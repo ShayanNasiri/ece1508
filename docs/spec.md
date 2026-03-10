@@ -1,10 +1,21 @@
 # Recipe-MPR QA Foundation Specification
 
-## 1. Objective
+## 1. Overview
 
 The project studies question answering on Recipe-MPR using a five-way recipe selection task. The current repository implementation defines the canonical dataset contract together with the preparation, loading, and formatting interfaces used by the codebase today.
 
-## 2. Dataset and Task Definition
+## 2. Current Scope
+
+The current implementation covers the data-facing foundation of the project:
+
+- raw dataset validation
+- canonical example normalization
+- deterministic split generation
+- loader interfaces for downstream consumers
+- prompt and prediction formatting
+- CLI support for preparation and inspection
+
+## 3. Dataset Definition
 
 - Source dataset: `data/500QA.json`
 - Task: five-way multiple-choice recipe selection
@@ -12,7 +23,7 @@ The project studies question answering on Recipe-MPR using a five-way recipe sel
 - Query types: `Specific`, `Commonsense`, `Negated`, `Analogical`, `Temporal`
 - Gold label: one correct option id per query
 
-### Canonical Example Schema
+### 3.1 Canonical Example Schema
 
 Each prepared example contains:
 
@@ -39,7 +50,15 @@ Validation policy:
 - Query-type keys must match the expected five-category schema
 - Text fields must be non-empty after trimming for validation purposes
 
-## 3. Split Policy
+## 4. Data Artifacts And Splits
+
+### 4.1 Canonical Processed Dataset
+
+- Path: `data/processed/recipe_mpr_qa.jsonl`
+- Contents: normalized canonical examples derived from `data/500QA.json`
+- Identifier policy: stable `example_id` values `rmpr-0001` through `rmpr-0500`
+
+### 4.2 Split Policy
 
 The project uses one deterministic primary split committed to the repo:
 
@@ -51,7 +70,7 @@ The project uses one deterministic primary split committed to the repo:
 
 The split manifest is the shared contract for all later phases. No phase should create ad hoc splits unless explicitly documented as auxiliary analysis.
 
-## 4. Current Implementation
+## 5. Implementation Structure
 
 The repository currently ships:
 
@@ -63,7 +82,7 @@ The repository currently ships:
 - canonical prediction record schema
 - tests covering data, loaders, prompt parsing, serialization, and CLI behavior
 
-Interfaces:
+### 5.1 Interfaces
 
 - `RecipeExample`
 - `PreparedDataset`
@@ -71,9 +90,15 @@ Interfaces:
 - `PredictionRecord`
 - `PromptSpec`
 
-## 5. Canonical Output Schemas
+### 5.2 Module Layout
 
-### PredictionRecord
+- `src/recipe_mpr_qa/data`: dataset constants, schemas, preparation, and loaders
+- `src/recipe_mpr_qa/formats.py`: prompt and prediction record formatting
+- `src/recipe_mpr_qa/cli.py`: command-line entrypoints
+
+## 6. Output Formats
+
+### 6.1 PredictionRecord
 
 Every model or prompt run should emit JSONL records with:
 
@@ -92,7 +117,7 @@ Every model or prompt run should emit JSONL records with:
 - `latency_ms`
 - `metadata`
 
-## 6. CLI Contract
+## 7. CLI Contract
 
 Supported commands:
 
@@ -103,7 +128,7 @@ Supported commands:
 
 The CLI must remain dependency-light and runnable without non-standard-library runtime dependencies.
 
-## 7. Testing Requirements
+## 8. Testing Requirements
 
 The test suite must cover:
 

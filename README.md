@@ -1,10 +1,12 @@
 # Recipe-MPR QA
 
+## Overview
+
 This repository contains the current foundation for the Recipe-MPR project: dataset preparation, deterministic splits, tokenizer-ready loading, and standardized prompt/output formatting for model runs.
 
 The broader project compares specialized small language models against general LLMs on the Recipe-MPR multiple-choice recipe recommendation dataset. The code currently in the repo establishes the shared data contract and workflow for dataset preparation and model-facing inputs.
 
-## Current Status
+## Current Scope
 
 - Raw dataset validation and normalization
 - Canonical processed JSONL artifact with stable example ids
@@ -14,7 +16,9 @@ The broader project compares specialized small language models against general L
 - CLI commands for prepare, validate, stats, and split export
 - Regression tests for all implemented functionality
 
-## Quickstart
+## Working With The Data
+
+### Quickstart
 
 Create the processed dataset and split manifest:
 
@@ -47,11 +51,14 @@ Run the test suite:
 pytest
 ```
 
-## Repo Layout
+### Current Data Outputs
 
-- `data/500QA.json`: raw Recipe-MPR dataset
 - `data/processed/recipe_mpr_qa.jsonl`: canonical normalized dataset artifact
 - `data/processed/primary_split.json`: deterministic 70/15/15 split manifest
+
+## Project Structure
+
+- `data/500QA.json`: raw Recipe-MPR dataset
 - `docs/spec.md`: current project foundation specification
 - `src/recipe_mpr_qa/data`: preparation, validation, splits, and loader interfaces
 - `src/recipe_mpr_qa/formats.py`: prompt formatting, response parsing, and prediction record schema
@@ -59,7 +66,7 @@ pytest
 - `llm_evaluation`: original Ollama-based evaluation helpers preserved from the initial repo
 - `tests`: regression coverage for the current implementation
 
-## Implemented So Far
+## Current Implementation
 
 - Canonical example schema with stable `example_id` values
 - Deterministic stratified split manifest
@@ -68,7 +75,9 @@ pytest
 - Canonical prediction record schema for consistent model outputs
 - CLI workflow for preparing, validating, inspecting, and exporting dataset artifacts
 
-## Data Contracts
+## Interfaces And Contracts
+
+### Core Data Types
 
 - `RecipeExample`: one normalized Recipe-MPR question with five ordered options
 - `PreparedDataset`: validated collection of canonical examples
@@ -77,10 +86,12 @@ pytest
 - `PromptSpec`: shared multiple-choice prompt contract
 - `PredictionRecord`: canonical serialized output format for model predictions
 
-## Ownership
+## Project Notes
+
+### Ownership
 
 - Pedram: data preparation, loading, and formatting foundation
 
-## Dependencies
+### Dependencies
 
 The current implementation runs with the Python standard library. `pytest` is the only declared development dependency.
