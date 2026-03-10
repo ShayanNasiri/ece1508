@@ -62,6 +62,20 @@ def build_option_scoring_examples(
     return tuple(scoring_examples)
 
 
+def combine_examples(
+    primary_examples: Sequence[RecipeExample],
+    augmentation_examples: Sequence[RecipeExample] = (),
+) -> tuple[RecipeExample, ...]:
+    combined = list(primary_examples)
+    seen_ids = {example.example_id for example in combined}
+    for example in augmentation_examples:
+        if example.example_id in seen_ids:
+            raise ValueError(f"Duplicate example_id in combined examples: {example.example_id}")
+        combined.append(example)
+        seen_ids.add(example.example_id)
+    return tuple(combined)
+
+
 def load_option_scoring_split(
     *,
     split_name: str,
