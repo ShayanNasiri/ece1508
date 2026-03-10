@@ -47,17 +47,15 @@ def parse_mc_response(response_text):
     """
     text = response_text.strip().upper()
 
-    # Check if response is just a single letter
     if text in LETTER_MAP:
         return text
 
-    # Look for patterns like "A)", "A.", "Answer: A", "(A)", etc.
     patterns = [
-        r'\b([A-E])\)',       # A)
-        r'\b([A-E])\.',       # A.
-        r'\(([A-E])\)',       # (A)
-        r'answer\s*[:is]*\s*([A-E])\b',  # answer: A / answer is A
-        r'\b([A-E])\b',       # standalone letter (last resort)
+        r"\b([A-E])\)",
+        r"\b([A-E])\.",
+        r"\(([A-E])\)",
+        r"answer\s*[:is]*\s*([A-E])\b",
+        r"\b([A-E])\b",
     ]
     for pattern in patterns:
         match = re.search(pattern, text)
