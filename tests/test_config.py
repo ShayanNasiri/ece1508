@@ -66,3 +66,24 @@ temperature = 0.0
 
     with pytest.raises(ConfigError):
         load_llm_experiment_config(config_path)
+
+
+def test_load_slm_experiment_config_parses_causal_baseline(tmp_path: Path) -> None:
+    config_path = tmp_path / "slm_causal.toml"
+    config_path.write_text(
+        """
+[output]
+run_id = "smollm2-baseline"
+
+[slm]
+mode = "causal_baseline"
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
+    config = load_slm_experiment_config(config_path)
+
+    assert config.mode == "causal_baseline"
+    assert config.causal_baseline is not None
+    assert config.causal_baseline.model_name == "HuggingFaceTB/SmolLM2-135M-Instruct"

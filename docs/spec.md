@@ -2,7 +2,7 @@
 
 ## 1. Project Objective
 
-The project evaluates whether a specialized DistilBERT-based pipeline can match or exceed a general LLM baseline on Recipe-MPR while keeping the workflow reproducible, inspectable, and easy to rerun on dedicated hardware.
+The project evaluates whether specialized SLM pipelines can match or exceed a general LLM baseline on Recipe-MPR while keeping the workflow reproducible, inspectable, and easy to rerun on dedicated hardware.
 
 The implementation target in this repository is the full experiment stack up to the point where the team can launch real augmentation, training, inference, and judge runs on a GPU or local model-serving machine and collect results through consistent artifacts.
 
@@ -95,6 +95,8 @@ Configs are TOML files under `configs/` and are loaded through typed config mode
 - `AugmentationConfig`
 - `VanillaSLMConfig`
 - `FineTuneConfig`
+- `CausalBaselineConfig`
+- `CausalFineTuneConfig`
 - `LLMRunConfig`
 - `JudgeConfig`
 
@@ -154,7 +156,26 @@ Outputs:
 - `artifacts/runs/<run_id>/slm/metrics.json`
 - run summary manifest
 
-### 7.3 General LLM Baseline
+### 7.3 Causal SLM Baseline and Fine-Tuning
+
+Definition:
+
+- model family: instruct-style causal LM, with `HuggingFaceTB/SmolLM2-135M-Instruct` as the default config target
+- prompt shape: single user message with `User request`, five `A-E` options, and an instruction to reply with only one letter
+- baseline evaluation: generate a short completion, parse the returned letter, and map it back to the original option id
+- fine-tuning: supervise the model on `prompt -> gold letter` sequences using the same chat-oriented format
+- adapter strategy: LoRA-ready by default for causal fine-tuning
+
+Outputs:
+
+- `artifacts/runs/<run_id>/slm/<split>_predictions.jsonl`
+- `artifacts/runs/<run_id>/slm/checkpoints/`
+- `artifacts/runs/<run_id>/slm/validation_predictions.jsonl`
+- `artifacts/runs/<run_id>/slm/test_predictions.jsonl`
+- `artifacts/runs/<run_id>/slm/metrics.json`
+- run summary manifest
+
+### 7.4 General LLM Baseline
 
 Definition:
 
@@ -175,7 +196,7 @@ Outputs:
 - `artifacts/runs/<run_id>/llm/<split>_metrics.json`
 - run summary manifest
 
-### 7.4 LLM as Judge
+### 7.5 LLM as Judge
 
 Definition:
 
@@ -221,7 +242,21 @@ Expected JSON shape:
 {"rewrites": ["query one", "query two"]}
 ```
 
-### 8.3 Judge Prompt
+### 8.3 Causal SLM Prompt
+
+Used for SmolLM2-style baseline prompting and supervised fine-tuning.
+
+- rendered as a chat-oriented user message
+- includes `User request`
+- lists options as `A` through `E`
+- instructs the model to reply with only one letter
+
+Training view:
+
+- the supervised target is the gold letter only
+- the fine-tuning sequence is effectively `prompt -> assistant: <gold_letter>`
+
+### 8.4 Judge Prompt
 
 Used for LLM-as-a-judge evaluation.
 
@@ -341,6 +376,8 @@ The non-training test suite must cover:
 - config parsing and default resolution
 - augmentation prompt parsing and artifact writing
 - vanilla SLM scoring on toy embeddings
+- causal SLM prompt rendering and letter parsing
+- causal SLM orchestration with mocked Hugging Face components
 - fine-tune orchestration with mocked Hugging Face components
 - LLM inference retries, parsing, resume behavior, and record writing
 - judge prompt parsing and judgment serialization

@@ -1,0 +1,30 @@
+[output]
+run_id = "smollm2-finetune"
+artifacts_root = "artifacts/runs"
+
+[data]
+dataset_path = "data/processed/recipe_mpr_qa.jsonl"
+split_manifest_path = "data/processed/primary_split.json"
+split = "test"
+
+[tracking]
+enabled = false
+experiment_name = "recipe-mpr-qa"
+
+[slm]
+mode = "causal_finetune"
+model_name = "HuggingFaceTB/SmolLM2-135M-Instruct"
+prompt_version = "recipe-mpr-chat-mc-v1"
+max_length = 512
+max_new_tokens = 8
+temperature = 0.0
+top_p = 0.9
+learning_rate = 2e-4
+train_batch_size = 2
+eval_batch_size = 2
+num_train_epochs = 3.0
+use_augmentation = false
+use_lora = true
+lora_r = 16
+lora_alpha = 32
+lora_dropout = 0.05

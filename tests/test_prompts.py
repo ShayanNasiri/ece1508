@@ -7,10 +7,12 @@ import pytest
 from recipe_mpr_qa.data.models import RecipeOption
 from recipe_mpr_qa.llm.prompts import (
     build_augmentation_prompt,
+    build_causal_multiple_choice_prompt,
     build_judge_prompt,
     DEFAULT_PROMPT_SPEC,
     JUDGE_PROMPT_SPEC,
     AUGMENTATION_PROMPT_SPEC,
+    CAUSAL_SLM_PROMPT_SPEC,
     build_multiple_choice_prompt,
     parse_augmentation_response,
     parse_judge_response,
@@ -97,3 +99,23 @@ def test_judge_prompt_and_parser_round_trip() -> None:
         '"rationale": "Mostly aligned."}'
     )
     assert parsed["overall_verdict"] == "partially_correct"
+
+
+def test_causal_prompt_matches_chat_style_letter_response() -> None:
+    options = (
+        RecipeOption("id-a", "Option A"),
+        RecipeOption("id-b", "Option B"),
+        RecipeOption("id-c", "Option C"),
+        RecipeOption("id-d", "Option D"),
+        RecipeOption("id-e", "Option E"),
+    )
+
+    prompt, letter_to_option_id = build_causal_multiple_choice_prompt(
+        query="I want a quick vegetarian breakfast",
+        options=options,
+        prompt_spec=CAUSAL_SLM_PROMPT_SPEC,
+    )
+
+    assert "User request: I want a quick vegetarian breakfast" in prompt
+    assert "Reply with only one letter: A, B, C, D, or E." in prompt
+    assert letter_to_option_id["B"] == "id-b"

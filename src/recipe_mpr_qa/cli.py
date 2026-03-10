@@ -46,8 +46,11 @@ from recipe_mpr_qa.evaluation import (
 )
 from recipe_mpr_qa.llm import OllamaClient, judge_predictions, run_llm_predictions
 from recipe_mpr_qa.slm import (
+    evaluate_causal_slm,
     evaluate_finetuned_model,
+    evaluate_finetuned_causal_model,
     evaluate_vanilla_slm,
+    train_causal_slm,
     train_finetuned_model,
 )
 from recipe_mpr_qa.tracking.mlflow import ExperimentContext, MLflowLogger, build_mlflow_tags
@@ -275,8 +278,6 @@ def _command_generate_augmentation(args: argparse.Namespace) -> int:
 
 def _command_train_slm(args: argparse.Namespace) -> int:
     config = load_slm_experiment_config(args.config)
-    if config.mode != "finetune" or config.finetune is None:
-        raise ConfigError("train-slm requires a config with slm.mode='finetune'")
     run_layout = ensure_run_layout(
         config.output.run_id,
         _resolve_root_dir(config.output.artifacts_root, args.output_dir),
@@ -287,24 +288,75 @@ def _command_train_slm(args: argparse.Namespace) -> int:
     train_examples = get_split_examples(dataset, split_manifest, "train")
     validation_examples = get_split_examples(dataset, split_manifest, "validation")
     test_examples = get_split_examples(dataset, split_manifest, "test")
-    if config.finetune.use_augmentation:
+    use_augmentation = False
+    if config.mode == "finetune" and config.finetune is not None:
+        use_augmentation = config.finetune.use_augmentation
+    elif config.mode == "causal_finetune" and config.causal_finetune is not None:
+        use_augmentation = config.causal_finetune.use_augmentation
+    else:
+        raise ConfigError(
+            "train-slm requires a config with slm.mode='finetune' or slm.mode='causal_finetune'"
+        )
+    if use_augmentation:
         if config.data.augmentation_dataset_path is None:
             raise ConfigError("augmentation_dataset_path is required when use_augmentation=true")
         augmented_examples = read_augmented_dataset(config.data.augmentation_dataset_path)
         train_examples = combine_examples(train_examples, augmented_examples)
-    result = train_finetuned_model(
-        train_examples=train_examples,
-        validation_examples=validation_examples,
-        test_examples=test_examples,
-        run_id=config.output.run_id,
-        output_dir=run_layout.checkpoints_dir,
-        model_name=config.finetune.model_name,
-        max_length=config.finetune.max_length,
-        learning_rate=config.finetune.learning_rate,
-        train_batch_size=config.finetune.train_batch_size,
-        eval_batch_size=config.finetune.eval_batch_size,
-        num_train_epochs=config.finetune.num_train_epochs,
-    )
+    if config.mode == "finetune" and config.finetune is not None:
+        result = train_finetuned_model(
+            train_examples=train_examples,
+            validation_examples=validation_examples,
+            test_examples=test_examples,
+            run_id=config.output.run_id,
+            output_dir=run_layout.checkpoints_dir,
+            model_name=config.finetune.model_name,
+            max_length=config.finetune.max_length,
+            learning_rate=config.finetune.learning_rate,
+            train_batch_size=config.finetune.train_batch_size,
+            eval_batch_size=config.finetune.eval_batch_size,
+            num_train_epochs=config.finetune.num_train_epochs,
+        )
+        model_name = config.finetune.model_name
+        prompt_version = "distilbert-cross-encoder-v1"
+        params = {
+            "learning_rate": config.finetune.learning_rate,
+            "num_train_epochs": config.finetune.num_train_epochs,
+            "use_augmentation": config.finetune.use_augmentation,
+            "mode": config.mode,
+        }
+    elif config.mode == "causal_finetune" and config.causal_finetune is not None:
+        result = train_causal_slm(
+            train_examples=train_examples,
+            validation_examples=validation_examples,
+            test_examples=test_examples,
+            run_id=config.output.run_id,
+            output_dir=run_layout.checkpoints_dir,
+            model_name=config.causal_finetune.model_name,
+            prompt_version=config.causal_finetune.prompt_version,
+            max_length=config.causal_finetune.max_length,
+            max_new_tokens=config.causal_finetune.max_new_tokens,
+            temperature=config.causal_finetune.temperature,
+            top_p=config.causal_finetune.top_p,
+            learning_rate=config.causal_finetune.learning_rate,
+            train_batch_size=config.causal_finetune.train_batch_size,
+            eval_batch_size=config.causal_finetune.eval_batch_size,
+            num_train_epochs=config.causal_finetune.num_train_epochs,
+            use_lora=config.causal_finetune.use_lora,
+            lora_r=config.causal_finetune.lora_r,
+            lora_alpha=config.causal_finetune.lora_alpha,
+            lora_dropout=config.causal_finetune.lora_dropout,
+        )
+        model_name = config.causal_finetune.model_name
+        prompt_version = config.causal_finetune.prompt_version
+        params = {
+            "learning_rate": config.causal_finetune.learning_rate,
+            "num_train_epochs": config.causal_finetune.num_train_epochs,
+            "use_augmentation": config.causal_finetune.use_augmentation,
+            "use_lora": config.causal_finetune.use_lora,
+            "mode": config.mode,
+        }
+    else:
+        raise ConfigError("Invalid SLM config")
     validation_metrics = summarize_prediction_metrics(result["validation_records"], dataset)
     test_metrics = summarize_prediction_metrics(result["test_records"], dataset)
     metrics = {
@@ -338,15 +390,11 @@ def _command_train_slm(args: argparse.Namespace) -> int:
             tags=build_mlflow_tags(
                 phase="phase2",
                 provider="slm",
-                model_name=config.finetune.model_name,
+                model_name=model_name,
                 split="test",
-                prompt_version="distilbert-cross-encoder-v1",
+                prompt_version=prompt_version,
             ),
-            params={
-                "learning_rate": config.finetune.learning_rate,
-                "num_train_epochs": config.finetune.num_train_epochs,
-                "use_augmentation": config.finetune.use_augmentation,
-            },
+            params=params,
         ),
         summary=summary,
     )
@@ -394,6 +442,38 @@ def _command_evaluate_slm(args: argparse.Namespace) -> int:
         )
         model_name = config.finetune.model_name
         prompt_version = "distilbert-cross-encoder-v1"
+    elif config.mode == "causal_baseline" and config.causal_baseline is not None:
+        prediction_records = evaluate_causal_slm(
+            examples=split_examples,
+            run_id=config.output.run_id,
+            split=split,
+            output_path=output_path,
+            model_name=config.causal_baseline.model_name,
+            prompt_version=config.causal_baseline.prompt_version,
+            max_length=config.causal_baseline.max_length,
+            max_new_tokens=config.causal_baseline.max_new_tokens,
+            temperature=config.causal_baseline.temperature,
+            top_p=config.causal_baseline.top_p,
+        )
+        model_name = config.causal_baseline.model_name
+        prompt_version = config.causal_baseline.prompt_version
+    elif config.mode == "causal_finetune" and config.causal_finetune is not None:
+        checkpoint_dir = config.causal_finetune.checkpoint_dir or run_layout.checkpoints_dir
+        prediction_records = evaluate_finetuned_causal_model(
+            examples=split_examples,
+            run_id=config.output.run_id,
+            split=split,
+            checkpoint_dir=checkpoint_dir,
+            output_path=output_path,
+            model_name=config.causal_finetune.model_name,
+            prompt_version=config.causal_finetune.prompt_version,
+            max_length=config.causal_finetune.max_length,
+            max_new_tokens=config.causal_finetune.max_new_tokens,
+            temperature=config.causal_finetune.temperature,
+            top_p=config.causal_finetune.top_p,
+        )
+        model_name = config.causal_finetune.model_name
+        prompt_version = config.causal_finetune.prompt_version
     else:
         raise ConfigError("Invalid SLM config")
     metrics = summarize_prediction_metrics(prediction_records, dataset)

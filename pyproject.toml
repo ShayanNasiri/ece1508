@@ -18,6 +18,7 @@ dependencies = []
 train = [
   "accelerate>=0.34",
   "datasets>=2.21",
+  "peft>=0.13",
   "torch>=2.3",
   "transformers>=4.44",
 ]

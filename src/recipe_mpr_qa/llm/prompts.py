@@ -69,6 +69,20 @@ JUDGE_PROMPT_SPEC = PromptSpec(
     ),
 )
 
+CAUSAL_SLM_PROMPT_SPEC = PromptSpec(
+    version="recipe-mpr-chat-mc-v1",
+    template=(
+        "User request: {query}\n\n"
+        "Options:\n"
+        "A. {option_a}\n"
+        "B. {option_b}\n"
+        "C. {option_c}\n"
+        "D. {option_d}\n"
+        "E. {option_e}\n\n"
+        "Reply with only one letter: A, B, C, D, or E."
+    ),
+)
+
 
 def build_multiple_choice_prompt(
     *,
@@ -94,6 +108,15 @@ def build_multiple_choice_prompt(
         option_e=option_items[4][1],
     )
     return prompt, letter_to_option_id
+
+
+def build_causal_multiple_choice_prompt(
+    *,
+    query: str,
+    options: Sequence[RecipeOption] | Mapping[str, str],
+    prompt_spec: PromptSpec = CAUSAL_SLM_PROMPT_SPEC,
+) -> tuple[str, dict[str, str]]:
+    return build_multiple_choice_prompt(query=query, options=options, prompt_spec=prompt_spec)
 
 
 def parse_multiple_choice_response(response_text: str) -> str | None:

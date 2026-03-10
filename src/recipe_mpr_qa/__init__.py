@@ -1,5 +1,7 @@
 from recipe_mpr_qa.config import (
     AugmentationConfig,
+    CausalBaselineConfig,
+    CausalFineTuneConfig,
     DataConfig,
     FineTuneConfig,
     JudgeConfig,
@@ -37,6 +39,8 @@ __all__ = [
     "TrackingConfig",
     "VanillaSLMConfig",
     "AugmentationConfig",
+    "CausalBaselineConfig",
+    "CausalFineTuneConfig",
 ]
 
 __version__ = "0.1.0"
