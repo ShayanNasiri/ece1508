@@ -237,7 +237,6 @@ def _build_causal_rows(
             chat_example["generation_prompt"],
             truncation=True,
             max_length=max_length,
-            padding="max_length",
         )
         full_tokens = tokenizer(
             chat_example["training_text"],
@@ -247,12 +246,20 @@ def _build_causal_rows(
         )
         input_ids = list(full_tokens["input_ids"])
         labels = list(input_ids)
+        attention_mask = list(full_tokens.get("attention_mask", [1] * len(input_ids)))
         prompt_length = min(len(prompt_tokens["input_ids"]), len(labels))
         for index in range(prompt_length):
             labels[index] = -100
+        for index, is_active in enumerate(attention_mask):
+            if not is_active:
+                labels[index] = -100
+        if not any(label != -100 for label in labels):
+            raise ValueError(
+                f"max_length={max_length} leaves no supervised target tokens for {example.example_id}"
+            )
         row = {
             "input_ids": input_ids,
-            "attention_mask": list(full_tokens.get("attention_mask", [1] * len(input_ids))),
+            "attention_mask": attention_mask,
             "labels": labels,
         }
         rows.append(row)

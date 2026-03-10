@@ -37,10 +37,22 @@ GPU or model-serving environment:
 
 ## Quickstart
 
+Install the package in editable mode before using the CLI from a fresh clone:
+
+```powershell
+python -m pip install -e ".[dev]"
+```
+
+For the full experiment stack on a GPU or model-serving machine:
+
+```powershell
+python -m pip install -e ".[train,llm,tracking,dev]"
+```
+
 Prepare the canonical dataset and split manifest:
 
 ```powershell
-python -m recipe_mpr_qa.cli prepare-data `
+recipe-mpr-qa prepare-data `
   --input data/500QA.json `
   --output data/processed/recipe_mpr_qa.jsonl `
   --split-output data/processed/primary_split.json
@@ -49,37 +61,37 @@ python -m recipe_mpr_qa.cli prepare-data `
 Run the vanilla DistilBERT baseline with the default config:
 
 ```powershell
-python -m recipe_mpr_qa.cli evaluate-slm --config configs/slm_vanilla.toml
+recipe-mpr-qa evaluate-slm --config configs/slm_vanilla.toml
 ```
 
 Generate augmentation artifacts through Ollama:
 
 ```powershell
-python -m recipe_mpr_qa.cli generate-augmentation --config configs/augmentation.toml
+recipe-mpr-qa generate-augmentation --config configs/augmentation.toml
 ```
 
 Train the fine-tuned DistilBERT model:
 
 ```powershell
-python -m recipe_mpr_qa.cli train-slm --config configs/slm_finetune_original.toml
+recipe-mpr-qa train-slm --config configs/slm_finetune_original.toml
 ```
 
 Run the SmolLM2-style causal SLM baseline:
 
 ```powershell
-python -m recipe_mpr_qa.cli evaluate-slm --config configs/slm_smollm2_baseline.toml
+recipe-mpr-qa evaluate-slm --config configs/slm_smollm2_baseline.toml
 ```
 
 Run the general LLM baseline:
 
 ```powershell
-python -m recipe_mpr_qa.cli run-llm --config configs/llm_baseline.toml
+recipe-mpr-qa run-llm --config configs/llm_baseline.toml
 ```
 
 Judge model predictions:
 
 ```powershell
-python -m recipe_mpr_qa.cli judge-predictions `
+recipe-mpr-qa judge-predictions `
   --config configs/judge.toml `
   --predictions artifacts/runs/llm-baseline/llm/test_predictions.jsonl
 ```

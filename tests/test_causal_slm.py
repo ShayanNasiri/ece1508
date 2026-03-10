@@ -40,14 +40,19 @@ class FakeCausalTokenizer:
         max_length=512,
         padding=None,
     ):
-        del truncation, max_length, padding
+        del truncation, max_length
         if return_tensors == "pt":
             return {
                 "input_ids": torch.tensor([[1, 2, 3]], dtype=torch.long),
                 "attention_mask": torch.tensor([[1, 1, 1]], dtype=torch.long),
             }
-        token_ids = [1, 2, 3, 4]
-        return {"input_ids": token_ids, "attention_mask": [1] * len(token_ids)}
+        if "Assistant:" in text and text.rstrip().endswith("Assistant:"):
+            token_ids = [11, 12, 13, 14]
+            attention_mask = [1, 1, 1, 1]
+        else:
+            token_ids = [11, 12, 13, 14, 15, 16]
+            attention_mask = [1, 1, 1, 1, 1, 0] if padding == "max_length" else [1] * len(token_ids)
+        return {"input_ids": token_ids, "attention_mask": attention_mask}
 
     def decode(self, tokens, skip_special_tokens=True):
         del skip_special_tokens
@@ -158,3 +163,17 @@ def test_train_and_evaluate_causal_slm_smoke(monkeypatch, tmp_path: Path) -> Non
     assert len(result["test_records"]) == 1
     assert (tmp_path / "validation_predictions.jsonl").exists()
     assert (tmp_path / "test_predictions.jsonl").exists()
+
+
+def test_build_causal_rows_keeps_supervised_letter_unmasked() -> None:
+    example = read_prepared_dataset(PROCESSED_DATASET_PATH).examples[0]
+
+    rows, _metadata = causal_module._build_causal_rows(
+        (example,),
+        FakeCausalTokenizer(),
+        max_length=32,
+    )
+
+    assert any(label != -100 for label in rows[0]["labels"])
+    assert rows[0]["labels"][:4] == [-100, -100, -100, -100]
+    assert rows[0]["labels"][4] != -100
