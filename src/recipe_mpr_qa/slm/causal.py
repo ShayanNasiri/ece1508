@@ -63,11 +63,14 @@ def _ensure_tokenizer_padding(tokenizer) -> None:
 
 def _apply_chat_template(tokenizer, messages: Sequence[Mapping[str, str]], *, add_generation_prompt: bool) -> str:
     if hasattr(tokenizer, "apply_chat_template"):
-        return tokenizer.apply_chat_template(
-            list(messages),
-            tokenize=False,
-            add_generation_prompt=add_generation_prompt,
-        )
+        try:
+            return tokenizer.apply_chat_template(
+                list(messages),
+                tokenize=False,
+                add_generation_prompt=add_generation_prompt,
+            )
+        except ValueError:
+            pass
     rendered = []
     for message in messages:
         rendered.append(f"{message['role'].capitalize()}: {message['content']}")
@@ -306,17 +309,19 @@ def _build_causal_trainer(
                 target_modules="all-linear",
             ),
         )
+    training_kwargs = {
+        "output_dir": checkpoint_dir.as_posix(),
+        "per_device_train_batch_size": train_batch_size,
+        "per_device_eval_batch_size": eval_batch_size,
+        "learning_rate": learning_rate,
+        "num_train_epochs": num_train_epochs,
+        "save_strategy": "epoch",
+        "logging_strategy": "steps",
+        "logging_steps": 10,
+        "report_to": [],
+    }
     training_args = TrainingArguments(
-        output_dir=checkpoint_dir.as_posix(),
-        per_device_train_batch_size=train_batch_size,
-        per_device_eval_batch_size=eval_batch_size,
-        learning_rate=learning_rate,
-        num_train_epochs=num_train_epochs,
-        evaluation_strategy="epoch",
-        save_strategy="epoch",
-        logging_strategy="steps",
-        logging_steps=10,
-        report_to=[],
+        **_add_eval_strategy_kwargs(TrainingArguments, training_kwargs)
     )
     return Trainer(
         model=model,
@@ -326,6 +331,16 @@ def _build_causal_trainer(
         tokenizer=tokenizer,
         data_collator=default_data_collator,
     )
+
+
+def _add_eval_strategy_kwargs(training_arguments_cls, kwargs: Mapping[str, Any]) -> dict[str, Any]:
+    init_parameters = training_arguments_cls.__init__.__code__.co_varnames
+    resolved = dict(kwargs)
+    if "evaluation_strategy" in init_parameters:
+        resolved["evaluation_strategy"] = "epoch"
+    elif "eval_strategy" in init_parameters:
+        resolved["eval_strategy"] = "epoch"
+    return resolved
 
 
 def train_causal_slm(

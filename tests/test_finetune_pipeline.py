@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
+
 from recipe_mpr_qa.data.preparation import read_prepared_dataset
 from recipe_mpr_qa.evaluation.records import read_prediction_records
 from recipe_mpr_qa.slm import finetune as finetune_module
@@ -113,3 +115,51 @@ def test_evaluate_finetuned_model_smoke(monkeypatch, tmp_path: Path) -> None:
 
     assert len(records) == 1
     assert read_prediction_records(output_path) == records
+
+
+def test_add_eval_strategy_kwargs_supports_newer_transformers_signature() -> None:
+    class DummyTrainingArguments:
+        def __init__(self, output_dir, eval_strategy=None):  # noqa: ARG002
+            pass
+
+    resolved = finetune_module._add_eval_strategy_kwargs(
+        DummyTrainingArguments,
+        {"output_dir": "tmp"},
+    )
+
+    assert resolved["eval_strategy"] == "epoch"
+
+
+def test_prediction_records_from_numpy_logits() -> None:
+    dataset = read_prepared_dataset(PROCESSED_DATASET_PATH)
+    example = dataset.examples[0]
+    metadata = [
+        {
+            "example_id": example.example_id,
+            "option_id": option.option_id,
+            "option_index": option_index,
+            "group_size": 5,
+            "label": int(option.option_id == example.answer_option_id),
+        }
+        for option_index, option in enumerate(example.options)
+    ]
+    logits = np.array(
+        [
+            [0.1, 0.2],
+            [0.2, 0.3],
+            [0.3, 0.4],
+            [0.4, 0.5],
+            [0.5, 0.6],
+        ]
+    )
+
+    records = finetune_module._prediction_records_from_logits(
+        logits=logits,
+        metadata=metadata,
+        examples=(example,),
+        run_id="numpy-run",
+        model_name="tiny",
+        split="test",
+    )
+
+    assert len(records) == 1

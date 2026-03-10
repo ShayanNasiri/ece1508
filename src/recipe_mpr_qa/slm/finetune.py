@@ -78,9 +78,9 @@ def _prediction_records_from_logits(
     grouped_scores: dict[str, list[tuple[str, float]]] = {}
     for index, row in enumerate(metadata):
         logit_row = logits[index]
-        if isinstance(logit_row, (list, tuple)):
+        try:
             score = float(logit_row[-1])
-        else:
+        except (TypeError, IndexError, KeyError):
             score = float(logit_row)
         grouped_scores.setdefault(row["example_id"], []).append(
             (row["option_index"], row["option_id"], score)
@@ -138,17 +138,19 @@ def _build_trainer(
         TrainingArguments,
     ) = _require_transformers()
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+    training_kwargs = {
+        "output_dir": checkpoint_dir.as_posix(),
+        "per_device_train_batch_size": train_batch_size,
+        "per_device_eval_batch_size": eval_batch_size,
+        "learning_rate": learning_rate,
+        "num_train_epochs": num_train_epochs,
+        "save_strategy": "epoch",
+        "logging_strategy": "steps",
+        "logging_steps": 10,
+        "report_to": [],
+    }
     training_args = TrainingArguments(
-        output_dir=checkpoint_dir.as_posix(),
-        per_device_train_batch_size=train_batch_size,
-        per_device_eval_batch_size=eval_batch_size,
-        learning_rate=learning_rate,
-        num_train_epochs=num_train_epochs,
-        evaluation_strategy="epoch",
-        save_strategy="epoch",
-        logging_strategy="steps",
-        logging_steps=10,
-        report_to=[],
+        **_add_eval_strategy_kwargs(TrainingArguments, training_kwargs)
     )
     trainer = Trainer(
         model=model,
@@ -260,9 +262,14 @@ def evaluate_finetuned_model(
     trainer = Trainer(
         model=model,
         args=TrainingArguments(
-            output_dir=checkpoint_dir.as_posix(),
-            per_device_eval_batch_size=8,
-            report_to=[],
+            **_add_eval_strategy_kwargs(
+                TrainingArguments,
+                {
+                    "output_dir": checkpoint_dir.as_posix(),
+                    "per_device_eval_batch_size": 8,
+                    "report_to": [],
+                },
+            )
         ),
         tokenizer=tokenizer,
         data_collator=DataCollatorWithPadding(tokenizer=tokenizer),
@@ -278,3 +285,13 @@ def evaluate_finetuned_model(
     )
     write_prediction_records(records, output_path)
     return records
+
+
+def _add_eval_strategy_kwargs(training_arguments_cls, kwargs: Mapping[str, Any]) -> dict[str, Any]:
+    init_parameters = training_arguments_cls.__init__.__code__.co_varnames
+    resolved = dict(kwargs)
+    if "evaluation_strategy" in init_parameters:
+        resolved["evaluation_strategy"] = "epoch"
+    elif "eval_strategy" in init_parameters:
+        resolved["eval_strategy"] = "epoch"
+    return resolved

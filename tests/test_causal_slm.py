@@ -177,3 +177,18 @@ def test_build_causal_rows_keeps_supervised_letter_unmasked() -> None:
     assert any(label != -100 for label in rows[0]["labels"])
     assert rows[0]["labels"][:4] == [-100, -100, -100, -100]
     assert rows[0]["labels"][4] != -100
+
+
+def test_apply_chat_template_falls_back_when_tokenizer_has_no_template() -> None:
+    class NoTemplateTokenizer(FakeCausalTokenizer):
+        def apply_chat_template(self, messages, tokenize=False, add_generation_prompt=False):
+            raise ValueError("chat template missing")
+
+    rendered = causal_module._apply_chat_template(
+        NoTemplateTokenizer(),
+        [{"role": "user", "content": "hello"}],
+        add_generation_prompt=True,
+    )
+
+    assert "User: hello" in rendered
+    assert rendered.endswith("Assistant:")
