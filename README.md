@@ -1,10 +1,10 @@
 # Recipe-MPR QA
 
-This repository currently contains the Phase 1 foundation for the Recipe-MPR project: dataset preparation, deterministic splits, tokenizer-ready loading, and standardized prompt/output formatting for later model runs.
+This repository contains the current foundation for the Recipe-MPR project: dataset preparation, deterministic splits, tokenizer-ready loading, and standardized prompt/output formatting for model runs.
 
-The focus here is Pedram's scope only. The repo is set up so later training and evaluation work can consume a stable data contract, but this branch of `main` does not implement later-phase modeling, API integration, judging, or tracking.
+The broader project compares specialized small language models against general LLMs on the Recipe-MPR multiple-choice recipe recommendation dataset. The code currently in the repo establishes the shared data contract and workflow that later model training and evaluation work will build on.
 
-## Phase 1 Scope
+## Current Status
 
 - Raw dataset validation and normalization
 - Canonical processed JSONL artifact with stable example ids
@@ -12,7 +12,7 @@ The focus here is Pedram's scope only. The repo is set up so later training and 
 - Tokenizer-ready option-scoring loader for downstream consumers
 - Standardized multiple-choice prompt formatting and output record schema
 - CLI commands for prepare, validate, stats, and split export
-- Regression tests for all Phase 1 functionality
+- Regression tests for all implemented functionality
 
 ## Quickstart
 
@@ -41,7 +41,7 @@ python -m recipe_mpr_qa.cli export-split `
   --output data/processed/train.jsonl
 ```
 
-Run the Phase 1 test suite:
+Run the test suite:
 
 ```powershell
 pytest
@@ -50,15 +50,15 @@ pytest
 ## Repo Layout
 
 - `data/500QA.json`: raw Recipe-MPR dataset
-- `data/processed/recipe_mpr_qa.jsonl`: canonical normalized Phase 1 dataset artifact
+- `data/processed/recipe_mpr_qa.jsonl`: canonical normalized dataset artifact
 - `data/processed/primary_split.json`: deterministic 70/15/15 split manifest
-- `docs/spec.md`: Phase 1 specification
+- `docs/spec.md`: current project foundation specification
 - `src/recipe_mpr_qa/data`: preparation, validation, splits, and loader interfaces
 - `src/recipe_mpr_qa/formats.py`: prompt formatting, response parsing, and prediction record schema
-- `src/recipe_mpr_qa/cli.py`: Phase 1 command-line entrypoints
-- `tests`: Phase 1 regression coverage
+- `src/recipe_mpr_qa/cli.py`: command-line entrypoints for dataset preparation and inspection
+- `tests`: regression coverage for the current implementation
 
-## Deliverables
+## Implemented So Far
 
 - Canonical example schema with stable `example_id` values
 - Deterministic stratified split manifest
@@ -78,8 +78,8 @@ pytest
 
 ## Ownership
 
-- Pedram: Phase 1 data preparation, loading, and formatting
+- Pedram: data preparation, loading, and formatting foundation
 
 ## Dependencies
 
-The Phase 1 implementation runs with the Python standard library. `pytest` is the only declared development dependency.
+The current implementation runs with the Python standard library. `pytest` is the only declared development dependency.

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "recipe-mpr-qa"
 version = "0.1.0"
-description = "Recipe-MPR Phase 1 data preparation, loading, and model I/O formatting."
+description = "Recipe-MPR data preparation, loading, and model I/O formatting foundation."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [

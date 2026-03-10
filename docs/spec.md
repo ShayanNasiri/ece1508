@@ -1,8 +1,8 @@
-# Recipe-MPR QA Phase 1 Specification
+# Recipe-MPR QA Foundation Specification
 
 ## 1. Objective
 
-Phase 1 defines the canonical Recipe-MPR dataset contract and the loader/formatting interfaces that later experimental work will consume. It does not implement model training, LLM API calls, judging, or experiment tracking.
+The project evaluates question answering on Recipe-MPR by comparing specialized small language models against general LLM baselines. The current repository implementation defines the canonical dataset contract and the loader/formatting interfaces that later experimental work will consume. It does not yet implement model training, LLM API calls, judging, or experiment tracking.
 
 ## 2. Dataset and Task Definition
 
@@ -12,7 +12,7 @@ Phase 1 defines the canonical Recipe-MPR dataset contract and the loader/formatt
 - Query types: `Specific`, `Commonsense`, `Negated`, `Analogical`, `Temporal`
 - Gold label: one correct option id per query
 
-### Canonical Phase 1 Example Schema
+### Canonical Example Schema
 
 Each prepared example contains:
 
@@ -51,9 +51,9 @@ The project uses one deterministic primary split committed to the repo:
 
 The split manifest is the shared contract for all later phases. No phase should create ad hoc splits unless explicitly documented as auxiliary analysis.
 
-## 4. Deliverables
+## 4. Current Implementation
 
-Phase 1 ships:
+The repository currently ships:
 
 - canonical JSONL dataset artifact
 - deterministic split manifest
@@ -105,7 +105,7 @@ The CLI must remain dependency-light and runnable without non-standard-library r
 
 ## 7. Testing Requirements
 
-Phase 1 tests must cover:
+The test suite must cover:
 
 - malformed records and validation failures
 - whitespace normalization behavior
