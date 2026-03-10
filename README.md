@@ -2,7 +2,7 @@
 
 This repository contains the current foundation for the Recipe-MPR project: dataset preparation, deterministic splits, tokenizer-ready loading, and standardized prompt/output formatting for model runs.
 
-The broader project compares specialized small language models against general LLMs on the Recipe-MPR multiple-choice recipe recommendation dataset. The code currently in the repo establishes the shared data contract and workflow that later model training and evaluation work will build on.
+The broader project compares specialized small language models against general LLMs on the Recipe-MPR multiple-choice recipe recommendation dataset. The code currently in the repo establishes the shared data contract and workflow for dataset preparation and model-facing inputs.
 
 ## Current Status
 

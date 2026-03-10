@@ -2,7 +2,7 @@
 
 ## 1. Objective
 
-The project evaluates question answering on Recipe-MPR by comparing specialized small language models against general LLM baselines. The current repository implementation defines the canonical dataset contract and the loader/formatting interfaces that later experimental work will consume. It does not yet implement model training, LLM API calls, judging, or experiment tracking.
+The project studies question answering on Recipe-MPR using a five-way recipe selection task. The current repository implementation defines the canonical dataset contract together with the preparation, loading, and formatting interfaces used by the codebase today.
 
 ## 2. Dataset and Task Definition
 
