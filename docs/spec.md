@@ -1,131 +1,239 @@
 # Recipe-MPR QA Specification
 
-## 1. Objective
+## 1. Project Objective
 
-The project evaluates whether a specialized, fine-tuned DistilBERT option scorer can match or exceed a general LLM baseline on Recipe-MPR. The operational baseline target is to beat the documented 65% accuracy reference on the task while maintaining a reproducible experimental workflow.
+The project evaluates whether a specialized DistilBERT-based pipeline can match or exceed a general LLM baseline on Recipe-MPR while keeping the workflow reproducible, inspectable, and easy to rerun on dedicated hardware.
 
-## 2. Dataset and Task Definition
+The implementation target in this repository is the full experiment stack up to the point where the team can launch real augmentation, training, inference, and judge runs on a GPU or local model-serving machine and collect results through consistent artifacts.
 
-- Source dataset: `data/500QA.json`
-- Task: five-way multiple-choice recipe selection
+## 2. Task Definition
+
+- Dataset source: `data/500QA.json`
+- Task: five-way multiple-choice recipe recommendation
 - Example count: 500
-- Query types: `Specific`, `Commonsense`, `Negated`, `Analogical`, `Temporal`
-- Gold label: one correct option id per query
+- Query type flags:
+  - `Specific`
+  - `Commonsense`
+  - `Negated`
+  - `Analogical`
+  - `Temporal`
+- Gold answer: exactly one option id per example
 
-### Canonical Phase 1 Example Schema
+## 3. Canonical Dataset Contract
 
-Each prepared example contains:
+The canonical processed dataset is written to `data/processed/recipe_mpr_qa.jsonl`.
 
-- `example_id`: stable identifier `rmpr-0001` through `rmpr-0500`
+Each example follows the `RecipeExample` schema:
+
+- `example_id`: stable id from `rmpr-0001` to `rmpr-0500`
 - `query`: normalized query text
-- `options`: ordered list of five candidate options with `option_id` and `text`
+- `options`: ordered list of 5 `RecipeOption` entries
 - `answer_option_id`: gold option id
-- `query_type_flags`: boolean map for the five query categories
-- `correctness_explanation`: original gold evidence map from the raw dataset, preserving string or string-list evidence values
-- `source_metadata`: raw dataset path, raw row index, and any normalization applied
+- `query_type_flags`: boolean map over the five task categories
+- `correctness_explanation`: evidence map preserved from the raw dataset
+- `source_metadata`: raw source index, path, and normalization metadata
 
 Normalization policy:
 
-- Strip outer whitespace from `query`
-- Preserve option text, explanations, and `<INFERRED>` markers
-- Preserve raw option ordering
+- strip only outer whitespace from `query`
+- preserve option text and explanation content
+- preserve `<INFERRED>` markers and raw option ordering
 
 Validation policy:
 
-- Required keys must be present
-- Exactly five options per example
-- Option ids must be unique within an example
-- `answer_option_id` must match one of the option ids
-- Query-type keys must match the expected five-category schema
-- Text fields must be non-empty after trimming for validation purposes
+- required keys must exist
+- query and option text must be non-empty
+- exactly 5 options per example
+- option ids must be unique within an example
+- `answer_option_id` must exist in the options
+- query-type keys must exactly match the expected schema
+- `correctness_explanation` values must be non-empty strings or non-empty string lists
 
-## 3. Split Policy
+## 4. Split Policy
 
-The project uses one deterministic primary split committed to the repo:
+The project uses one committed split manifest: `data/processed/primary_split.json`.
 
-- Train: 350 examples
-- Validation: 75 examples
-- Test: 75 examples
-- Strategy: stratified by query-type signature
-- Seed: `1508`
+- train: 350 examples
+- validation: 75 examples
+- test: 75 examples
+- seed: `1508`
+- strategy: stratified by query-type signature
 
-The split manifest is the shared contract for all later phases. No phase should create ad hoc splits unless explicitly documented as auxiliary analysis.
+All baselines and training runs are expected to use this split unless an explicit alternative analysis is documented separately.
 
-## 4. Phase Plan
+## 5. Additional Data Artifacts
 
-### Phase 1: Data Preparation and Loading
+### 5.1 Augmentation Artifacts
 
-Deliverables:
+Synthetic query augmentation is persisted as JSONL under `artifacts/runs/<run_id>/augmentation/augmented_examples.jsonl`.
 
-- canonical JSONL dataset artifact
-- deterministic split manifest
-- CLI for prepare, validate, stats, and export
-- tokenizer-ready option-scoring loader
-- shared multiple-choice prompt format and response parser
-- canonical prediction and judgment record schemas
-- tests covering data, loaders, prompt parsing, serialization, and CLI behavior
+Synthetic examples reuse the `RecipeExample` schema with:
 
-Interfaces:
+- `example_id`: `<source_example_id>-aug-<NNN>`
+- identical options and gold answer as the source example
+- inherited query-type flags and correctness explanation
+- `source_metadata.synthetic = true`
+- `source_metadata.source_example_id`
+- `source_metadata.teacher_model_name`
+- `source_metadata.prompt_version`
 
-- `RecipeExample`
-- `PreparedDataset`
-- `OptionScoringExample`
-- `PredictionRecord`
-- `PromptSpec`
+Augmentation constraints:
 
-### Phase 2: DistilBERT Baselines
+- generate only from the train split
+- do not alter the option set
+- do not alter the gold answer
+- each synthetic query must be non-empty
+- ids must be stable and unique within the artifact
 
-Model formulation:
+## 6. Experiment Config Contracts
 
-- DistilBERT is used as an option scorer over query-option pairs.
-- Each original question expands into five examples with one positive label and four negatives.
-- Question-level prediction is the option with the highest score among its five candidates.
+Configs are TOML files under `configs/` and are loaded through typed config models:
 
-Expected work:
+- `DataConfig`
+- `OutputConfig`
+- `TrackingConfig`
+- `AugmentationConfig`
+- `VanillaSLMConfig`
+- `FineTuneConfig`
+- `LLMRunConfig`
+- `JudgeConfig`
 
-- vanilla pretrained DistilBERT baseline
-- fine-tuned DistilBERT on the fixed split
-- optional augmented fine-tuning using teacher-generated query variants over the same option sets
+Command-specific bundles:
 
-### Phase 3: General LLM Inference
+- `AugmentationRunConfig`
+- `SLMExperimentConfig`
+- `LLMExperimentConfig`
+- `JudgeExperimentConfig`
 
-Provider architecture:
+Shared config behavior:
 
-- Ollama-first provider interface
-- shared prompt format and prediction record schema across providers
-- model-specific settings captured in per-run metadata
+- `output.run_id` is required
+- `output.artifacts_root` defaults to `artifacts/runs`
+- `data.dataset_path` defaults to the committed processed dataset
+- `data.split_manifest_path` defaults to the committed split manifest
+- tracking is optional and disabled by default
 
-Baseline expectation:
+## 7. Experiment Pipelines
 
-- at least one open model served through Ollama
-- room to add more providers without changing downstream evaluation formats
+### 7.1 Vanilla SLM Baseline
 
-### Phase 4: Evaluation, Judge, and Tracking
+Definition:
 
-Evaluation modes:
+- model: pretrained `distilbert-base-uncased`
+- no task fine-tuning
+- encode query and each option independently
+- mean-pool token embeddings with attention masking
+- score query-option similarity with cosine similarity
+- choose the highest-scoring option
 
-- exact-match accuracy against the gold answer
-- per-query-type and per-signature breakdowns
-- LLM-as-a-judge evaluation on `query + chosen option + short rationale + gold evidence`
+Outputs:
 
-Judged dimensions:
+- `artifacts/runs/<run_id>/slm/<split>_predictions.jsonl`
+- `artifacts/runs/<run_id>/slm/<split>_metrics.json`
+- run summary manifest
 
-- ingredient alignment
-- constraint satisfaction
-- reasoning quality
-- overall verdict
+### 7.2 Fine-Tuned SLM
 
-Tracking policy:
+Definition:
 
-- Phase 1 defines run naming and metadata contracts
-- MLflow is the intended experiment backend once training/inference phases start logging runs
-- DVC is a planned future addition for expanded data/version control, not a Phase 1 requirement
+- model: DistilBERT sequence classifier over query-option pairs
+- training view: one positive and four negative rows per original question
+- training runtime: Hugging Face Trainer
+- evaluation view: reconstruct question-level predictions by taking the highest option score per example
 
-## 5. Canonical Output Schemas
+Supported training modes:
 
-### PredictionRecord
+- original-only fine-tuning
+- original-plus-augmented fine-tuning
 
-Every baseline or model run should emit JSONL records with:
+Outputs:
+
+- `artifacts/runs/<run_id>/slm/checkpoints/`
+- `artifacts/runs/<run_id>/slm/validation_predictions.jsonl`
+- `artifacts/runs/<run_id>/slm/test_predictions.jsonl`
+- `artifacts/runs/<run_id>/slm/metrics.json`
+- run summary manifest
+
+### 7.3 General LLM Baseline
+
+Definition:
+
+- provider: Ollama
+- task prompt: shared multiple-choice template
+- parser: extract `A` through `E` from raw model output
+- prediction: map parsed letter back to the original option id
+
+Operational behavior:
+
+- retry failed requests
+- capture latency
+- optionally resume from partially written prediction JSONL
+
+Outputs:
+
+- `artifacts/runs/<run_id>/llm/<split>_predictions.jsonl`
+- `artifacts/runs/<run_id>/llm/<split>_metrics.json`
+- run summary manifest
+
+### 7.4 LLM as Judge
+
+Definition:
+
+- provider: Ollama
+- input: query, predicted option, gold option, gold evidence, and optional model rationale
+- output: strict JSON
+
+Required judge fields:
+
+- `ingredient_alignment`: integer 1-5
+- `constraint_satisfaction`: integer 1-5
+- `reasoning_quality`: integer 1-5
+- `overall_verdict`: `correct | partially_correct | incorrect`
+- `rationale`: non-empty string
+
+Outputs:
+
+- `artifacts/runs/<run_id>/judge/judgments.jsonl`
+- `artifacts/runs/<run_id>/judge/metrics.json`
+- run summary manifest
+
+## 8. Prompt Contracts
+
+### 8.1 Multiple-Choice Prompt
+
+Used for baseline LLM inference.
+
+- query shown once
+- options rendered as `A` through `E`
+- model instructed to return only the letter
+
+### 8.2 Augmentation Prompt
+
+Used for teacher-generated rewrites.
+
+- request JSON only
+- request a fixed number of rewrites
+- preserve task semantics and answer choice
+
+Expected JSON shape:
+
+```json
+{"rewrites": ["query one", "query two"]}
+```
+
+### 8.3 Judge Prompt
+
+Used for LLM-as-a-judge evaluation.
+
+- request JSON only
+- provide query, predicted option, gold option, gold evidence, and rationale
+- require numeric rubric scores plus verdict and rationale
+
+## 9. Output Schemas
+
+### 9.1 PredictionRecord
+
+Every model inference path writes `PredictionRecord` JSONL rows:
 
 - `run_id`
 - `phase`
@@ -140,11 +248,12 @@ Every baseline or model run should emit JSONL records with:
 - `gold_option_id`
 - `is_correct`
 - `latency_ms`
+- `response_rationale`
 - `metadata`
 
-### JudgmentRecord
+### 9.2 JudgmentRecord
 
-Reserved for the Phase 4 judge pipeline:
+Judge runs write `JudgmentRecord` JSONL rows:
 
 - `run_id`
 - `phase`
@@ -152,6 +261,9 @@ Reserved for the Phase 4 judge pipeline:
 - `model_name`
 - `split`
 - `example_id`
+- `prediction_run_id`
+- `predicted_option_id`
+- `gold_option_id`
 - `judge_model_name`
 - `ingredient_alignment`
 - `constraint_satisfaction`
@@ -160,28 +272,79 @@ Reserved for the Phase 4 judge pipeline:
 - `rationale`
 - `metadata`
 
-## 6. CLI Contract
+### 9.3 Run Summary
+
+Each run can emit `artifacts/runs/<run_id>/manifests/run_summary.json` containing:
+
+- resolved config snapshot
+- dataset metadata
+- artifact paths
+- prediction metrics
+- judgment metrics
+- optional component-specific metadata
+
+## 10. Metrics
+
+Primary metric:
+
+- exact-match accuracy on question-level predictions
+
+Secondary metrics:
+
+- per-query-type accuracy
+- per-query-signature accuracy
+- average judge rubric scores
+- judge verdict distribution
+
+## 11. CLI Contract
 
 Supported commands:
 
-- `prepare-data`: create the canonical processed dataset and split manifest
-- `validate-data`: validate raw or prepared dataset inputs
-- `dataset-stats`: print dataset summary counts
-- `export-split`: export one manifest-defined split to JSONL
+- `prepare-data`
+- `validate-data`
+- `dataset-stats`
+- `export-split`
+- `generate-augmentation`
+- `train-slm`
+- `evaluate-slm`
+- `run-llm`
+- `judge-predictions`
+- `summarize-run`
 
-The CLI must remain dependency-light and runnable without training or tracking extras installed.
+Behavioral requirements:
 
-## 7. Testing Requirements
+- legacy data commands remain lightweight
+- experiment commands are config-first
+- commands write resolved configs and structured artifacts
+- failures return non-zero exit codes with human-readable errors
 
-Phase 1 tests must cover:
+## 12. Tracking
 
-- malformed records and validation failures
-- whitespace normalization behavior
-- deterministic ids and split generation
-- split sizes, coverage, and disjointness
-- option-scoring expansion and tokenizer passthrough
-- prompt rendering and noisy response parsing
-- prediction record JSONL round-trips
-- CLI smoke behavior and artifact generation
+MLflow integration is optional and activated only when the tracking extra is installed and configs enable it.
 
-The committed processed artifacts must regenerate exactly from the raw dataset and split seed.
+The tracking adapter logs:
+
+- experiment name
+- run name
+- tags
+- parameters
+- flattened numeric metrics
+- artifact files and directories
+
+DVC is out of scope for this implementation pass.
+
+## 13. Testing Requirements
+
+The non-training test suite must cover:
+
+- data validation and deterministic artifacts
+- config parsing and default resolution
+- augmentation prompt parsing and artifact writing
+- vanilla SLM scoring on toy embeddings
+- fine-tune orchestration with mocked Hugging Face components
+- LLM inference retries, parsing, resume behavior, and record writing
+- judge prompt parsing and judgment serialization
+- MLflow adapter behavior with a mocked backend
+- CLI dry-run behavior across augmentation, SLM, LLM, judge, and summary commands
+
+The local test suite is not required to perform real training or live model queries. The repository is considered experiment-ready when these contracts pass locally and the commands can be pointed at a proper GPU/model-serving environment without further code changes.

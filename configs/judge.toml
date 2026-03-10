@@ -1,0 +1,19 @@
+[output]
+run_id = "judge-ollama"
+artifacts_root = "artifacts/runs"
+
+[data]
+dataset_path = "data/processed/recipe_mpr_qa.jsonl"
+split_manifest_path = "data/processed/primary_split.json"
+split = "test"
+
+[tracking]
+enabled = false
+experiment_name = "recipe-mpr-qa"
+
+[judge]
+model_name = "llama3.1:8b"
+prompt_version = "recipe-mpr-judge-v1"
+temperature = 0.0
+max_retries = 3
+resume = true

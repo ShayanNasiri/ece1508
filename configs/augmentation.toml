@@ -1,0 +1,20 @@
+[output]
+run_id = "augmentation-ollama"
+artifacts_root = "artifacts/runs"
+
+[data]
+dataset_path = "data/processed/recipe_mpr_qa.jsonl"
+split_manifest_path = "data/processed/primary_split.json"
+split = "train"
+
+[tracking]
+enabled = false
+experiment_name = "recipe-mpr-qa"
+
+[augmentation]
+teacher_model_name = "llama3.1:8b"
+prompt_version = "recipe-mpr-augmentation-v1"
+variants_per_example = 2
+temperature = 0.2
+max_retries = 3
+resume = true

@@ -1,0 +1,23 @@
+[output]
+run_id = "distilbert-finetune-augmented"
+artifacts_root = "artifacts/runs"
+
+[data]
+dataset_path = "data/processed/recipe_mpr_qa.jsonl"
+split_manifest_path = "data/processed/primary_split.json"
+split = "test"
+augmentation_dataset_path = "artifacts/runs/augmentation-ollama/augmentation/augmented_examples.jsonl"
+
+[tracking]
+enabled = false
+experiment_name = "recipe-mpr-qa"
+
+[slm]
+mode = "finetune"
+model_name = "distilbert-base-uncased"
+max_length = 128
+learning_rate = 5e-5
+train_batch_size = 8
+eval_batch_size = 8
+num_train_epochs = 3.0
+use_augmentation = true

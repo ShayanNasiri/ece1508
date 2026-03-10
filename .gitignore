@@ -6,3 +6,6 @@ dist/
 *.egg-info/
 mlruns/
 results/
+.tmp_pytest/
+artifacts/
+*.pyc

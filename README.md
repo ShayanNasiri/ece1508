@@ -1,19 +1,40 @@
 # Recipe-MPR QA
 
-This repository compares specialized small language models against general LLMs on the Recipe-MPR multiple-choice recipe recommendation dataset.
+This repository implements an end-to-end experiment stack for comparing specialized small language models against general LLMs on the Recipe-MPR multiple-choice recipe recommendation dataset.
 
-The project objective is to test whether a task-specific DistilBERT pipeline can match or outperform a general-purpose LLM baseline while keeping the workflow reproducible and easy to extend. Phase 1 establishes the data contracts, deterministic splits, model I/O schemas, and repo structure that later phases build on.
+The codebase is structured so the full workflow can be developed and validated locally, then executed on a GPU machine for actual experiments. That includes deterministic data preparation, augmentation artifact generation, DistilBERT baselines, fine-tuning, Ollama inference, LLM-as-a-judge evaluation, and MLflow logging.
 
-## Project Status
+## What Is In Scope
 
-- Phase 1: implemented in this repo
-- Phase 2: vanilla DistilBERT baseline and fine-tuning
-- Phase 3: Ollama-backed LLM inference and provider expansion
-- Phase 4: LLM-as-a-judge evaluation and MLflow-backed experiment tracking
+- Canonical processed dataset and fixed split manifest
+- Config-driven experiment commands
+- Persisted synthetic augmentation datasets
+- Vanilla DistilBERT embedding-similarity baseline
+- DistilBERT fine-tuning as a query-option scorer
+- Ollama-backed multiple-choice baseline inference
+- Ollama-backed LLM-as-a-judge evaluation
+- Structured run artifacts and summary manifests
+- Optional MLflow integration
+
+## What Gets Run Where
+
+Local development:
+
+- validate schemas and contracts
+- regenerate processed artifacts
+- run dry-run and mocked integration tests
+- verify CLI orchestration without training or live model servers
+
+GPU or model-serving environment:
+
+- execute DistilBERT training runs
+- evaluate real checkpoints
+- generate synthetic data with an Ollama model
+- run LLM baseline inference and judge evaluation
 
 ## Quickstart
 
-Create the processed dataset and split manifest:
+Prepare the canonical dataset and split manifest:
 
 ```powershell
 python -m recipe_mpr_qa.cli prepare-data `
@@ -22,81 +43,90 @@ python -m recipe_mpr_qa.cli prepare-data `
   --split-output data/processed/primary_split.json
 ```
 
-Validate the raw dataset:
+Run the vanilla DistilBERT baseline with the default config:
 
 ```powershell
-python -m recipe_mpr_qa.cli validate-data --input data/500QA.json --kind raw
+python -m recipe_mpr_qa.cli evaluate-slm --config configs/slm_vanilla.toml
 ```
 
-Export the training split:
+Generate augmentation artifacts through Ollama:
 
 ```powershell
-python -m recipe_mpr_qa.cli export-split `
-  --dataset data/processed/recipe_mpr_qa.jsonl `
-  --split-manifest data/processed/primary_split.json `
-  --split train `
-  --output data/processed/train.jsonl
+python -m recipe_mpr_qa.cli generate-augmentation --config configs/augmentation.toml
 ```
 
-Run the Phase 1 test suite:
+Train the fine-tuned DistilBERT model:
+
+```powershell
+python -m recipe_mpr_qa.cli train-slm --config configs/slm_finetune_original.toml
+```
+
+Run the general LLM baseline:
+
+```powershell
+python -m recipe_mpr_qa.cli run-llm --config configs/llm_baseline.toml
+```
+
+Judge model predictions:
+
+```powershell
+python -m recipe_mpr_qa.cli judge-predictions `
+  --config configs/judge.toml `
+  --predictions artifacts/runs/llm-baseline/llm/test_predictions.jsonl
+```
+
+Run the non-training test suite:
 
 ```powershell
 pytest
 ```
 
-## Repo Layout
+## Repo Structure
 
-- `data/500QA.json`: raw Recipe-MPR dataset
-- `data/processed/recipe_mpr_qa.jsonl`: canonical normalized dataset for all phases
-- `data/processed/primary_split.json`: deterministic 70/15/15 split manifest
-- `docs/spec.md`: end-to-end project specification
-- `src/recipe_mpr_qa/data`: preparation, validation, splits, and loader interfaces
-- `src/recipe_mpr_qa/llm`: prompt contracts and Ollama integration points
-- `src/recipe_mpr_qa/evaluation`: prediction and judge record schemas
-- `src/recipe_mpr_qa/tracking`: MLflow-facing experiment metadata helpers
-- `tests`: Phase 1 regression coverage
+- `data/500QA.json`: raw dataset source of truth
+- `data/processed/`: committed normalized dataset and split manifest
+- `configs/`: reusable TOML experiment configs
+- `docs/spec.md`: detailed project specification and contracts
+- `src/recipe_mpr_qa/data`: schemas, validation, loaders, and split generation
+- `src/recipe_mpr_qa/slm`: vanilla DistilBERT and fine-tuning pipelines
+- `src/recipe_mpr_qa/llm`: prompts, Ollama client, inference, and judge logic
+- `src/recipe_mpr_qa/evaluation`: prediction and judgment records, metrics, summaries
+- `src/recipe_mpr_qa/tracking`: MLflow adapter
+- `artifacts/runs/<run_id>/`: generated configs, checkpoints, predictions, metrics, and summaries
 
-## Phase 1 Deliverables
+## Current Experiment Matrix
 
-- Canonical example schema with stable `example_id` values
-- Deterministic stratified split manifest
-- Tokenizer-ready option-scoring loader for DistilBERT-style training
-- Standardized multiple-choice prompt format and parser for LLM outputs
-- Canonical prediction record schema for all later phases
-- CLI workflow for preparing, validating, inspecting, and exporting dataset artifacts
+- `SLM vanilla`: pretrained DistilBERT embedding similarity, no task training
+- `SLM finetune`: DistilBERT cross-encoder over query-option pairs
+- `SLM finetune + augmentation`: same model trained with original plus synthetic queries
+- `General LLM`: Ollama-served multiple-choice baseline using the shared prompt format
+- `LLM judge`: Ollama-served rubric scorer over model predictions
 
-## Planned Evaluation
+## Artifacts
 
-Primary metric:
+Each run writes to `artifacts/runs/<run_id>/` with a stable layout:
 
-- exact-match accuracy on the held-out test split
-
-Secondary metrics:
-
-- per-query-type accuracy
-- breakdowns by query-type signature
-- LLM-as-a-judge scores for ingredient alignment, dietary/constraint satisfaction, reasoning quality, and overall verdict
-
-## Team Ownership
-
-- Pedram: Phase 1 data preparation, loading, and repo foundation
-- Jagrit: Phase 2 DistilBERT baseline and fine-tuning
-- Shayan: Phase 3 LLM inference plus Phase 4 judge integration
+- `configs/`: resolved config snapshots
+- `augmentation/`: synthetic dataset artifacts and augmentation metrics
+- `slm/`: SLM predictions, metrics, and checkpoints
+- `llm/`: baseline LLM predictions and metrics
+- `judge/`: judgment records and metrics
+- `manifests/run_summary.json`: machine-readable run summary
 
 ## Dependencies
 
-The base Phase 1 implementation is intentionally light and runs with only the Python standard library.
+Base install:
+
+- standard library only for data preparation, configs, and schema tooling
 
 Optional extras:
 
-- `.[train]` for DistilBERT training and Hugging Face tooling
-- `.[llm]` for `requests`-based Ollama inference
-- `.[tracking]` for MLflow integration
+- `.[train]` for `torch`, `transformers`, `datasets`, and `accelerate`
+- `.[llm]` for `requests`
+- `.[tracking]` for `mlflow`
 
-## Roadmap
+## Notes
 
-1. Use the fixed split manifest for all baseline and fine-tuning runs.
-2. Train and evaluate the vanilla DistilBERT option scorer.
-3. Add teacher-generated query augmentation while keeping the same five-option structure.
-4. Run Ollama-backed LLM baselines through the shared prompt and prediction record schema.
-5. Compare all systems with exact-match metrics and an LLM-as-a-judge pipeline.
+- The processed dataset and primary split manifest are committed and treated as stable contracts.
+- The branch is designed to be GPU-ready without forcing heavy training or live model calls in the local test suite.
+- DVC is intentionally not implemented in this pass.

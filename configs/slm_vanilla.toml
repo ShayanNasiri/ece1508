@@ -1,0 +1,19 @@
+[output]
+run_id = "distilbert-vanilla"
+artifacts_root = "artifacts/runs"
+
+[data]
+dataset_path = "data/processed/recipe_mpr_qa.jsonl"
+split_manifest_path = "data/processed/primary_split.json"
+split = "test"
+
+[tracking]
+enabled = false
+experiment_name = "recipe-mpr-qa"
+
+[slm]
+mode = "vanilla"
+model_name = "distilbert-base-uncased"
+prompt_version = "embedding-similarity-v1"
+batch_size = 8
+max_length = 128

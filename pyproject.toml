@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "recipe-mpr-qa"
 version = "0.1.0"
-description = "Recipe-MPR question answering foundation and Phase 1 data pipeline."
+description = "Recipe-MPR question answering experiment stack for specialized SLMs vs general LLMs."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
@@ -16,6 +16,7 @@ dependencies = []
 
 [project.optional-dependencies]
 train = [
+  "accelerate>=0.34",
   "datasets>=2.21",
   "torch>=2.3",
   "transformers>=4.44",
