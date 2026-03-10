@@ -55,9 +55,8 @@ pytest
 - `docs/spec.md`: current project foundation specification
 - `src/recipe_mpr_qa/data`: preparation, validation, splits, and loader interfaces
 - `src/recipe_mpr_qa/formats.py`: prompt formatting, response parsing, and prediction record schema
-- `src/recipe_mpr_qa/llm_evaluation`: packaged home for the original Ollama-based evaluation helpers
 - `src/recipe_mpr_qa/cli.py`: command-line entrypoints for dataset preparation and inspection
-- `llm_evaluation`: compatibility wrappers preserving the original repo entrypoints
+- `llm_evaluation`: original Ollama-based evaluation helpers preserved from the initial repo
 - `tests`: regression coverage for the current implementation
 
 ## Implemented So Far
