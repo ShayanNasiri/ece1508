@@ -1,7 +1,0 @@
-{
-    "model": "deepseek-r1:7b",
-    "data_path": "../data/500QA.json",
-    "ollama_url": "http://localhost:11434/api/generate",
-    "temperature": 0,
-    "output_dir": "results"
-}
