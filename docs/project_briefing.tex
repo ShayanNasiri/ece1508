@@ -1,0 +1,78 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{microtype}
+
+\setlist[itemize]{leftmargin=*, topsep=3pt, itemsep=2pt}
+
+\title{Cooking Is All You Need: Project Briefing for Recipe-MPR QA}
+\author{
+Shayan Nasiri\\
+Department of Computer Science\\
+University of Toronto
+\and
+Pedram Yazdinia\\
+Department of Computer Science\\
+University of Toronto
+\and
+Jagrit Rai\\
+Department of Computer Science\\
+University of Toronto
+}
+\date{March 11, 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This project studies whether a compact language model can be adapted to solve Recipe-MPR, a five-way recipe recommendation question-answering task, while remaining lightweight enough for local development and later fine-tuning. By the current submission date, the repository already contains a reproducible data pipeline, standardized prompt and evaluation utilities, a local general-LLM baseline through Ollama, and initial SmolLM2 prototyping for the small-language-model direction. The main focus so far has been to turn the project idea into a reliable experimental foundation rather than to report final numerical results.
+\end{abstract}
+
+\section*{Attestation of Teamwork}
+This briefing reflects the repository history up to March 11, 2026 and the current division of labor across the team. All three group members contributed to the project framing, the comparison setup between specialized small language models and general language models, and the refinement of the repository structure.
+
+\begin{itemize}
+\item \textbf{Pedram Yazdinia} led Phase~1 of the project by implementing the data loading and data preparation foundation. This includes validation of the raw Recipe-MPR data, normalization into a canonical processed format, deterministic split generation, and the shared loading and command-line interfaces that later model experiments depend on.
+\item \textbf{Jagrit Rai} selected the initial small language model candidate, \texttt{SmolLM2-135M-Instruct}, and instantiated the tokenizer and model for text generation in the baseline notebook. He also documented early prompt-design and fine-tuning considerations for the SLM path.
+\item \textbf{Shayan Nasiri} implemented the model-facing evaluation stack for locally served language models. His contributions include the multiple-choice prompt formatter, the dynamic Ollama wrapper, the response parser and evaluator, and the end-to-end local test confirming that \texttt{deepseek-r1:7b} can be queried successfully.
+\end{itemize}
+
+\section{Problem Description}
+Recipe-MPR is a multiple-choice recipe recommendation task in which each example contains a natural-language user request and five candidate recipe options, exactly one of which is correct. The dataset is challenging because the query may require more than direct keyword matching: some examples depend on commonsense reasoning, some involve negation, and others include analogical or temporal cues. In the repository, these query types are tracked through the five category flags \textit{Specific}, \textit{Commonsense}, \textit{Negated}, \textit{Analogical}, and \textit{Temporal}.
+
+The ultimate goal of the project is to determine whether a fine-tuned small language model can perform this task competitively while remaining cheaper to run and easier to inspect than a larger general-purpose model. To make this comparison meaningful, the project first needs a stable experimental foundation: fixed train/validation/test splits, a canonical processed dataset, shared prompt formatting, and a consistent way to parse and evaluate model responses.
+
+\section{Considered Deep Learning Solution}
+The team is currently pursuing two complementary modeling directions. The primary small-model direction is centered on \texttt{SmolLM2-135M-Instruct}, which was chosen as the initial SLM because it is compact, instruction-oriented, and naturally compatible with a prompt that presents five answer options labeled \texttt{A} through \texttt{E}. This makes it a suitable candidate both for zero-shot or prompt-based baselines and for later supervised fine-tuning on the recipe task.
+
+In parallel, the repository includes a general-LLM baseline path using models served locally through Ollama. The current code constructs a shared multiple-choice prompt, queries a selected local model, parses the returned answer letter, and computes accuracy overall and by query type. This gives the team a practical baseline that can be run locally without relying on a hosted API, and it already supports end-to-end evaluation of \texttt{deepseek-r1:7b}.
+
+Beyond the notebook prototype, the repository history also shows the design progressing toward executable SLM experiments. In particular, an additional development branch contains causal-SLM prompting and configuration support around SmolLM2-style evaluation, indicating that the project has already moved from model selection into concrete experiment scaffolding.
+
+\section{Data Acquisition}
+The project uses the provided Recipe-MPR dataset stored in \texttt{data/500QA.json}. This file contains 500 examples, each with a user query, five candidate recipe descriptions, a gold answer option, query-type annotations, and correctness explanations. Since every example has the same five-way structure, the task is naturally formulated as multiple-choice prediction.
+
+Phase~1 focused on converting the raw file into a reliable shared dataset contract. The implemented preparation pipeline validates that each record contains the required fields, enforces the five-option structure, checks that the answer belongs to the option set, and preserves the original option ordering and explanation content. The pipeline then assigns stable example identifiers (\texttt{rmpr-0001} through \texttt{rmpr-0500}) and writes a canonical processed artifact to \texttt{data/processed/recipe\_mpr\_qa.jsonl}.
+
+To support fair comparison across models, the repository also produces a deterministic split manifest at \texttt{data/processed/primary\_split.json}. The split is fixed at 70\% training, 15\% validation, and 15\% test, and is stratified by the query-type signature using seed \texttt{1508}. As a result, all later baselines and fine-tuned models can be evaluated on the same partition of the data rather than on ad hoc random splits.
+
+\section{Milestones Accomplished by the Submission Time}
+By the current submission deadline, the project has advanced from an initial idea into an implemented experimental foundation.
+
+\begin{itemize}
+\item \textbf{Data foundation completed.} The raw Recipe-MPR data has been validated, normalized, and exported into committed processed artifacts. The repository already includes deterministic split generation, reusable data loaders, and command-line utilities for preparation, validation, statistics, and split export.
+\item \textbf{Prompt and evaluation contract established.} The codebase now has a standard multiple-choice prompt format, a parser that converts a model response back into one of the five option labels, and an evaluation script that reports exact-match accuracy overall and by query type.
+\item \textbf{Local LLM baseline operational.} The Ollama client and evaluation workflow have been implemented, and local querying of \texttt{deepseek-r1:7b} has been tested successfully. This means the team already has a runnable general-LLM baseline for future comparisons.
+\item \textbf{SLM direction initiated and de-risked.} SmolLM2 has been selected and instantiated for baseline text generation, and the repository history contains early causal-SLM prompting and experiment scaffolding. This reduces the uncertainty around whether the SLM direction is practically runnable.
+\item \textbf{Documentation and reproducibility improved.} The repository now includes a project specification, updated README instructions, and regression tests for the core implemented functionality, which makes the current design easier to extend in the final phase.
+\end{itemize}
+
+At this stage, the emphasis has been on establishing a sound and reproducible design rather than on final numerical experiments. The team now has the data, prompting, and local evaluation infrastructure needed to continue into fine-tuning and systematic comparison in the final report.
+
+\end{document}
