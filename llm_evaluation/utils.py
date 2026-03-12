@@ -1,14 +1,4 @@
-import json
-import csv
-
-
-QUERY_TYPES = ["Specific", "Commonsense", "Negated", "Analogical", "Temporal"]
-
-
-def load_dataset(path):
-    """Load the 500QA.json dataset."""
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+from recipe_mpr_qa.data.constants import QUERY_TYPE_NAMES
 
 
 def compute_accuracy(predictions, ground_truth, dataset):
@@ -26,15 +16,15 @@ def compute_accuracy(predictions, ground_truth, dataset):
 
     total_correct = 0
     total = len(predictions)
-    type_correct = {qt: 0 for qt in QUERY_TYPES}
-    type_total = {qt: 0 for qt in QUERY_TYPES}
+    type_correct = {qt: 0 for qt in QUERY_TYPE_NAMES}
+    type_total = {qt: 0 for qt in QUERY_TYPE_NAMES}
 
     for pred, gt, item in zip(predictions, ground_truth, dataset):
         correct = pred == gt
         if correct:
             total_correct += 1
 
-        for qt in QUERY_TYPES:
+        for qt in QUERY_TYPE_NAMES:
             if item["query_type"].get(qt, 0) == 1:
                 type_total[qt] += 1
                 if correct:
@@ -47,7 +37,7 @@ def compute_accuracy(predictions, ground_truth, dataset):
         "parse_failures": sum(1 for p in predictions if p is None),
     }
 
-    for qt in QUERY_TYPES:
+    for qt in QUERY_TYPE_NAMES:
         if type_total[qt] > 0:
             results[qt] = {
                 "accuracy": type_correct[qt] / type_total[qt],
@@ -58,19 +48,3 @@ def compute_accuracy(predictions, ground_truth, dataset):
             results[qt] = {"accuracy": 0, "correct": 0, "total": 0}
 
     return results
-
-
-def save_results(rows, path):
-    """Save evaluation results to CSV.
-
-    Args:
-        rows: list of dicts with keys like query, raw_response, parsed_letter, etc.
-        path: output CSV path.
-    """
-    if not rows:
-        return
-    fieldnames = list(rows[0].keys())
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)

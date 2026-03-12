@@ -51,6 +51,36 @@ Run the test suite:
 pytest
 ```
 
+### LLM Evaluation
+
+Evaluate any Ollama model on the prepared dataset splits. Requires Ollama running locally and the package installed (`pip install -e .`).
+
+```bash
+cd llm_evaluation
+
+# Evaluate on the test split (default: 75 examples)
+python mc_eval.py --model smollm2:135m --output results/smollm2_test.csv
+
+# Evaluate on a different split
+python mc_eval.py --model smollm2:135m --split train --output results/smollm2_train.csv
+python mc_eval.py --model smollm2:135m --split validation --output results/smollm2_val.csv
+
+# Use a different model
+python mc_eval.py --model deepseek-r1:7b --output results/deepseek_test.csv
+```
+
+**Arguments:**
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--model` | (required) | Ollama model name (e.g. `smollm2:135m`, `deepseek-r1:7b`) |
+| `--output` | (required) | Output CSV path for per-question results |
+| `--split` | `test` | Which split to evaluate: `train`, `validation`, or `test` |
+| `--data` | `../data/processed/recipe_mpr_qa.jsonl` | Path to prepared dataset |
+| `--split-manifest` | `../data/processed/primary_split.json` | Path to split manifest |
+| `--config` | `config.json` | Path to Ollama config (URL, temperature) |
+
+**Outputs:** A CSV with per-question results and a `_metrics.json` with accuracy breakdown by query type.
+
 ### Current Data Outputs
 
 - `data/processed/recipe_mpr_qa.jsonl`: canonical normalized dataset artifact
@@ -92,6 +122,21 @@ pytest
 
 - Pedram: data preparation, loading, and formatting foundation
 
-### Dependencies
+### Installation
 
-The current implementation runs with the Python standard library. `pytest` is the only declared development dependency.
+```bash
+# Core package (includes requests, tqdm)
+pip install -e .
+
+# Development (adds pytest)
+pip install -e ".[dev]"
+
+# SLM experiments (adds torch, transformers)
+pip install -e ".[slm]"
+
+# Results dashboard (adds streamlit, plotly)
+pip install -e ".[dashboard]"
+
+# Everything
+pip install -e ".[dev,slm,dashboard]"
+```

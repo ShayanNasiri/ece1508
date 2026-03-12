@@ -5,15 +5,22 @@ import os
 from tqdm import tqdm
 
 from ollama_client import OllamaClient
-from prompts import build_mc_prompt, parse_mc_response
-from utils import load_dataset, compute_accuracy, save_results
+from recipe_mpr_qa.formats import build_multiple_choice_prompt, parse_multiple_choice_response
+from recipe_mpr_qa.data.constants import QUERY_TYPE_NAMES
+from recipe_mpr_qa.data.loaders import load_dataset, load_split_manifest, get_split_examples
+from utils import compute_accuracy
 
 
 def main():
     parser = argparse.ArgumentParser(description="Multiple-choice evaluation via Ollama")
     parser.add_argument("--model", type=str, required=True, help="Ollama model name (e.g. deepseek-r1:7b)")
-    parser.add_argument("--data", type=str, required=True, help="Path to 500QA.json")
-    parser.add_argument("--output", type=str, required=True, help="Output CSV path for results")
+    parser.add_argument("--data", type=str, default="../data/processed/recipe_mpr_qa.jsonl",
+                        help="Path to prepared dataset JSONL")
+    parser.add_argument("--split-manifest", type=str, default="../data/processed/primary_split.json",
+                        help="Path to split manifest JSON")
+    parser.add_argument("--split", type=str, default="test", choices=["train", "validation", "test"],
+                        help="Which split to evaluate (default: test)")
+    parser.add_argument("--output", type=str, required=True, help="Output JSON path for results")
     parser.add_argument("--config", type=str, default="config.json", help="Path to config.json")
     args = parser.parse_args()
 
@@ -28,24 +35,26 @@ def main():
     temperature = config.get("temperature", 0)
 
     client = OllamaClient(base_url=ollama_url)
+
+    # Load prepared dataset and split
     dataset = load_dataset(args.data)
+    manifest = load_split_manifest(args.split_manifest)
+    examples = get_split_examples(dataset, manifest, args.split)
 
     predictions = []
     ground_truth = []
     result_rows = []
 
     print(f"Model: {args.model}")
-    print(f"Dataset: {len(dataset)} queries")
+    print(f"Split: {args.split} ({len(examples)} examples)")
     print(f"Ollama URL: {ollama_url}")
     print(f"Temperature: {temperature}")
     print("-" * 60)
 
-    for i, item in enumerate(tqdm(dataset, desc="Evaluating")):
-        query = item["query"]
-        options = item["options"]
-        answer_id = item["answer"]
-
-        prompt, letter_to_id = build_mc_prompt(query, options)
+    for i, example in enumerate(tqdm(examples, desc="Evaluating")):
+        prompt, letter_to_id = build_multiple_choice_prompt(
+            query=example.query, options=example.options
+        )
 
         try:
             raw_response = client.query(args.model, prompt, temperature=temperature)
@@ -53,51 +62,56 @@ def main():
             print(f"\n  Query {i} failed: {e}")
             raw_response = ""
 
-        parsed_letter = parse_mc_response(raw_response)
+        parsed_letter = parse_multiple_choice_response(raw_response)
         predicted_id = letter_to_id.get(parsed_letter) if parsed_letter else None
 
         predictions.append(predicted_id)
-        ground_truth.append(answer_id)
+        ground_truth.append(example.answer_option_id)
 
         # Find the correct letter for logging
         id_to_letter = {v: k for k, v in letter_to_id.items()}
-        correct_letter = id_to_letter.get(answer_id, "?")
+        correct_letter = id_to_letter.get(example.answer_option_id, "?")
 
         result_rows.append({
             "index": i,
-            "query": query,
-            "correct_answer_id": answer_id,
+            "example_id": example.example_id,
+            "query": example.query,
+            "correct_answer_id": example.answer_option_id,
             "correct_letter": correct_letter,
             "predicted_letter": parsed_letter,
             "predicted_id": predicted_id,
-            "is_correct": predicted_id == answer_id,
+            "is_correct": predicted_id == example.answer_option_id,
             "raw_response": raw_response.replace("\n", " ").strip(),
         })
 
-    # Compute and display metrics
-    metrics = compute_accuracy(predictions, ground_truth, dataset)
+    # Build dataset-like dicts for compute_accuracy (expects query_type field)
+    dataset_for_metrics = [
+        {"query_type": dict(ex.query_type_flags)} for ex in examples
+    ]
+    metrics = compute_accuracy(predictions, ground_truth, dataset_for_metrics)
 
     print("\n" + "=" * 60)
-    print(f"RESULTS — {args.model}")
+    print(f"RESULTS — {args.model} ({args.split} split)")
     print("=" * 60)
     print(f"Overall Accuracy: {metrics['overall']:.4f} ({metrics['total_correct']}/{metrics['total']})")
     print(f"Parse Failures:   {metrics['parse_failures']}")
     print("-" * 40)
 
-    for qt in ["Specific", "Commonsense", "Negated", "Analogical", "Temporal"]:
+    for qt in QUERY_TYPE_NAMES:
         info = metrics[qt]
         print(f"  {qt:15s}: {info['accuracy']:.4f} ({info['correct']}/{info['total']})")
 
-    # Save results
+    # Save combined results + metrics as JSON
+    output_data = {
+        "model": args.model,
+        "split": args.split,
+        "metrics": metrics,
+        "results": result_rows,
+    }
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
-    save_results(result_rows, args.output)
+    with open(args.output, "w", encoding="utf-8") as f:
+        json.dump(output_data, f, indent=2, ensure_ascii=False)
     print(f"\nResults saved to {args.output}")
-
-    # Also save metrics summary as JSON alongside the CSV
-    metrics_path = args.output.replace(".csv", "_metrics.json")
-    with open(metrics_path, "w") as f:
-        json.dump({"model": args.model, **metrics}, f, indent=2)
-    print(f"Metrics saved to {metrics_path}")
 
 
 if __name__ == "__main__":
