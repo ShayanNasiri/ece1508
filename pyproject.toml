@@ -12,11 +12,22 @@ authors = [
   { name = "ECE1508 Team" }
 ]
 license = { text = "MIT" }
-dependencies = []
+dependencies = [
+  "requests",
+  "tqdm",
+]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.4",
+]
+slm = [
+  "torch",
+  "transformers",
+]
+dashboard = [
+  "streamlit",
+  "plotly",
 ]
 
 [project.scripts]
