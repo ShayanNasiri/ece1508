@@ -58,28 +58,36 @@ Evaluate any Ollama model on the prepared dataset splits. Requires Ollama runnin
 ```bash
 cd llm_evaluation
 
-# Evaluate on the test split (default: 75 examples)
-python mc_eval.py --model smollm2:135m --output results/smollm2_test.csv
+# Evaluate on the test split — output auto-named results/smollm2_135m_test_75.json
+python mc_eval.py --model smollm2:135m
 
 # Evaluate on a different split
-python mc_eval.py --model smollm2:135m --split train --output results/smollm2_train.csv
-python mc_eval.py --model smollm2:135m --split validation --output results/smollm2_val.csv
+python mc_eval.py --model smollm2:135m --split train
 
 # Use a different model
-python mc_eval.py --model deepseek-r1:7b --output results/deepseek_test.csv
+python mc_eval.py --model deepseek-r1:7b
+
+# Run only the first 10 questions (useful for quick testing)
+python mc_eval.py --model smollm2:135m --limit 10
+
+# Explicit output path overrides auto-naming
+python mc_eval.py --model smollm2:135m --output results/custom_name.json
 ```
+
+Output files are auto-named as `results/<Model>_<Split>_<N>.json` (e.g. `deepseek-r1_7b_test_10.json`). Use `--output` to override.
 
 **Arguments:**
 | Argument | Default | Description |
 |----------|---------|-------------|
 | `--model` | (required) | Ollama model name (e.g. `smollm2:135m`, `deepseek-r1:7b`) |
-| `--output` | (required) | Output CSV path for per-question results |
+| `--output` | auto | Output JSON path (default: `results/<Model>_<Split>_<N>.json`) |
 | `--split` | `test` | Which split to evaluate: `train`, `validation`, or `test` |
+| `--limit` | all | Limit the number of questions to evaluate |
 | `--data` | `../data/processed/recipe_mpr_qa.jsonl` | Path to prepared dataset |
 | `--split-manifest` | `../data/processed/primary_split.json` | Path to split manifest |
 | `--config` | `config.json` | Path to Ollama config (URL, temperature) |
 
-**Outputs:** A CSV with per-question results and a `_metrics.json` with accuracy breakdown by query type.
+**Outputs:** A JSON file with per-question results and accuracy metrics breakdown by query type.
 
 ### Current Data Outputs
 

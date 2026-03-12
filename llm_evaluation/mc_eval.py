@@ -20,8 +20,11 @@ def main():
                         help="Path to split manifest JSON")
     parser.add_argument("--split", type=str, default="test", choices=["train", "validation", "test"],
                         help="Which split to evaluate (default: test)")
-    parser.add_argument("--output", type=str, required=True, help="Output JSON path for results")
+    parser.add_argument("--output", type=str, default=None,
+                        help="Output JSON path (default: results/<Model>_<Split>_<N>.json)")
     parser.add_argument("--config", type=str, default="config.json", help="Path to config.json")
+    parser.add_argument("--limit", type=int, default=None,
+                        help="Limit the number of questions to evaluate (default: all)")
     args = parser.parse_args()
 
     # Load config for defaults
@@ -40,6 +43,14 @@ def main():
     dataset = load_dataset(args.data)
     manifest = load_split_manifest(args.split_manifest)
     examples = get_split_examples(dataset, manifest, args.split)
+
+    if args.limit is not None:
+        examples = examples[:args.limit]
+
+    # Auto-generate output path if not provided: results/<Model>_<Split>_<N>.json
+    if args.output is None:
+        safe_model = args.model.replace(":", "_").replace("/", "_")
+        args.output = f"results/{safe_model}_{args.split}_{len(examples)}.json"
 
     predictions = []
     ground_truth = []
