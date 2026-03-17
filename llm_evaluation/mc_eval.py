@@ -5,6 +5,7 @@ import os
 from tqdm import tqdm
 
 from ollama_client import OllamaClient
+from hf_client import HFClient
 from recipe_mpr_qa.formats import build_multiple_choice_prompt, parse_multiple_choice_response
 from recipe_mpr_qa.data.constants import QUERY_TYPE_NAMES
 from recipe_mpr_qa.data.loaders import load_dataset, load_split_manifest, get_split_examples
@@ -42,9 +43,12 @@ def build_result_row(*, index, example, parsed_letter, letter_to_id, raw_respons
     return row
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Multiple-choice evaluation via Ollama")
-    parser.add_argument("--model", type=str, required=True, help="Ollama model name (e.g. deepseek-r1:7b)")
+def build_arg_parser():
+    parser = argparse.ArgumentParser(description="Multiple-choice evaluation")
+    parser.add_argument("--model", type=str, required=True,
+                        help="Model name: Ollama model (e.g. deepseek-r1:7b) or HF model ID (e.g. HuggingFaceTB/SmolLM2-135M-Instruct)")
+    parser.add_argument("--backend", type=str, default="ollama", choices=["ollama", "huggingface"],
+                        help="Inference backend: 'ollama' (default, local server) or 'huggingface' (transformers, for cluster)")
     parser.add_argument("--data", type=str, default="../data/processed/recipe_mpr_qa.jsonl",
                         help="Path to prepared dataset JSONL")
     parser.add_argument("--split-manifest", type=str, default="../data/processed/primary_split.json",
@@ -56,7 +60,11 @@ def main():
     parser.add_argument("--config", type=str, default="config.json", help="Path to config.json")
     parser.add_argument("--limit", type=int, default=None,
                         help="Limit the number of questions to evaluate (default: all)")
-    args = parser.parse_args()
+    return parser
+
+
+def main():
+    args = build_arg_parser().parse_args()
 
     # Load config for defaults
     if os.path.exists(args.config):
@@ -65,10 +73,13 @@ def main():
     else:
         config = {}
 
-    ollama_url = config.get("ollama_url", "http://localhost:11434/api/generate")
     temperature = config.get("temperature", 0)
 
-    client = OllamaClient(base_url=ollama_url)
+    if args.backend == "huggingface":
+        client = HFClient()
+    else:
+        ollama_url = config.get("ollama_url", "http://localhost:11434/api/generate")
+        client = OllamaClient(base_url=ollama_url)
 
     # Load prepared dataset and split
     dataset = load_dataset(args.data)
@@ -87,9 +98,9 @@ def main():
     ground_truth = []
     result_rows = []
 
-    print(f"Model: {args.model}")
-    print(f"Split: {args.split} ({len(examples)} examples)")
-    print(f"Ollama URL: {ollama_url}")
+    print(f"Model:    {args.model}")
+    print(f"Backend:  {args.backend}")
+    print(f"Split:    {args.split} ({len(examples)} examples)")
     print(f"Temperature: {temperature}")
     print("-" * 60)
 
