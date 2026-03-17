@@ -37,3 +37,6 @@ results/
 .idea/
 .DS_Store
 Thumbs.db
+CLAUDE.md
+TODO.md
+SLURM_Documentation.md

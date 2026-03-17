@@ -11,6 +11,37 @@ from recipe_mpr_qa.data.loaders import load_dataset, load_split_manifest, get_sp
 from utils import compute_accuracy
 
 
+def build_result_row(*, index, example, parsed_letter, letter_to_id, raw_response):
+    """Build a single result row dict for the output JSON."""
+    predicted_id = letter_to_id.get(parsed_letter) if parsed_letter else None
+    id_to_letter = {v: k for k, v in letter_to_id.items()}
+    correct_letter = id_to_letter.get(example.answer_option_id, "?")
+    is_correct = predicted_id == example.answer_option_id
+    parse_failure = parsed_letter is None
+
+    row = {
+        "index": index,
+        "example_id": example.example_id,
+        "query": example.query,
+        "correct_answer_id": example.answer_option_id,
+        "correct_letter": correct_letter,
+        "predicted_letter": parsed_letter,
+        "predicted_id": predicted_id,
+        "is_correct": is_correct,
+        "parse_failure": parse_failure,
+        "raw_response": raw_response.replace("\n", " ").strip(),
+    }
+
+    # Include option texts for wrong/failed answers to support dashboard inspection
+    if not is_correct:
+        row["options"] = {
+            letter: next(opt.text for opt in example.options if opt.option_id == oid)
+            for letter, oid in letter_to_id.items()
+        }
+
+    return row
+
+
 def main():
     parser = argparse.ArgumentParser(description="Multiple-choice evaluation via Ollama")
     parser.add_argument("--model", type=str, required=True, help="Ollama model name (e.g. deepseek-r1:7b)")
@@ -79,21 +110,10 @@ def main():
         predictions.append(predicted_id)
         ground_truth.append(example.answer_option_id)
 
-        # Find the correct letter for logging
-        id_to_letter = {v: k for k, v in letter_to_id.items()}
-        correct_letter = id_to_letter.get(example.answer_option_id, "?")
-
-        result_rows.append({
-            "index": i,
-            "example_id": example.example_id,
-            "query": example.query,
-            "correct_answer_id": example.answer_option_id,
-            "correct_letter": correct_letter,
-            "predicted_letter": parsed_letter,
-            "predicted_id": predicted_id,
-            "is_correct": predicted_id == example.answer_option_id,
-            "raw_response": raw_response.replace("\n", " ").strip(),
-        })
+        result_rows.append(build_result_row(
+            index=i, example=example, parsed_letter=parsed_letter,
+            letter_to_id=letter_to_id, raw_response=raw_response,
+        ))
 
     # Build dataset-like dicts for compute_accuracy (expects query_type field)
     dataset_for_metrics = [
