@@ -30,7 +30,8 @@ pytest-cache-files-*/
 
 # Local experiment outputs
 mlruns/
-results/
+results/*.log
+llm_evaluation/results/*.log
 
 # Editor / OS noise
 .vscode/
