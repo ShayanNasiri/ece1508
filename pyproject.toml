@@ -24,6 +24,7 @@ dev = [
 slm = [
   "torch",
   "transformers",
+  "accelerate",
 ]
 dashboard = [
   "streamlit",
