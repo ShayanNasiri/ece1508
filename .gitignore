@@ -32,6 +32,7 @@ pytest-cache-files-*/
 mlruns/
 results/*.log
 llm_evaluation/results/*.log
+outputs/
 
 # Editor / OS noise
 .vscode/
@@ -41,3 +42,6 @@ Thumbs.db
 CLAUDE.md
 TODO.md
 SLURM_Documentation.md
+
+
+
