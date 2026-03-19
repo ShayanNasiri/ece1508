@@ -337,9 +337,36 @@ def main():
     with open(os.path.join(cfg.output_dir, "run_config.json"), "w", encoding="utf-8") as f:
         json.dump(asdict(cfg), f, indent=2)
 
+    # Save trainer log history
+    log_history_path = os.path.join(cfg.output_dir, "log_history.json")
+    with open(log_history_path, "w", encoding="utf-8") as f:
+        json.dump(trainer.state.log_history, f, indent=2)
+
+    # Save a small trainer state summary too
+    trainer_state_path = os.path.join(cfg.output_dir, "trainer_state_summary.json")
+    with open(trainer_state_path, "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "epoch": trainer.state.epoch,
+                "global_step": trainer.state.global_step,
+                "best_metric": trainer.state.best_metric,
+                "best_model_checkpoint": trainer.state.best_model_checkpoint,
+                "log_history": trainer.state.log_history,
+            },
+            f,
+            indent=2,
+            default=str,
+        )
+
+    print(f"Saved log history to: {log_history_path}")
+    print(f"Saved trainer state summary to: {trainer_state_path}")
+
     print("=" * 80)
     print(f"Training complete. Final artifacts saved to: {final_dir}")
     print("=" * 80)
+
+
+
 
 
 if __name__ == "__main__":
