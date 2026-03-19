@@ -32,7 +32,7 @@ pytest-cache-files-*/
 mlruns/
 results/*.log
 llm_evaluation/results/*.log
-outputs/
+outputs/smollm2_recipe_mpr/checkpoint*
 
 # Editor / OS noise
 .vscode/
