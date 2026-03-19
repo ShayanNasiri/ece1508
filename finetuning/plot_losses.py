@@ -95,6 +95,7 @@ def plot_single(run_dir, use_epoch=False, save_path=None):
     xlabel = "Epoch" if use_epoch else "Step"
     plt.xlabel(xlabel)
     plt.ylabel("Loss")
+    plt.yscale("log")
     plt.title(f"Loss Curve: {run_dir}")
     plt.legend()
     plt.grid(True)
