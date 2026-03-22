@@ -64,7 +64,10 @@ def build_multiple_choice_prompt(
     return prompt, letter_to_option_id
 
 
-def parse_multiple_choice_response(response_text: str) -> str | None:
+def parse_multiple_choice_response(
+    response_text: str,
+    options: dict[str, str] | None = None,
+) -> str | None:
     text = response_text.strip().upper()
     if not text:
         return None
@@ -83,6 +86,28 @@ def parse_multiple_choice_response(response_text: str) -> str | None:
         match = re.search(pattern, text)
         if match:
             return match.group(1)
+
+    # Fallback: if options provided, try to match "the best option is <text>"
+    if options:
+        desc_match = re.search(r"BEST OPTION IS\s+(.+?)(?:\.|##|\Z)", text)
+        if desc_match:
+            candidate = desc_match.group(1).strip()
+            best_letter = None
+            best_score = 0
+            for letter, option_text in options.items():
+                option_upper = option_text.upper()
+                # Score by number of words in option text that appear in candidate
+                words = [w for w in option_upper.split() if len(w) > 3]
+                if not words:
+                    continue
+                score = sum(1 for w in words if w in candidate) / len(words)
+                if score > best_score:
+                    best_score = score
+                    best_letter = letter
+            # Require at least 50% word overlap to avoid spurious matches
+            if best_score >= 0.5:
+                return best_letter
+
     return None
 
 
