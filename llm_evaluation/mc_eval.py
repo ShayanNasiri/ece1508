@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+from pathlib import Path
 
 from tqdm import tqdm
 
@@ -10,6 +11,22 @@ from recipe_mpr_qa.formats import build_multiple_choice_prompt, parse_multiple_c
 from recipe_mpr_qa.data.constants import QUERY_TYPE_NAMES
 from recipe_mpr_qa.data.loaders import load_dataset, load_split_manifest, get_split_examples
 from utils import compute_accuracy
+
+
+def _model_display_name(model: str) -> str:
+    """Return a human-readable, filename-safe model identifier.
+
+    For local PEFT adapter paths (contain adapter_config.json), reads the base
+    model name from the config and appends '_finetuned'.
+    For HF Hub IDs, returns the ID with unsafe characters replaced.
+    """
+    adapter_cfg = Path(model) / "adapter_config.json"
+    if adapter_cfg.is_file():
+        cfg = json.loads(adapter_cfg.read_text(encoding="utf-8"))
+        base = cfg.get("base_model_name_or_path", model)
+        short = Path(base).name if "/" not in base else base.split("/")[-1]
+        return f"{short}_finetuned"
+    return model.replace(":", "_").replace("/", "_")
 
 
 def build_result_row(*, index, example, parsed_letter, letter_to_id, raw_response):
@@ -91,7 +108,7 @@ def main():
 
     # Auto-generate output path if not provided: results/<Model>_<Split>_<N>.json
     if args.output is None:
-        safe_model = args.model.replace(":", "_").replace("/", "_")
+        safe_model = _model_display_name(args.model)
         args.output = f"results/{safe_model}_{args.split}_{len(examples)}.json"
 
     predictions = []
