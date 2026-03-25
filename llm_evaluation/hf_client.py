@@ -135,7 +135,7 @@ class HFClient:
         model, tokenizer = self._peft_models[adapter_path]
 
         inputs = tokenizer(prompt, return_tensors="pt")
-        input_ids = inputs["input_ids"]
+        input_ids = inputs["input_ids"].to(model.device)
 
         gen_kwargs: dict = {
             "max_new_tokens": 256,
