@@ -116,6 +116,12 @@ def main():
             raw_response = ""
 
         parsed_letter = parse_multiple_choice_response(raw_response)
+        if parsed_letter is None:
+            options_map = {
+                letter: next(opt.text for opt in example.options if opt.option_id == oid)
+                for letter, oid in letter_to_id.items()
+            }
+            parsed_letter = parse_multiple_choice_response(raw_response, options=options_map)
         predicted_id = letter_to_id.get(parsed_letter) if parsed_letter else None
 
         predictions.append(predicted_id)
