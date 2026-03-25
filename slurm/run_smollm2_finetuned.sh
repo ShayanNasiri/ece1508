@@ -27,4 +27,5 @@ mkdir -p ../results
 python mc_eval.py \
     --model /h/439/snasiri/ece1508/outputs/smollm2_recipe_mpr/final \
     --backend huggingface \
-    --split test
+    --split test \
+    --shuffle-options
