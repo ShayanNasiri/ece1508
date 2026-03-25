@@ -25,6 +25,7 @@ slm = [
   "torch",
   "transformers",
   "accelerate",
+  "peft",
 ]
 dashboard = [
   "streamlit",
