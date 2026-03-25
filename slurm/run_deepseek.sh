@@ -5,6 +5,7 @@
 #SBATCH --mem=32G
 #SBATCH -t 4:00:00
 #SBATCH --output=/h/439/snasiri/ece1508/results/deepseek_%j.log
+#SBATCH --exclude=gpunode4,gpunode5,gpunode7
 
 # Redirect caches to /tmp to avoid home directory quota issues
 export HF_HOME=/tmp/hf_cache_$USER

@@ -5,6 +5,7 @@
 #SBATCH --mem=16G
 #SBATCH -t 2:00:00
 #SBATCH --output=/h/439/snasiri/ece1508/results/smollm2_finetuned_%j.log
+#SBATCH --exclude=gpunode4,gpunode5,gpunode7
 
 # Redirect caches to /tmp to avoid home directory quota issues
 export HF_HOME=/tmp/hf_cache_$USER
