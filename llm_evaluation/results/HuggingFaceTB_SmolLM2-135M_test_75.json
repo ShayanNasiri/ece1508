@@ -2,23 +2,23 @@
   "model": "HuggingFaceTB/SmolLM2-135M",
   "split": "test",
   "metrics": {
-    "overall": 0.7466666666666667,
-    "total_correct": 56,
+    "overall": 0.7066666666666667,
+    "total_correct": 53,
     "total": 75,
-    "parse_failures": 4,
+    "parse_failures": 6,
     "Specific": {
-      "accuracy": 0.6956521739130435,
-      "correct": 16,
+      "accuracy": 0.7391304347826086,
+      "correct": 17,
       "total": 23
     },
     "Commonsense": {
-      "accuracy": 0.7435897435897436,
-      "correct": 29,
+      "accuracy": 0.6666666666666666,
+      "correct": 26,
       "total": 39
     },
     "Negated": {
-      "accuracy": 0.6470588235294118,
-      "correct": 11,
+      "accuracy": 0.7058823529411765,
+      "correct": 12,
       "total": 17
     },
     "Analogical": {
@@ -99,11 +99,18 @@
       "query": "How to make rice in a pan?",
       "correct_answer_id": "7a667996c6",
       "correct_letter": "A",
-      "predicted_letter": "A",
-      "predicted_id": "7a667996c6",
-      "is_correct": true,
-      "parse_failure": false,
-      "raw_response": "Solution:  Option A:  The best option is option A.  Option B:  The best option is option B.  Option C:  The best option is option C.  Option D:  The best option is option D.  Option E:  The best option is option E.  Option F:  The best option is option F.  Option G:  The best option is option G.  Option H:  The best option is option H.  Option I:  The best option is option I.  Option J:  The best option is option J.  Option K:  The best option is option K.  Option L:  The best option is option L.  Option M:  The best option is option M.  Option N:  The best option is option N.  Option O:  The best option is option O.  Option P:  The best option is option P.  Option Q:  The best option is option Q.  Option R:  The best option is option R."
+      "predicted_letter": null,
+      "predicted_id": null,
+      "is_correct": false,
+      "parse_failure": true,
+      "raw_response": "## 1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.",
+      "options": {
+        "A": "Fried rice containing eggs, onion, frozen peas, and pork chop",
+        "B": "Mexican-style rice cooked in a rice cooker",
+        "C": "Sweet rice pudding cooked in a rice cooker",
+        "D": "Pan fried egg noodles with onion and green pepper",
+        "E": "Pan fried salmon fillets with carrots and spring onions"
+      }
     },
     {
       "index": 6,
@@ -135,10 +142,10 @@
       "query": "I want a cheesy dip for my afternoon snack",
       "correct_answer_id": "377e1d21bc",
       "correct_letter": "A",
-      "predicted_letter": null,
-      "predicted_id": null,
+      "predicted_letter": "C",
+      "predicted_id": "05a48b55d8",
       "is_correct": false,
-      "parse_failure": true,
+      "parse_failure": false,
       "raw_response": "## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese and elbow macaroni with onions.  ## Solution  The best option is Cheddar cheese",
       "options": {
         "A": "Queso made from melted cheese and chili peppers",
@@ -367,11 +374,11 @@
       "query": "I want to make a well-known Chinese chicken dish",
       "correct_answer_id": "06dddda4ee",
       "correct_letter": "A",
-      "predicted_letter": "C",
-      "predicted_id": "6b29d0d777",
+      "predicted_letter": null,
+      "predicted_id": null,
       "is_correct": false,
-      "parse_failure": false,
-      "raw_response": "## Solution  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best",
+      "parse_failure": true,
+      "raw_response": "## 1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.",
       "options": {
         "A": "Kung pao chicken flavoured with soy sauce and red chilies",
         "B": "Chinese stir fry made using celery and beef",
@@ -386,11 +393,18 @@
       "query": "I want to make an italian snack",
       "correct_answer_id": "1b696370fa",
       "correct_letter": "A",
-      "predicted_letter": "A",
-      "predicted_id": "1b696370fa",
-      "is_correct": true,
-      "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The following query is used to find the best matching recipe.  Query: I want to make an italian snack  Options: A) Italian cracker similar to a pretzel B) Sweet French dessert based on meringue C) Italian chicken made from chicken thighs. Flavoured with tomato paste D) Italian chicken made from skinless chicken, cheese blend, and breadcrumbs E) Italian chicken made from skinless chicken, cheese blend, and breadcrumbs  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is used to find the best matching recipe.  Query: I want to make an italian snack  Options: A) Italian cracker similar to a pretzel B) Sweet French dessert based on meringue C) Italian chicken made from chicken thighs. Flavoured with tomato paste D) Italian chicken made from skinless chicken, cheese blend, and breadcrumbs E) Italian chicken made from skinless chicken, cheese blend, and breadcrumbs  Respond with only the letter (A"
+      "predicted_letter": null,
+      "predicted_id": null,
+      "is_correct": false,
+      "parse_failure": true,
+      "raw_response": "## 1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.",
+      "options": {
+        "A": "Italian cracker similar to a pretzel",
+        "B": "Sweet French dessert based on meringue",
+        "C": "Italian coffee with Amaretto and brandy added",
+        "D": "Italian chicken made from chicken thighs. Flavoured with tomato paste",
+        "E": "Italian chicken made from skinless chicken, cheese blend, and breadcrumbs"
+      }
     },
     {
       "index": 27,
@@ -476,7 +490,7 @@
       "predicted_id": "22e9269352",
       "is_correct": true,
       "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The following query is used to find the best matching recipe.  Query: How do I make a slushie without artificial flavouring?  Options: A) Slushie drink made from orange juice blended with ice B) Slushie drink made from kool aid drink mix blended with ice C) Popsicles made from yoghurt, apple juice and assorted fruit D) Fizzy lemon soda E) Pina colada - cocktail made from coconut cream, pineapple juice and rum  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is used to find the best matching recipe.  Query: How do I make a slushie without artificial flavouring?  Options: A) Slushie drink made from orange juice blended with ice B) Slushie drink made from kool aid drink mix blended with ice C) Popsicles made from yoghurt, apple juice and assorted fruit D) Fizzy lemon soda E) Pina colada - cocktail made from coconut cream, pineapple juice and rum"
+      "raw_response": "Option: A) Slushie drink made from orange juice blended with ice B) Slushie drink made from kool aid drink mix blended with ice C) Popsicles made from yoghurt, apple juice and assorted fruit D) Fizzy lemon soda E) Pina colada - cocktail made from coconut cream, pineapple juice and rum  Option: A) Slushie drink made from orange juice blended with ice B) Slushie drink made from kool aid drink mix blended with ice C) Popsicles made from yoghurt, apple juice and assorted fruit D) Fizzy lemon soda E) Pina colada - cocktail made from coconut cream, pineapple juice and rum  Option: A) Slushie drink made from orange juice blended with ice B) Slushie drink made from kool aid drink mix blended with ice C) Popsicles made from yoghurt, apple juice and assorted fruit D) Fizzy lemon soda E) Pina colada - cocktail made from coconut cream, pineapple juice and rum  Option: A) Slushie drink made from orange juice blended with ice B) Slushie drink"
     },
     {
       "index": 33,
@@ -488,7 +502,7 @@
       "predicted_id": "08d62f3586",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "## Solution  The best option is C.  ## Explanation  The best option is C.  ## Solution  The best option is C.  ## Explanation  The best option is C.  ## Solution  The best option is C.  ## Explanation  The best option is C.  ## Solution  The best option is C.  ## Explanation  The best option is C.  ## Solution  The best option is C.  ## Explanation  The best option is C.  ## Solution  The best option is C.  ## Explanation  The best option is C.  ## Solution  The best option is C.  ## Explanation  The best option is C.  ## Solution  The best option is C.  ## Explanation  The best option is C.  ## Solution  The best option is C.  ## Explanation  The best option is C.  ## Solution  The best option is C.  ## Explanation  The best option is C.  ## Solution  The best option is C.  ## Explanation",
+      "raw_response": "## Solution  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best",
       "options": {
         "A": "Ham and cheese sandwich with mayonnaise",
         "B": "Mashed potatoes with herbs and sour cream",
@@ -519,7 +533,7 @@
       "predicted_id": "8abf5e0868",
       "is_correct": true,
       "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option is to make a quick breakfast.  The best option"
+      "raw_response": "Option: A) Pancakes with berries B) Spaghetti pasta with bolognese sauce C) Eggs benedict - poached eggs, prosciutto on top of English muffins topped with a creamy Hollandaise sauce D) Instant potato soup made from instant mashed potatoes and herbs E) Instant ramen with eggs, spinach and pickled cabbage  Option: A) Pancakes with berries B) Spaghetti pasta with bolognese sauce C) Eggs benedict - poached eggs, prosciutto on top of English muffins topped with a creamy Hollandaise sauce D) Instant potato soup made from instant mashed potatoes and herbs E) Instant ramen with eggs, spinach and pickled cabbage  Option: A) Pancakes with berries B) Spaghetti pasta with bolognese sauce C) Eggs benedict - poached eggs, prosciutto on top of English muffins topped with a creamy Hollandaise sauce D) Instant potato soup made from instant mashed potatoes and herbs E) Instant ramen with eggs, spinach and pickled cabbage  Option: A) Pancakes with berries B) Spaghetti pasta with bolognese"
     },
     {
       "index": 36,
@@ -527,11 +541,18 @@
       "query": "What's a good lunch I can warm up in the microwave at my office?",
       "correct_answer_id": "035e1bea0d",
       "correct_letter": "A",
-      "predicted_letter": "A",
-      "predicted_id": "035e1bea0d",
-      "is_correct": true,
+      "predicted_letter": "C",
+      "predicted_id": "0bf4540f77",
+      "is_correct": false,
       "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The following query is a good lunch I can warm up in the microwave at my office.  Query: What's a good lunch I can warm up in the microwave at my office?  Options: A) Simple fried rice with carrots and peas B) Breakfast wrap with scrambled eggs, smoked bacon and sharp cheddar C) Microwave chocolate cake in a mug D) Classic egg sandwich - mashed eggs with mayonnaise sandwiched between white bread E) Zaru Soba - Japanese cold noodles with tsuyu dipping sauce  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a good lunch I can warm up in the microwave at my office.  Query: What's a good lunch I can warm up in the microwave at my office?  Options: A) Simple fried rice with carrots and peas B) Breakfast wrap with scrambled eggs, smoked bacon and sharp cheddar C) Microwave chocolate cake in a mug D) Classic egg sandwich - mashed eggs with mayonnaise sandwiched between white bread"
+      "raw_response": "## Solution  The best option is C.  ## Question 10  The following is a list of 1000 words.  The first 1000 words are:  • 1000 • 1001 • 1002 • 1003 • 1004 • 1005 • 1006 • 1007 • 1008 • 1009 • 1010 • 1011 • 1012 • 1013 • 1014 • 1015 • 1016 • 1017 • 1018 • 1019 • 1020 • 1021 • 1022 • 1023 • 1024 • 1025 • 1026 • 1027 • 1028 • 102",
+      "options": {
+        "A": "Simple fried rice with carrots and peas",
+        "B": "Breakfast wrap with scrambled eggs, smoked bacon and sharp cheddar",
+        "C": "Microwave chocolate cake in a mug",
+        "D": "Classic egg sandwich - mashed eggs with mayonnaise sandwiched between white bread",
+        "E": "Zaru Soba - Japanese cold noodles with tsuyu dipping sauce"
+      }
     },
     {
       "index": 37,
@@ -539,18 +560,11 @@
       "query": "What's a good way to make jello shots with a bottle of Chandon?",
       "correct_answer_id": "66627b96b7",
       "correct_letter": "A",
-      "predicted_letter": "C",
-      "predicted_id": "0da098066c",
-      "is_correct": false,
+      "predicted_letter": "A",
+      "predicted_id": "66627b96b7",
+      "is_correct": true,
       "parse_failure": false,
-      "raw_response": "Solution:  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best",
-      "options": {
-        "A": "Jello shots with Champagne and fruit juice",
-        "B": "Jello shots with Vodka",
-        "C": "Champagne mousse",
-        "D": "Peach Jello shots made with peach nectar and peach schnapps",
-        "E": "Key lime pie pudding shots with Vodka"
-      }
+      "raw_response": "Solution:  A) Jello shots with Champagne and fruit juice  The best option is A.  The best option is B.  The best option is C.  The best option is D.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E.  The best option is E"
     },
     {
       "index": 38,
@@ -593,7 +607,7 @@
       "predicted_id": "0a1ce6cce0",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "## Solution  The best option is C.  ## Solution  The best option is D.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution  The best option is E.  ## Solution",
+      "raw_response": "## Solution  The best option is C.  ## Question 10  The following is a list of 1000 words.  The first 1000 words are:  • 1000 • 10000 • 100000 • 1000000 • 10000000 • 100000000 • 1000000000 • 10000000000 • 100000000000 • 1000000000000 • 10000000000000 • 100000000000000 • 1000000000000000 • 10000000000000000 • 10000000000000000",
       "options": {
         "A": "Baked jacket potatoes stuffed with parmesan cheese, ham, yoghurt and onions",
         "B": "Classic salted popcorn",
@@ -643,7 +657,7 @@
       "predicted_id": "04f1bc79a5",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "## Solution  The best option is C.  ## Question 10  The following is a list of 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "raw_response": "## Solution  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best",
       "options": {
         "A": "Simple fried rice with carrots and peas",
         "B": "Sweet dessert made from boiled black glutinous rice",
@@ -662,7 +676,7 @@
       "predicted_id": "1cd635a823",
       "is_correct": true,
       "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The following query is a simple query to get the best matching recipe.  Query: I want to prepare enough dinner for my family but we really need to save money right now  Options: A) Standard plain porridge B) Pork loin roasted with onions, carrots and celery C) Seafood paella - sauteed saffron-flavoured rice cooked with seafood D) Simple grilled cubed beef steaks with potatoes E) Breakfast pizza with sausage, cheddar, sour cream and jalapenos  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a simple query to get the best matching recipe.  Query: I want to prepare enough dinner for my family but we really need to save money right now  Options: A) Standard plain porridge B) Pork loin roasted with onions, carrots and celery C) Seafood paella - sauteed saffron-flavoured rice cooked with seafood D) Simple grilled cubed beef steaks with potatoes E) Breakfast pizza with sausage, c"
+      "raw_response": "## 1.1.1.1  The following query is used to find the best matching recipe.  Query: I want to prepare enough dinner for my family but we really need to save money right now  Options: A) Standard plain porridge B) Pork loin roasted with onions, carrots and celery C) Seafood paella - sauteed saffron-flavoured rice cooked with seafood D) Simple grilled cubed beef steaks with potatoes E) Breakfast pizza with sausage, cheddar, sour cream and jalapenos  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is used to find the best matching recipe.  Query: I want to prepare enough dinner for my family but we really need to save money right now  Options: A) Standard plain porridge B) Pork loin roasted with onions, carrots and celery C) Seafood paella - sauteed saffron-flavoured rice cooked with seafood D) Simple grilled cubed beef steaks with potatoes E) Breakfast pizza with sausage, cheddar, sour"
     },
     {
       "index": 45,
@@ -710,7 +724,7 @@
       "predicted_id": "88761278df",
       "is_correct": true,
       "parse_failure": false,
-      "raw_response": "### 1.1.1.1  The following query is a query to find the best matching recipe.  Query: Could I have a potato recipe for my baby who is teething?  Options: A) Mashed potatoes with butter and salt B) Mashed carrot that is soft and sweet C) Crispy potato pancakes with bacon. D) Sweet potato soft tacos E) Fried potatoes with bacon and onion  Respond with only the letter (A-E) of the best option.  ### 1.1.1.2  The following query is a query to find the best matching recipe.  Query: Could I have a potato recipe for my baby who is teething?  Options: A) Mashed potatoes with butter and salt B) Mashed carrot that is soft and sweet C) Crispy potato pancakes with bacon. D) Sweet potato soft tacos E) Fried potatoes with bacon and onion  Respond with only the letter (A-E) of the best option.  ### 1.1.1.3  The following query is a query to find the best matching recipe."
+      "raw_response": "Option: A) Mashed potatoes with butter and salt B) Mashed carrot that is soft and sweet C) Crispy potato pancakes with bacon. D) Sweet potato soft tacos E) Fried potatoes with bacon and onion  Option: A) Mashed potatoes with butter and salt B) Mashed carrot that is soft and sweet C) Crispy potato pancakes with bacon. D) Sweet potato soft tacos E) Fried potatoes with bacon and onion  Option: A) Mashed potatoes with butter and salt B) Mashed carrot that is soft and sweet C) Crispy potato pancakes with bacon. D) Sweet potato soft tacos E) Fried potatoes with bacon and onion  Option: A) Mashed potatoes with butter and salt B) Mashed carrot that is soft and sweet C) Crispy potato pancakes with bacon. D) Sweet potato soft tacos E) Fried potatoes with bacon and onion  Option: A) Mashed potatoes with butter and salt B) Mashed carrot that is soft and sweet C) Crispy potato pancakes with bacon. D) Sweet potato soft tacos E) Fried potatoes"
     },
     {
       "index": 49,
@@ -741,7 +755,7 @@
       "predicted_id": "5570b46221",
       "is_correct": true,
       "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The following query is a sample of the query.  Query: Surprise me with an unconventional vegan noodle recipe  Options: A) Stir-fried tofu, noodles and vegetables B) Smoothie with tomato juice and cucumbers C) Noodles with chicken and eggs D) Noodles with beef and chicken soup E) Fast and easy vegan-friendly pizza recipe  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a sample of the query.  Query: Surprise me with an unconventional vegan noodle recipe  Options: A) Stir-fried tofu, noodles and vegetables B) Smoothie with tomato juice and cucumbers C) Noodles with chicken and eggs D) Noodles with beef and chicken soup E) Fast and easy vegan-friendly pizza recipe  Respond with only the letter (A-E) of the best option.  ## 1.1.1.3  The following query is a sample of the query.  Query: Surprise me with an unconventional vegan noodle"
+      "raw_response": "## 1.1.1.1  The following query is a sample of the query.  Query: How many people are there in the world?  Options: A) 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
     },
     {
       "index": 51,
@@ -749,11 +763,18 @@
       "query": "Do you have a Kosher meat recipe for Shabbat?",
       "correct_answer_id": "826e30e428",
       "correct_letter": "A",
-      "predicted_letter": "A",
-      "predicted_id": "826e30e428",
-      "is_correct": true,
-      "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The following query is a subset of the following query.  Query: Do you have a Kosher meat recipe for Shabbat?  Options: A) Meat cholent made with beef B) High fiber kosher chocolate roll C) Kosher pickles made from cucumber, dill, vinegar, and gralic cloves D) Kosher pickles made from cucumber, dill, vinegar, and gralic cloves E) Oven cooked thin pork meat with orange and maple flavoring  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a subset of the following query.  Query: Do you have a Kosher meat recipe for Shabbat?  Options: A) Meat cholent made with beef B) High fiber kosher chocolate roll C) Kosher pickles made from cucumber, dill, vinegar, and gralic cloves D) Kosher pickles made from cucumber, dill, vinegar, and gralic cloves E) Oven cooked thin pork meat with orange and maple flavoring  Respond with only the letter"
+      "predicted_letter": null,
+      "predicted_id": null,
+      "is_correct": false,
+      "parse_failure": true,
+      "raw_response": "## 1.1.2.1.1.1.1.1.2.2.3.4.5.6.7.8.9.10.11.12.13.14.15.16.17.18.19.20.21.22.23.24.25.26.27.28.29.30.31.32.33.34.35.36.37.38.39.40.41.42.43.44.45.46.47.48.49.50.51.52.53.54.55.56.57.58.59.60.61.62.63.64.65.66.67.68.69.70.71.72.73.74.75.76.77.78.79.80.81.82",
+      "options": {
+        "A": "Meat cholent made with beef",
+        "B": "High fiber kosher chocolate roll",
+        "C": "Kosher cholent made from vegetables",
+        "D": "Kosher pickles made from cucumber, dill, vinegar, and gralic cloves",
+        "E": "Oven cooked thin pork meat with orange and maple flavoring"
+      }
     },
     {
       "index": 52,
@@ -761,18 +782,11 @@
       "query": "I'm on a paleo diet and want a breakfast I can grab and go",
       "correct_answer_id": "39bc46d7ce",
       "correct_letter": "A",
-      "predicted_letter": null,
-      "predicted_id": null,
-      "is_correct": false,
-      "parse_failure": true,
-      "raw_response": "## Solution  The best option is Baked breakfast bars made with nuts and seeds.  ## Explanation  The best option is Baked breakfast bars made with nuts and seeds.  ## Solution  The best option is Baked breakfast bars made with nuts and seeds.  ## Explanation  The best option is Baked breakfast bars made with nuts and seeds.  ## Solution  The best option is Baked breakfast bars made with nuts and seeds.  ## Explanation  The best option is Baked breakfast bars made with nuts and seeds.  ## Solution  The best option is Baked breakfast bars made with nuts and seeds.  ## Explanation  The best option is Baked breakfast bars made with nuts and seeds.  ## Solution  The best option is Baked breakfast bars made with nuts and seeds.  ## Explanation  The best option is Baked breakfast bars made with nuts and seeds.  ## Solution  The best option is Baked breakfast bars made with nuts and seeds.  ## Explanation  The best option is Baked breakfast bars made with nuts and seeds.  ## Solution  The best option is Baked breakfast bars made with",
-      "options": {
-        "A": "Baked breakfast bars made with nuts and seeds",
-        "B": "Paleo taco salad made with ground beef",
-        "C": "Chocolate ice cream",
-        "D": "Paleo creamy kale, sausage and sweet potato soup",
-        "E": "Texas chili made from lean beef, breakfast sausage and and paprika"
-      }
+      "predicted_letter": "A",
+      "predicted_id": "39bc46d7ce",
+      "is_correct": true,
+      "parse_failure": false,
+      "raw_response": "## 1.1.1.1  The best option is Baked breakfast bars made with nuts and seeds.  ## 1.1.1.2  The best option is Chocolate ice cream.  ## 1.1.1.3  The best option is Paleo taco salad made with ground beef.  ## 1.1.1.4  The best option is Texas chili made from lean beef, breakfast sausage and and paprika.  ## 1.1.1.5  The best option is Chocolate ice cream.  ## 1.1.1.6  The best option is Paleo creamy kale, sausage and sweet potato soup.  ## 1.1.1.7  The best option is Texas chili made from lean beef, breakfast sausage and and paprika.  ## 1.1.1.8  The best option is Chocolate ice cream.  ## 1.1.1.9  The best option is Paleo taco salad made with ground beef.  ## 1.1.1.10  The best option is Texas chili made from lean beef,"
     },
     {
       "index": 53,
@@ -820,7 +834,7 @@
       "predicted_id": "0e55986ae4",
       "is_correct": true,
       "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The following query is a subset of the following query.  Query: Give me a sandwich recipe that's vegetarian  Options: A) Croissant sandwich made with vegetables B) Italian style sandwiches made with beef C) Sandwiches made with cooked pork D) Vegetarian chili E) Vegetable soup made with beef bouillon cubes  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a subset of the following query.  Query: Give me a sandwich recipe that's vegetarian  Options: A) Croissant sandwich made with vegetables B) Italian style sandwiches made with beef C) Sandwiches made with cooked pork D) Vegetarian chili E) Vegetable soup made with beef bouillon cubes  Respond with only the letter (A-E) of the best option.  ## 1.1.1.3  The following query is a subset of the following query.  Query: Give me a sandwich recipe that's vegetarian  Options: A) Croissant sandwich made"
+      "raw_response": "## 1.1.1.1  The following query is a subset of the query below.  Query: Give me a sandwich recipe that's vegetarian  Options: A) Croissant sandwich made with vegetables B) Italian style sandwiches made with beef C) Sandwiches made with cooked pork D) Vegetarian chili E) Vegetable soup made with beef bouillon cubes  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a subset of the query below.  Query: Give me a sandwich recipe that's vegetarian  Options: A) Croissant sandwich made with vegetables B) Italian style sandwiches made with beef C) Sandwiches made with cooked pork D) Vegetarian chili E) Vegetable soup made with beef bouillon cubes  Respond with only the letter (A-E) of the best option.  ## 1.1.1.3  The following query is a subset of the query below.  Query: Give me a sandwich recipe that's vegetarian  Options: A) Croissant sandwich made"
     },
     {
       "index": 57,
@@ -832,7 +846,7 @@
       "predicted_id": "51c55a401e",
       "is_correct": true,
       "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The following query is a query to find the best matching recipe.  Query: I want a lunch I can eat cold  Options: A) Taco salad with vegetables B) Steak fingers made with sirloin steaks, flour, and pepper C) Korean style hot pot made with vegetables D) Iced coffee made with cold coffee and ice cream E) Banana split ice cream, ice cream and banana drizzled with chocolate syrup  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a query to find the best matching recipe.  Query: I want a lunch I can eat cold  Options: A) Taco salad with vegetables B) Steak fingers made with sirloin steaks, flour, and pepper C) Korean style hot pot made with vegetables D) Iced coffee made with cold coffee and ice cream E) Banana split ice cream, ice cream and banana drizzled with chocolate syrup  Respond with only the letter (A-E) of the best option."
+      "raw_response": "## 1.1.1.1  The following query is a good example of a query that uses the ORDER BY clause.  Query: I want a lunch I can eat cold  Options: A) Taco salad with vegetables B) Steak fingers made with sirloin steaks, flour, and pepper C) Korean style hot pot made with vegetables D) Iced coffee made with cold coffee and ice cream E) Banana split ice cream, ice cream and banana drizzled with chocolate syrup  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a good example of a query that uses the ORDER BY clause.  Query: I want a lunch I can eat cold  Options: A) Taco salad with vegetables B) Steak fingers made with sirloin steaks, flour, and pepper C) Korean style hot pot made with vegetables D) Iced coffee made with cold coffee and ice cream E) Banana split ice cream, ice cream and banana drizzled with chocolate syrup  Respond with only the letter"
     },
     {
       "index": 58,
@@ -856,7 +870,7 @@
       "predicted_id": "8819bff596",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The best option is D.  ## 1.1.1.2  The best option is E.  ## 1.1.1.3  The best option is C.  ## 1.1.1.4  The best option is D.  ## 1.1.1.5  The best option is E.  ## 1.1.1.6  The best option is D.  ## 1.1.1.7  The best option is E.  ## 1.1.1.8  The best option is D.  ## 1.1.1.9  The best option is E.  ## 1.1.1.10  The best option is D.  ## 1.1.1.11  The best option is E.  ## 1.1.1.12  The best option is D.  ## 1.1.1.13  The best option is E.  ## 1",
+      "raw_response": "## 1.1.1.1  The best option is D.  ## 1.1.1.2  The best option is E.  ## 1.1.1.3  The best option is A.  ## 1.1.1.4  The best option is B.  ## 1.1.1.5  The best option is C.  ## 1.1.1.6  The best option is D.  ## 1.1.1.7  The best option is E.  ## 1.1.1.8  The best option is F.  ## 1.1.1.9  The best option is G.  ## 1.1.1.10  The best option is H.  ## 1.1.1.11  The best option is I.  ## 1.1.1.12  The best option is J.  ## 1.1.1.13  The best option is K.  ## 1",
       "options": {
         "A": "Calcium-rich soup made with broccoli and beans",
         "B": "High calcium toast recipe for breakfast",
@@ -906,7 +920,7 @@
       "predicted_id": "a3fca9963a",
       "is_correct": true,
       "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The following query is a sample of a query that is used to find the best matching recipe.  Query: My son is skinny and wants to get bigger, what are some good snacks I could send with him to school?  Options: A) Protein snacks made with peanut butter, raisins, and milk B) Chocolate sauce to be used on macadamia nuts as a snack C) Orange and caramel flavored sauce to be paired with nuts for snacking D) Baked pasta made with pasta, flour, milk, butter, cheese, parmesan cheese, and ham E) Crispy baked kale chips  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a sample of a query that is used to find the best matching recipe.  Query: My son is skinny and wants to get bigger, what are some good snacks I could send with him to school?  Options: A) Protein snacks made with peanut butter, raisins, and milk B) Chocolate sauce to be used on macadamia nuts as a snack C"
+      "raw_response": "## 1.1.1.1  The following query is a good example of a query that uses the ORDER BY clause.  Query: My son is skinny and wants to get bigger, what are some good snacks I could send with him to school?  Options: A) Protein snacks made with peanut butter, raisins, and milk B) Chocolate sauce to be used on macadamia nuts as a snack C) Orange and caramel flavored sauce to be paired with nuts for snacking D) Baked pasta made with pasta, flour, milk, butter, cheese, parmesan cheese, and ham E) Crispy baked kale chips  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a good example of a query that uses the ORDER BY clause.  Query: My son is skinny and wants to get bigger, what are some good snacks I could send with him to school?  Options: A) Protein snacks made with peanut butter, raisins, and milk B) Chocolate sauce to be used on macadamia nuts as a snack C) Orange"
     },
     {
       "index": 63,
@@ -1005,11 +1019,18 @@
       "query": "Can I get a coconut drink that is alcoholic?",
       "correct_answer_id": "8d27c9a9af",
       "correct_letter": "A",
-      "predicted_letter": "A",
-      "predicted_id": "8d27c9a9af",
-      "is_correct": true,
+      "predicted_letter": "C",
+      "predicted_id": "24f9b38ec5",
+      "is_correct": false,
       "parse_failure": false,
-      "raw_response": "## 1.1.1.1  The following query is a query to get the best matching recipe.  Query: Can I get a coconut drink that is alcoholic?  Options: A) Coconut flavored rum beverage B) Low-sugar iced tea with rum or vodka C) Berry flavored alcoholic beverage D) Smoothie with orange juice, mango, papaya, pineapple, soy milk, and coconut E) Passion fruit flavored alcoholic beverage  Respond with only the letter (A-E) of the best option.  ## 1.1.1.2  The following query is a query to get the best matching recipe.  Query: Can I get a coconut drink that is alcoholic?  Options: A) Coconut flavored rum beverage B) Low-sugar iced tea with rum or vodka C) Berry flavored alcoholic beverage D) Smoothie with orange juice, mango, papaya, pineapple, soy milk, and coconut E) Passion fruit flavored alcoholic beverage  Respond with only the letter (A-E) of the best option.  ## 1.1.1.3  The following query is a"
+      "raw_response": "Solution:  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best option is C.  The best",
+      "options": {
+        "A": "Coconut flavored rum beverage",
+        "B": "Low-sugar iced tea with rum or vodka",
+        "C": "Berry flavored alcoholic beverage",
+        "D": "Smoothie with orange juice, mango, papayas, pineapple, soy milk, and coconut",
+        "E": "Passion fruit flavored alcoholic beverage"
+      }
     },
     {
       "index": 71,
