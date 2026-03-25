@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import random
 from pathlib import Path
 
 from tqdm import tqdm
@@ -77,6 +78,8 @@ def build_arg_parser():
     parser.add_argument("--config", type=str, default="config.json", help="Path to config.json")
     parser.add_argument("--limit", type=int, default=None,
                         help="Limit the number of questions to evaluate (default: all)")
+    parser.add_argument("--shuffle-options", action="store_true",
+                        help="Shuffle option order per example using a deterministic per-example seed (diagnostic: tests if model learned content vs letter positions)")
     return parser
 
 
@@ -109,7 +112,8 @@ def main():
     # Auto-generate output path if not provided: results/<Model>_<Split>_<N>.json
     if args.output is None:
         safe_model = _model_display_name(args.model)
-        args.output = f"results/{safe_model}_{args.split}_{len(examples)}.json"
+        suffix = "_shuffled" if args.shuffle_options else ""
+        args.output = f"results/{safe_model}_{args.split}_{len(examples)}{suffix}.json"
 
     predictions = []
     ground_truth = []
@@ -119,11 +123,18 @@ def main():
     print(f"Backend:  {args.backend}")
     print(f"Split:    {args.split} ({len(examples)} examples)")
     print(f"Temperature: {temperature}")
+    if args.shuffle_options:
+        print("Shuffle:  ON (diagnostic — option order randomized per example)")
     print("-" * 60)
 
     for i, example in enumerate(tqdm(examples, desc="Evaluating")):
+        if args.shuffle_options:
+            options = list(example.options)
+            random.Random(example.example_id).shuffle(options)
+        else:
+            options = example.options
         prompt, letter_to_id = build_multiple_choice_prompt(
-            query=example.query, options=example.options
+            query=example.query, options=options
         )
 
         try:
