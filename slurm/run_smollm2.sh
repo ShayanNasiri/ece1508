@@ -15,7 +15,9 @@ export TORCH_HOME=/tmp/torch_cache_$USER
 TMPVENV=/tmp/venv_$USER
 python3 -m venv $TMPVENV
 source $TMPVENV/bin/activate
-pip install --no-cache-dir -e /h/439/snasiri/ece1508/.[dev,slm]
+pip install --no-cache-dir torch==2.5.1 --index-url https://download.pytorch.org/whl/cu124
+pip install --no-cache-dir -e /h/439/snasiri/ece1508/.[dev,slm] --no-deps
+pip install --no-cache-dir transformers accelerate peft safetensors
 
 cd /h/439/snasiri/ece1508/llm_evaluation
 
