@@ -13,6 +13,7 @@ export TORCH_HOME=/tmp/torch_cache_$USER
 
 # Set up a temporary venv in /tmp with all required deps
 TMPVENV=/tmp/venv_$USER
+rm -rf $TMPVENV
 python3 -m venv $TMPVENV
 source $TMPVENV/bin/activate
 pip install --no-cache-dir torch==2.5.1 --index-url https://download.pytorch.org/whl/cu124
