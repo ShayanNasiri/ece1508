@@ -123,7 +123,10 @@ def main():
 
     for i, example in enumerate(tqdm(examples, desc="Evaluating")):
         prompt, letter_to_id = build_multiple_choice_prompt(
-            query=example.query, options=example.options
+            query=example.query,
+            options=example.options,
+            # Match the fine-tuning prompt order and avoid answer-position leakage.
+            shuffle_key=example.example_id,
         )
 
         try:

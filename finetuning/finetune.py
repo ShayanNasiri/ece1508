@@ -181,6 +181,8 @@ def example_to_prompt_completion(example):
     prompt, letter_to_id = build_multiple_choice_prompt(
         query=example.query,
         options=example.options,
+        # Keep option order reproducible while breaking the raw-data answer position shortcut.
+        shuffle_key=example.example_id,
     )
 
     gold_letter = next(

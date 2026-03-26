@@ -139,7 +139,7 @@ pip install -e .
 # Development (adds pytest)
 pip install -e ".[dev]"
 
-# SLM experiments (adds torch, transformers)
+# SLM experiments (adds torch, transformers, datasets, trl)
 pip install -e ".[slm]"
 
 # Results dashboard (adds streamlit, plotly)

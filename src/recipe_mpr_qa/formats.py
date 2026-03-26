@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import random
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -9,6 +11,7 @@ from typing import Any, Mapping, Sequence
 from recipe_mpr_qa.data.models import RecipeOption
 
 LETTER_MAP = ("A", "B", "C", "D", "E")
+OPTION_ORDER_SHUFFLE_SEED = 1508
 
 
 @dataclass(frozen=True)
@@ -17,9 +20,20 @@ class PromptSpec:
     template: str
 
     def render(
-        self, *, query: str, options: Sequence[RecipeOption] | Mapping[str, str]
+        self,
+        *,
+        query: str,
+        options: Sequence[RecipeOption] | Mapping[str, str],
+        shuffle_key: str | None = None,
+        shuffle_seed: int = OPTION_ORDER_SHUFFLE_SEED,
     ) -> tuple[str, dict[str, str]]:
-        return build_multiple_choice_prompt(query=query, options=options, prompt_spec=self)
+        return build_multiple_choice_prompt(
+            query=query,
+            options=options,
+            prompt_spec=self,
+            shuffle_key=shuffle_key,
+            shuffle_seed=shuffle_seed,
+        )
 
 
 DEFAULT_PROMPT_SPEC = PromptSpec(
@@ -43,6 +57,8 @@ def build_multiple_choice_prompt(
     query: str,
     options: Sequence[RecipeOption] | Mapping[str, str],
     prompt_spec: PromptSpec = DEFAULT_PROMPT_SPEC,
+    shuffle_key: str | None = None,
+    shuffle_seed: int = OPTION_ORDER_SHUFFLE_SEED,
 ) -> tuple[str, dict[str, str]]:
     if isinstance(options, Mapping):
         option_items = list(options.items())
@@ -50,6 +66,14 @@ def build_multiple_choice_prompt(
         option_items = [(option.option_id, option.text) for option in options]
     if len(option_items) != 5:
         raise ValueError(f"Expected exactly 5 options, got {len(option_items)}")
+    if shuffle_key is not None:
+        derived_seed = int(
+            hashlib.sha256(f"{shuffle_seed}:{shuffle_key}".encode("utf-8")).hexdigest()[:16],
+            16,
+        )
+        shuffled_option_items = list(option_items)
+        random.Random(derived_seed).shuffle(shuffled_option_items)
+        option_items = shuffled_option_items
     letter_to_option_id = {
         LETTER_MAP[index]: option_items[index][0] for index in range(len(LETTER_MAP))
     }
@@ -71,25 +95,47 @@ def parse_multiple_choice_response(
     text = response_text.strip().upper()
     if not text:
         return None
-    if text in LETTER_MAP:
-        return text
-    patterns = (
-        r"^\s*([A-E])[\)\.\:\-]?\s*$",
-        r"\(([A-E])\)",
-        r"ANSWER\s*(?:IS|:)?\s*([A-E])\b",
-        r"OPTION\s*([A-E])\b",
-        r"\b([A-E])\)",
-        r"\b([A-E])\.",
-        r"\b([A-E])\b",
+    exact_match = re.fullmatch(r"\(?([A-E])\)?[\)\.\:\-]?", text)
+    if exact_match:
+        return exact_match.group(1)
+    option_match = re.fullmatch(r"OPTION\s*([A-E])[\)\.\:\-]?", text)
+    if option_match:
+        return option_match.group(1)
+
+    explicit_patterns = (
+        r"\b(?:FINAL\s+ANSWER|ANSWER|CORRECT\s+ANSWER|BEST\s+OPTION|BEST\s+MATCHING\s+RECIPE|PREDICTION|CHOICE)\s*(?:IS|:)?\s*\(?([A-E])\)?[\)\.\:\-]?(?=\s|$)",
+        r"\b(?:I\s+CHOOSE|I\s+PICK|I\s+SELECT|CHOOSE|PICK|SELECT)\s+(?:OPTION\s*)?\(?([A-E])\)?(?=\b)",
+        r"\b(?:MY\s+ANSWER|MY\s+CHOICE)\s*(?:IS|:)\s*\(?([A-E])\)?[\)\.\:\-]?(?=\s|$)",
     )
-    for pattern in patterns:
-        match = re.search(pattern, text)
-        if match:
-            return match.group(1)
+    latest_match: tuple[int, str] | None = None
+    for pattern in explicit_patterns:
+        for match in re.finditer(pattern, text):
+            candidate = match.group(1)
+            if latest_match is None or match.end() > latest_match[0]:
+                latest_match = (match.end(), candidate)
+    if latest_match is not None:
+        return latest_match[1]
+
+    tail_match = re.search(r"(?:^|[\s>])\(?([A-E])\)?[\)\.\:\-]?\s*$", text)
+    if tail_match:
+        prefix = text[:tail_match.start(1)]
+        if not re.search(r"(?:OPTION|CHOICE)\s*$", prefix):
+            return tail_match.group(1)
+
+    mentioned_letters = {
+        match.group(1) or match.group(2)
+        for match in re.finditer(r"OPTION\s+([A-E])\b|(?:^|[\s])([A-E])\)", text)
+    }
+    if len(mentioned_letters) < 3:
+        leading_match = re.match(r"\s*\(?([A-E])\)?[\)\.\:\-]\s+\S", text)
+        if leading_match:
+            return leading_match.group(1)
 
     # Fallback: if options provided, try to match "the best option is <text>"
     if options:
-        desc_match = re.search(r"BEST OPTION IS\s+(.+?)(?:\.|##|\Z)", text)
+        desc_match = None
+        for match in re.finditer(r"BEST OPTION IS\s+(.+?)(?:\.|##|\Z)", text):
+            desc_match = match
         if desc_match:
             candidate = desc_match.group(1).strip()
             best_letter = None

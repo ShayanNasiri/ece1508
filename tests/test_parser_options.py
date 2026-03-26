@@ -89,3 +89,40 @@ class TestBestOptionIsPattern:
         # If a letter is already parseable, it wins — text fallback is last resort
         raw = "The answer is B. The best option is Cheddar cheese and elbow macaroni with onions."
         assert parse_multiple_choice_response(raw, options=OPTIONS) == "B"
+
+
+class TestReasoningTraceParsing:
+    """Guard against treating option enumeration as an answer."""
+
+    def test_option_enumeration_without_final_answer_returns_none(self):
+        raw = (
+            "Option A: First candidate. "
+            "Option B: Second candidate. "
+            "Option C: Third candidate. "
+            "Option D: Fourth candidate. "
+            "Option E: Fifth candidate."
+        )
+        assert parse_multiple_choice_response(raw) is None
+
+    def test_prompt_echo_without_final_answer_returns_none(self):
+        raw = (
+            "A) First candidate "
+            "B) Second candidate "
+            "C) Third candidate "
+            "D) Fourth candidate "
+            "E) Fifth candidate"
+        )
+        assert parse_multiple_choice_response(raw) is None
+
+    def test_explicit_final_answer_beats_earlier_option_mentions(self):
+        raw = (
+            "Option A: First candidate. "
+            "Option B: Second candidate. "
+            "Option C: Third candidate. "
+            "Final answer: B"
+        )
+        assert parse_multiple_choice_response(raw) == "B"
+
+    def test_final_bare_letter_still_parses(self):
+        raw = "I considered all five options carefully.\nB"
+        assert parse_multiple_choice_response(raw) == "B"

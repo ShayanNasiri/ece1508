@@ -26,6 +26,8 @@ slm = [
   "transformers",
   "accelerate",
   "peft",
+  "datasets",
+  "trl",
 ]
 dashboard = [
   "streamlit",

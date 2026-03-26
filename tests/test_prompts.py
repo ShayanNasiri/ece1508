@@ -38,6 +38,40 @@ def test_build_multiple_choice_prompt_renders_expected_format() -> None:
     }
 
 
+def test_build_multiple_choice_prompt_with_shuffle_key_is_deterministic() -> None:
+    options = (
+        RecipeOption("id-a", "Option A"),
+        RecipeOption("id-b", "Option B"),
+        RecipeOption("id-c", "Option C"),
+        RecipeOption("id-d", "Option D"),
+        RecipeOption("id-e", "Option E"),
+    )
+
+    prompt_one, mapping_one = build_multiple_choice_prompt(
+        query="Need a roasted fish recipe",
+        options=options,
+        prompt_spec=DEFAULT_PROMPT_SPEC,
+        shuffle_key="rmpr-0001",
+    )
+    prompt_two, mapping_two = build_multiple_choice_prompt(
+        query="Need a roasted fish recipe",
+        options=options,
+        prompt_spec=DEFAULT_PROMPT_SPEC,
+        shuffle_key="rmpr-0001",
+    )
+
+    assert prompt_one == prompt_two
+    assert mapping_one == mapping_two
+    assert set(mapping_one.values()) == {"id-a", "id-b", "id-c", "id-d", "id-e"}
+    assert mapping_one != {
+        "A": "id-a",
+        "B": "id-b",
+        "C": "id-c",
+        "D": "id-d",
+        "E": "id-e",
+    }
+
+
 @pytest.mark.parametrize(
     ("response_text", "expected"),
     [

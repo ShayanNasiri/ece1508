@@ -9,6 +9,7 @@ from recipe_mpr_qa.data.loaders import (
     load_option_scoring_split,
     load_split_manifest,
 )
+from recipe_mpr_qa.formats import build_multiple_choice_prompt
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -73,3 +74,25 @@ def test_load_option_scoring_split_returns_five_rows_per_example() -> None:
     )
 
     assert len(scoring_examples) == 75 * 5
+
+
+def test_shuffled_prompt_answers_are_not_fixed_to_slot_zero_across_splits() -> None:
+    dataset = load_dataset(PROCESSED_DATASET_PATH)
+    split_manifest = load_split_manifest(SPLIT_MANIFEST_PATH)
+
+    for split_name in ("train", "validation", "test"):
+        examples = get_split_examples(dataset, split_manifest, split_name)
+        gold_slots = []
+        for example in examples:
+            _, letter_to_id = build_multiple_choice_prompt(
+                query=example.query,
+                options=example.options,
+                shuffle_key=example.example_id,
+            )
+            gold_letter = next(
+                letter for letter, option_id in letter_to_id.items()
+                if option_id == example.answer_option_id
+            )
+            gold_slots.append("ABCDE".index(gold_letter))
+
+        assert len(set(gold_slots)) > 1
