@@ -45,6 +45,16 @@ python -m recipe_mpr_qa.cli export-split `
   --output data/processed/train.jsonl
 ```
 
+Create an optional augmented training artifact:
+
+```powershell
+python -m recipe_mpr_qa.cli augment-train `
+  --dataset data/processed/recipe_mpr_qa.jsonl `
+  --split-manifest data/processed/primary_split.json `
+  --output data/processed/train_augmented.jsonl `
+  --max-variants 2
+```
+
 Run the test suite:
 
 ```powershell
@@ -93,6 +103,7 @@ Output files are auto-named as `results/<Model>_<Split>_<N>.json` (e.g. `deepsee
 
 - `data/processed/recipe_mpr_qa.jsonl`: canonical normalized dataset artifact
 - `data/processed/primary_split.json`: deterministic 70/15/15 split manifest
+- `data/processed/train_augmented.jsonl`: optional synthetic train-only artifact generated from the canonical dataset
 
 ## Project Structure
 
@@ -108,6 +119,7 @@ Output files are auto-named as `results/<Model>_<Split>_<N>.json` (e.g. `deepsee
 
 - Canonical example schema with stable `example_id` values
 - Deterministic stratified split manifest
+- Optional training-only query augmentation artifact with conservative query rewrites
 - Tokenizer-ready option-scoring loader for query-option scoring workflows
 - Standardized multiple-choice prompt format and parser for LLM outputs
 - Canonical prediction record schema for consistent model outputs
@@ -141,6 +153,9 @@ pip install -e ".[dev]"
 
 # SLM experiments (adds torch, transformers, datasets, trl)
 pip install -e ".[slm]"
+
+# Fine-tuning with optional training augmentation
+python finetuning/finetune.py --augmented-train-path data/processed/train_augmented.jsonl
 
 # Results dashboard (adds streamlit, plotly)
 pip install -e ".[dashboard]"

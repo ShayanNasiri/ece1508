@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from recipe_mpr_qa.cli import main
+from recipe_mpr_qa.data.preparation import read_prepared_dataset
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -75,3 +76,33 @@ def test_cli_export_split_smoke(tmp_path: Path, capsys) -> None:
     assert exit_code == 0
     assert output_path.exists()
     assert "Exported 75 test examples" in captured.out
+
+
+def test_cli_augment_train_writes_augmented_artifact(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "augmented_train.jsonl"
+
+    exit_code = main(
+        [
+            "augment-train",
+            "--dataset",
+            str(PROCESSED_DATASET_PATH),
+            "--split-manifest",
+            str(SPLIT_MANIFEST_PATH),
+            "--output",
+            str(output_path),
+            "--max-variants",
+            "2",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert output_path.exists()
+    assert "Augmented 350 parent train examples" in captured.out
+
+    augmented_dataset = read_prepared_dataset(output_path)
+    assert len(augmented_dataset.examples) > 0
+    train_ids = set(json.loads(SPLIT_MANIFEST_PATH.read_text(encoding="utf-8"))["splits"]["train"])
+    assert all(example.example_id.endswith(("-aug-01", "-aug-02")) for example in augmented_dataset.examples)
+    assert all(example.example_id not in train_ids for example in augmented_dataset.examples)
+    assert all(example.source_metadata["parent_example_id"] in train_ids for example in augmented_dataset.examples)

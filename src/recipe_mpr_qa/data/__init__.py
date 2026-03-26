@@ -1,3 +1,8 @@
+from recipe_mpr_qa.data.augmentation import (
+    augment_example,
+    augment_training_examples,
+    count_augmentation_strategies,
+)
 from recipe_mpr_qa.data.loaders import (
     build_option_scoring_examples,
     get_split_examples,
@@ -30,8 +35,11 @@ __all__ = [
     "RecipeExample",
     "RecipeOption",
     "SplitManifest",
+    "augment_example",
+    "augment_training_examples",
     "build_dataset_metadata",
     "build_option_scoring_examples",
+    "count_augmentation_strategies",
     "generate_primary_split",
     "get_split_examples",
     "load_dataset",

@@ -6,6 +6,10 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
+from recipe_mpr_qa.data.augmentation import (
+    augment_training_examples,
+    count_augmentation_strategies,
+)
 from recipe_mpr_qa.data.constants import (
     DEFAULT_PROCESSED_DATASET_PATH,
     DEFAULT_RAW_DATASET_PATH,
@@ -13,7 +17,7 @@ from recipe_mpr_qa.data.constants import (
     DEFAULT_SPLIT_SEED,
 )
 from recipe_mpr_qa.data.loaders import get_split_examples
-from recipe_mpr_qa.data.models import DatasetValidationError
+from recipe_mpr_qa.data.models import DatasetValidationError, PreparedDataset
 from recipe_mpr_qa.data.preparation import (
     generate_primary_split,
     prepare_dataset,
@@ -59,6 +63,14 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     export_parser.add_argument("--split", choices=("train", "validation", "test"), required=True)
     export_parser.add_argument("--output", type=Path, required=True)
+
+    augment_parser = subparsers.add_parser("augment-train")
+    augment_parser.add_argument("--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH)
+    augment_parser.add_argument(
+        "--split-manifest", type=Path, default=DEFAULT_SPLIT_MANIFEST_PATH
+    )
+    augment_parser.add_argument("--output", type=Path, required=True)
+    augment_parser.add_argument("--max-variants", type=int, default=2)
 
     return parser
 
@@ -106,6 +118,36 @@ def _command_export_split(args: argparse.Namespace) -> int:
     return 0
 
 
+def _command_augment_train(args: argparse.Namespace) -> int:
+    dataset = read_prepared_dataset(args.dataset)
+    split_manifest = read_split_manifest(args.split_manifest)
+    train_examples = get_split_examples(dataset, split_manifest, "train")
+    augmented_examples = augment_training_examples(
+        train_examples,
+        max_variants=args.max_variants,
+    )
+    write_prepared_dataset(
+        dataset=PreparedDataset(examples=augmented_examples, metadata={}),
+        output_path=args.output,
+    )
+    print(
+        f"Augmented {len(train_examples)} parent train examples into {len(augmented_examples)} "
+        f"synthetic examples at {args.output.as_posix()}."
+    )
+    print(
+        json.dumps(
+            {
+                "parent_examples": len(train_examples),
+                "augmented_examples": len(augmented_examples),
+                "strategy_counts": count_augmentation_strategies(augmented_examples),
+            },
+            ensure_ascii=True,
+            indent=2,
+        )
+    )
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -118,6 +160,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _command_dataset_stats(args)
         if args.command == "export-split":
             return _command_export_split(args)
+        if args.command == "augment-train":
+            return _command_augment_train(args)
     except (DatasetValidationError, FileNotFoundError, json.JSONDecodeError, RuntimeError) as exc:
         print(str(exc), file=sys.stderr)
         return 1

@@ -33,6 +33,7 @@ from recipe_mpr_qa.data.loaders import (
     load_split_manifest,
     get_split_examples,
 )
+from recipe_mpr_qa.data.models import DatasetValidationError
 
 
 # ----------------------------
@@ -64,6 +65,7 @@ class RunConfig:
     data_path: str
     split_manifest_path: str
     output_dir: str
+    augmented_train_path: str | None = None
 
     seed: int = 42
     max_seq_length: int = 512
@@ -127,6 +129,12 @@ def parse_args():
         type=str,
         default=str(REPO_ROOT / "outputs" / "smollm2_recipe_mpr"),
         help="Where to save checkpoints and config",
+    )
+    parser.add_argument(
+        "--augmented-train-path",
+        type=str,
+        default=None,
+        help="Optional JSONL artifact containing augmented train examples in RecipeExample format",
     )
 
     parser.add_argument("--seed", type=int, default=42)
@@ -199,13 +207,40 @@ def example_to_prompt_completion(example):
     }
 
 
-def build_hf_datasets(data_path: str, split_manifest_path: str):
+def _load_augmented_train_examples(augmented_train_path: str, train_examples):
+    augmented_dataset = load_dataset(augmented_train_path)
+    train_example_ids = {example.example_id for example in train_examples}
+    augmented_examples = augmented_dataset.examples
+    conflicting_ids = sorted(train_example_ids.intersection(example.example_id for example in augmented_examples))
+    if conflicting_ids:
+        raise DatasetValidationError(
+            f"augmented train examples must not reuse original example ids: {conflicting_ids[:5]}"
+        )
+    for example in augmented_examples:
+        parent_example_id = example.source_metadata.get("parent_example_id")
+        if parent_example_id not in train_example_ids:
+            raise DatasetValidationError(
+                f"augmented example {example.example_id} must reference a train parent_example_id"
+            )
+    return augmented_examples
+
+
+def build_hf_datasets(
+    data_path: str,
+    split_manifest_path: str,
+    augmented_train_path: str | None = None,
+):
     dataset = load_dataset(data_path)
     manifest = load_split_manifest(split_manifest_path)
 
     train_examples = get_split_examples(dataset, manifest, "train")
     val_examples = get_split_examples(dataset, manifest, "validation")
     test_examples = get_split_examples(dataset, manifest, "test")
+    if augmented_train_path is not None:
+        train_examples = train_examples + _load_augmented_train_examples(
+            augmented_train_path,
+            train_examples,
+        )
 
     train_rows = [example_to_prompt_completion(ex) for ex in train_examples]
     val_rows = [example_to_prompt_completion(ex) for ex in val_examples]
@@ -229,6 +264,7 @@ def main():
         data_path=args.data_path,
         split_manifest_path=args.split_manifest_path,
         output_dir=args.output_dir,
+        augmented_train_path=args.augmented_train_path,
         seed=args.seed,
         max_seq_length=args.max_seq_length,
         num_train_epochs=args.num_train_epochs,
@@ -265,6 +301,7 @@ def main():
     train_ds, val_ds, test_ds = build_hf_datasets(
         data_path=cfg.data_path,
         split_manifest_path=cfg.split_manifest_path,
+        augmented_train_path=cfg.augmented_train_path,
     )
 
     print(f"Train examples: {len(train_ds)}")
