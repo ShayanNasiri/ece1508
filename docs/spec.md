@@ -212,6 +212,11 @@ Supported commands:
 - `dataset-stats`
 - `export-split`
 - `augment-train`
+- `run-train`
+- `run-eval`
+- `list-runs`
+- `compare-runs`
+- `promote-run`
 
 Expected behavior:
 
@@ -220,6 +225,9 @@ Expected behavior:
 - `dataset-stats` prints dataset metadata
 - `export-split` writes one manifest-defined split to JSONL
 - `augment-train` writes a train-only augmentation artifact in `RecipeExample` format
+- `run-train` wraps the existing fine-tuning path with tracked manifests and registries
+- `run-eval` wraps the existing evaluation path with tracked manifests and registries
+- `list-runs`, `compare-runs`, and `promote-run` operate on the local run registry under `mlops/`
 
 The CLI should remain dependency-light relative to the rest of the repo and should not require the SLM stack to prepare or inspect data artifacts.
 
@@ -231,6 +239,9 @@ Important repo-relative output locations:
 - `data/processed/primary_split.json`: split manifest
 - `data/processed/train_augmented.jsonl`: optional train-only augmentation artifact
 - `llm_evaluation/results/`: evaluation JSON outputs
+- `mlops/runs/`: tracked run manifests and summaries
+- `mlops/registry/`: run and model registry files
+- `mlops/reports/`: optional comparison reports
 - `outputs/`: saved fine-tuning artifacts from prior runs
 
 ## Testing Expectations

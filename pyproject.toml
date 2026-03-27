@@ -29,6 +29,9 @@ slm = [
   "datasets",
   "trl",
 ]
+mlops = [
+  "mlflow",
+]
 dashboard = [
   "streamlit",
   "plotly",

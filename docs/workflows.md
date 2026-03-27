@@ -24,11 +24,18 @@ Install the SLM stack:
 pip install -e ".[slm]"
 ```
 
+Install the optional MLOps extra:
+
+```bash
+pip install -e ".[mlops]"
+```
+
 Current extras from `pyproject.toml`:
 
 - base: `requests`, `tqdm`
 - `dev`: `pytest`
 - `slm`: `torch`, `transformers`, `accelerate`, `peft`, `datasets`, `trl`
+- `mlops`: `mlflow`
 
 ## Canonical Data Preparation
 
@@ -192,6 +199,63 @@ Important current behavior:
 - model-facing prompts use deterministic per-example option shuffling
 - the script trains a causal LM in prompt-completion form, where the completion is the correct answer letter
 
+## Tracked MLOps Wrappers
+
+The repository also exposes tracked wrappers through `recipe-mpr-qa`. These commands add run manifests, registries, and artifact lineage on top of the existing training and evaluation workflow without changing the direct scripts.
+
+Run a tracked training job:
+
+```bash
+recipe-mpr-qa run-train \
+  --stage candidate \
+  --model-name HuggingFaceTB/SmolLM2-135M-Instruct \
+  --data-path data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest-path data/processed/primary_split.json
+```
+
+Run a tracked evaluation job:
+
+```bash
+recipe-mpr-qa run-eval \
+  --stage baseline \
+  --backend ollama \
+  --model deepseek-r1:7b \
+  --data data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest data/processed/primary_split.json \
+  --config llm_evaluation/config.json
+```
+
+List tracked runs:
+
+```bash
+recipe-mpr-qa list-runs
+```
+
+Compare tracked runs:
+
+```bash
+recipe-mpr-qa compare-runs --run-id train-... --run-id eval-...
+```
+
+Promote a tracked run:
+
+```bash
+recipe-mpr-qa promote-run --run-id train-... --stage validated
+```
+
+Optional MLflow mirroring:
+
+```bash
+recipe-mpr-qa run-eval \
+  --enable-mlflow \
+  --mlflow-experiment recipe-mpr-qa \
+  --backend ollama \
+  --model deepseek-r1:7b \
+  --data data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest data/processed/primary_split.json \
+  --config llm_evaluation/config.json
+```
+
 ## Common Output Locations
 
 Source-of-truth artifacts:
@@ -204,6 +268,9 @@ Optional generated artifacts:
 - `data/processed/train_augmented.jsonl`
 - `data/processed/train.jsonl`
 - `llm_evaluation/results/*.json`
+- `mlops/runs/*/run_manifest.json`
+- `mlops/registry/runs.json`
+- `mlops/registry/models.json`
 - `outputs/smollm2_recipe_mpr/`
 
 Interpretation notes:

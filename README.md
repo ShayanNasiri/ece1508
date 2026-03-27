@@ -15,6 +15,7 @@ The repository currently provides the shared project foundation:
 - local LLM evaluation utilities
 - SLM fine-tuning scaffolding for prompt-completion training
 - optional train-only query augmentation with conservative rule-based rewrites
+- local-first MLOps wrappers for tracked train and eval runs
 - regression tests covering the implemented data and workflow surfaces
 
 ## Quickstart
@@ -35,6 +36,12 @@ Install the SLM stack:
 
 ```bash
 pip install -e ".[slm]"
+```
+
+Install the optional MLOps extra:
+
+```bash
+pip install -e ".[mlops]"
 ```
 
 Prepare the canonical processed dataset and split manifest:
@@ -94,6 +101,7 @@ python finetuning/finetune.py \
 - [Workflows](docs/workflows.md)
 - [Architecture](docs/architecture.md)
 - [Experiment Status](docs/experiments_status.md)
+- [MLOps Layer](docs/mlops.md)
 
 ## Repository Structure
 

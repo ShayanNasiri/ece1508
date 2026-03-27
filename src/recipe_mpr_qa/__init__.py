@@ -7,15 +7,19 @@ from recipe_mpr_qa.data.models import (
     SplitManifest,
 )
 from recipe_mpr_qa.formats import PredictionRecord, PromptSpec
+from recipe_mpr_qa.tracking.models import ArtifactRef, RegistryEntry, RunManifest
 
 __all__ = [
+    "ArtifactRef",
     "DatasetValidationError",
+    "RegistryEntry",
     "OptionScoringExample",
     "PredictionRecord",
     "PreparedDataset",
     "PromptSpec",
     "RecipeExample",
     "RecipeOption",
+    "RunManifest",
     "SplitManifest",
 ]
 

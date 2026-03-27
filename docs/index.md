@@ -11,6 +11,7 @@ Read based on what you need:
 - Understanding data contracts and artifact invariants: read [Technical Spec](spec.md)
 - Understanding how the codebase fits together: read [Architecture](architecture.md)
 - Understanding current benchmark caveats and recent fixes: read [Experiment Status](experiments_status.md)
+- Understanding tracked runs and registries: read [MLOps Layer](mlops.md)
 
 ## Documentation Set
 
@@ -19,6 +20,7 @@ Read based on what you need:
 - [Workflows](workflows.md): installation, data preparation, augmentation, evaluation, and fine-tuning commands
 - [Architecture](architecture.md): high-level data flow and module responsibilities
 - [Experiment Status](experiments_status.md): current state of the experiment stack, corrective changes, and important caveats
+- [MLOps Layer](mlops.md): tracked wrapper commands, local artifact layout, run registries, and optional MLflow mirroring
 
 ## Historical Project Context
 

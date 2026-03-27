@@ -26,6 +26,18 @@ from recipe_mpr_qa.data.preparation import (
     write_prepared_dataset,
     write_split_manifest,
 )
+from recipe_mpr_qa.tracking import (
+    DEFAULT_MLOPS_ROOT,
+    build_run_comparison,
+    format_run_comparison_table,
+    format_run_table,
+    list_registered_runs,
+    promote_run,
+    run_tracked_eval,
+    run_tracked_train,
+    write_comparison_report,
+)
+from recipe_mpr_qa.tracking.models import REGISTRY_STAGES, RUN_STATUSES, RUN_TYPES
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -71,6 +83,39 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     augment_parser.add_argument("--output", type=Path, required=True)
     augment_parser.add_argument("--max-variants", type=int, default=2)
+
+    run_train_parser = subparsers.add_parser("run-train")
+    run_train_parser.add_argument("--stage", choices=REGISTRY_STAGES, default="candidate")
+    run_train_parser.add_argument("--mlops-root", type=Path, default=DEFAULT_MLOPS_ROOT)
+    run_train_parser.add_argument("--enable-mlflow", action="store_true")
+    run_train_parser.add_argument("--mlflow-tracking-uri", type=str, default=None)
+    run_train_parser.add_argument("--mlflow-experiment", type=str, default="recipe-mpr-qa")
+
+    run_eval_parser = subparsers.add_parser("run-eval")
+    run_eval_parser.add_argument("--stage", choices=REGISTRY_STAGES, default="baseline")
+    run_eval_parser.add_argument("--parent-run-id", type=str, default=None)
+    run_eval_parser.add_argument("--mlops-root", type=Path, default=DEFAULT_MLOPS_ROOT)
+    run_eval_parser.add_argument("--enable-mlflow", action="store_true")
+    run_eval_parser.add_argument("--mlflow-tracking-uri", type=str, default=None)
+    run_eval_parser.add_argument("--mlflow-experiment", type=str, default="recipe-mpr-qa")
+
+    list_runs_parser = subparsers.add_parser("list-runs")
+    list_runs_parser.add_argument("--mlops-root", type=Path, default=DEFAULT_MLOPS_ROOT)
+    list_runs_parser.add_argument("--run-type", choices=RUN_TYPES, default=None)
+    list_runs_parser.add_argument("--status", choices=RUN_STATUSES, default=None)
+    list_runs_parser.add_argument("--stage", choices=REGISTRY_STAGES, default=None)
+    list_runs_parser.add_argument("--format", choices=("table", "json"), default="table")
+
+    compare_runs_parser = subparsers.add_parser("compare-runs")
+    compare_runs_parser.add_argument("--mlops-root", type=Path, default=DEFAULT_MLOPS_ROOT)
+    compare_runs_parser.add_argument("--run-id", action="append", required=True)
+    compare_runs_parser.add_argument("--format", choices=("table", "json"), default="table")
+    compare_runs_parser.add_argument("--output", type=Path, default=None)
+
+    promote_run_parser = subparsers.add_parser("promote-run")
+    promote_run_parser.add_argument("--mlops-root", type=Path, default=DEFAULT_MLOPS_ROOT)
+    promote_run_parser.add_argument("--run-id", required=True)
+    promote_run_parser.add_argument("--stage", choices=REGISTRY_STAGES, required=True)
 
     return parser
 
@@ -148,9 +193,95 @@ def _command_augment_train(args: argparse.Namespace) -> int:
     return 0
 
 
+def _command_run_train(args: argparse.Namespace, script_args: Sequence[str]) -> int:
+    manifest = run_tracked_train(
+        script_args=script_args,
+        stage=args.stage,
+        mlops_root=args.mlops_root,
+        enable_mlflow=args.enable_mlflow,
+        mlflow_tracking_uri=args.mlflow_tracking_uri,
+        mlflow_experiment=args.mlflow_experiment,
+    )
+    print(
+        json.dumps(
+            {
+                "run_id": manifest.run_id,
+                "run_type": manifest.run_type,
+                "status": manifest.status,
+                "stage": args.stage,
+            },
+            ensure_ascii=True,
+            indent=2,
+        )
+    )
+    return 0
+
+
+def _command_run_eval(args: argparse.Namespace, script_args: Sequence[str]) -> int:
+    manifest = run_tracked_eval(
+        script_args=script_args,
+        stage=args.stage,
+        parent_run_id=args.parent_run_id,
+        mlops_root=args.mlops_root,
+        enable_mlflow=args.enable_mlflow,
+        mlflow_tracking_uri=args.mlflow_tracking_uri,
+        mlflow_experiment=args.mlflow_experiment,
+    )
+    print(
+        json.dumps(
+            {
+                "run_id": manifest.run_id,
+                "run_type": manifest.run_type,
+                "status": manifest.status,
+                "stage": args.stage,
+                "parent_run_id": manifest.parent_run_id,
+            },
+            ensure_ascii=True,
+            indent=2,
+        )
+    )
+    return 0
+
+
+def _command_list_runs(args: argparse.Namespace) -> int:
+    entries = list_registered_runs(
+        mlops_root=args.mlops_root,
+        run_type=args.run_type,
+        status=args.status,
+        stage=args.stage,
+    )
+    if args.format == "json":
+        print(json.dumps([entry.to_dict() for entry in entries], ensure_ascii=True, indent=2))
+    else:
+        print(format_run_table(entries) if entries else "No tracked runs found.")
+    return 0
+
+
+def _command_compare_runs(args: argparse.Namespace) -> int:
+    comparison_rows = build_run_comparison(args.run_id, mlops_root=args.mlops_root)
+    if args.output is not None:
+        write_comparison_report(comparison_rows, args.output)
+    if args.format == "json":
+        print(json.dumps(comparison_rows, ensure_ascii=True, indent=2))
+    else:
+        print(format_run_comparison_table(comparison_rows))
+    return 0
+
+
+def _command_promote_run(args: argparse.Namespace) -> int:
+    entry = promote_run(args.run_id, args.stage, mlops_root=args.mlops_root)
+    print(json.dumps(entry.to_dict(), ensure_ascii=True, indent=2))
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _build_parser()
-    args = parser.parse_args(argv)
+    args, unknown = parser.parse_known_args(argv)
+    script_args: Sequence[str] = ()
+    if args.command in {"run-train", "run-eval"}:
+        script_args = tuple(unknown)
+    elif unknown:
+        parser.error(f"Unrecognized arguments: {' '.join(unknown)}")
     try:
         if args.command == "prepare-data":
             return _command_prepare_data(args)
@@ -162,7 +293,23 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _command_export_split(args)
         if args.command == "augment-train":
             return _command_augment_train(args)
-    except (DatasetValidationError, FileNotFoundError, json.JSONDecodeError, RuntimeError) as exc:
+        if args.command == "run-train":
+            return _command_run_train(args, script_args)
+        if args.command == "run-eval":
+            return _command_run_eval(args, script_args)
+        if args.command == "list-runs":
+            return _command_list_runs(args)
+        if args.command == "compare-runs":
+            return _command_compare_runs(args)
+        if args.command == "promote-run":
+            return _command_promote_run(args)
+    except (
+        DatasetValidationError,
+        FileNotFoundError,
+        json.JSONDecodeError,
+        RuntimeError,
+        ValueError,
+    ) as exc:
         print(str(exc), file=sys.stderr)
         return 1
     parser.error(f"Unsupported command: {args.command}")
