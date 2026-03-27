@@ -112,10 +112,22 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default=None,
         help="Limit the number of questions to evaluate (default: all)",
     )
+    parser.add_argument(
+        "--eval-mode",
+        type=str,
+        default="generative",
+        choices=["generative", "loglikelihood"],
+        help="Evaluation mode: 'generative' (default) or 'loglikelihood' (scores A-E by logits)",
+    )
     return parser
 
 
 def run_evaluation(args: argparse.Namespace) -> dict[str, object]:
+    eval_mode = getattr(args, "eval_mode", "generative")
+
+    if eval_mode == "loglikelihood" and args.backend != "huggingface":
+        raise ValueError("loglikelihood eval mode requires the huggingface backend")
+
     if os.path.exists(args.config):
         with open(args.config, "r", encoding="utf-8") as handle:
             config = json.load(handle)
@@ -147,6 +159,7 @@ def run_evaluation(args: argparse.Namespace) -> dict[str, object]:
 
     print(f"Model:    {args.model}")
     print(f"Backend:  {args.backend}")
+    print(f"Eval mode: {eval_mode}")
     print(f"Split:    {args.split} ({len(examples)} examples)")
     print(f"Temperature: {temperature}")
     print("-" * 60)
@@ -158,19 +171,29 @@ def run_evaluation(args: argparse.Namespace) -> dict[str, object]:
             shuffle_key=example.example_id,
         )
 
-        try:
-            raw_response = client.query(args.model, prompt, temperature=temperature)
-        except RuntimeError as exc:
-            print(f"\n  Query {index} failed: {exc}")
-            raw_response = ""
+        if eval_mode == "loglikelihood":
+            letters = list(letter_to_id.keys())
+            try:
+                parsed_letter = client.query_loglikelihood(args.model, prompt, letters)
+            except RuntimeError as exc:
+                print(f"\n  Query {index} failed: {exc}")
+                parsed_letter = None
+            raw_response = f"[loglikelihood] selected {parsed_letter}"
+        else:
+            try:
+                raw_response = client.query(args.model, prompt, temperature=temperature)
+            except RuntimeError as exc:
+                print(f"\n  Query {index} failed: {exc}")
+                raw_response = ""
 
-        parsed_letter = parse_multiple_choice_response(raw_response)
-        if parsed_letter is None:
-            options_map = {
-                letter: next(opt.text for opt in example.options if opt.option_id == option_id)
-                for letter, option_id in letter_to_id.items()
-            }
-            parsed_letter = parse_multiple_choice_response(raw_response, options=options_map)
+            parsed_letter = parse_multiple_choice_response(raw_response)
+            if parsed_letter is None:
+                options_map = {
+                    letter: next(opt.text for opt in example.options if opt.option_id == option_id)
+                    for letter, option_id in letter_to_id.items()
+                }
+                parsed_letter = parse_multiple_choice_response(raw_response, options=options_map)
+
         predicted_id = letter_to_id.get(parsed_letter) if parsed_letter else None
 
         predictions.append(predicted_id)
@@ -202,6 +225,7 @@ def run_evaluation(args: argparse.Namespace) -> dict[str, object]:
     output_data = {
         "model": args.model,
         "split": args.split,
+        "eval_mode": eval_mode,
         "metrics": metrics,
         "results": result_rows,
     }

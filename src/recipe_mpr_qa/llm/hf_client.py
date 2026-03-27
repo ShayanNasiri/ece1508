@@ -72,11 +72,48 @@ class HFClient:
     def __init__(self):
         self._pipelines: dict = {}
         self._peft_models: dict = {}
+        self._models: dict = {}
 
     def query(self, model_name: str, prompt: str, temperature: float = 0) -> str:
         if self._is_adapter_path(model_name):
             return self._query_peft(model_name, prompt, temperature)
         return self._query_pipeline(model_name, prompt, temperature)
+
+    def query_loglikelihood(
+        self, model_name: str, prompt: str, choices: list[str],
+    ) -> str:
+        """Score each choice token by logits and return the highest-scoring one."""
+        import torch
+
+        if model_name not in self._models:
+            self._models[model_name] = self._load_model_and_tokenizer(model_name)
+
+        model, tokenizer = self._models[model_name]
+        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+
+        with torch.no_grad():
+            logits = model(**inputs).logits
+
+        last_logits = logits[0, -1, :]
+
+        best_choice = None
+        best_score = float("-inf")
+        for choice in choices:
+            token_id = tokenizer.encode(choice, add_special_tokens=False)[-1]
+            score = last_logits[token_id].item()
+            if score > best_score:
+                best_score = score
+                best_choice = choice
+
+        return best_choice
+
+    def _load_model_and_tokenizer(self, model_name: str):
+        """Load a causal LM and its tokenizer for log-likelihood scoring."""
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name, device_map="auto", trust_remote_code=True,
+        )
+        tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+        return model, tokenizer
 
     def _is_adapter_path(self, model_name: str) -> bool:
         path = Path(model_name)
