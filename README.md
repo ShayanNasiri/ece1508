@@ -63,6 +63,10 @@ python -m recipe_mpr_qa.cli augment-train \
   --max-variants 2
 ```
 
+You do not need to run this step for the default fine-tuning workflow.
+This command creates a separate augmented dataset file on disk.
+`finetuning/finetune.py` does not generate that file automatically.
+
 Run the test suite:
 
 ```bash
@@ -86,12 +90,20 @@ Run SLM fine-tuning with the canonical train split only:
 python finetuning/finetune.py
 ```
 
+Use this default command if you want to train on the canonical split only.
+No augmentation artifact is required.
+
 Run SLM fine-tuning with the optional train-only augmentation artifact:
 
 ```bash
 python finetuning/finetune.py \
   --augmented-train-path data/processed/train_augmented.jsonl
 ```
+
+Use this only if you already created `data/processed/train_augmented.jsonl`
+with the `augment-train` command above. The `--augmented-train-path` flag
+reads an existing file and appends those extra examples to the training split;
+it does not create the file for you.
 
 ## Documentation Map
 

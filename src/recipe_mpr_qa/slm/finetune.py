@@ -115,7 +115,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--augmented-train-path",
         type=str,
         default=None,
-        help="Optional JSONL artifact containing augmented train examples in RecipeExample format",
+        help=(
+            "Optional path to a pre-generated augmented train JSONL artifact in "
+            "RecipeExample format. This script reads an existing file; it does "
+            "not create augmentation automatically."
+        ),
     )
 
     parser.add_argument("--seed", type=int, default=42)
