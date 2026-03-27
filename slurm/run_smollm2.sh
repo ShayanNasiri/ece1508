@@ -4,7 +4,7 @@
 #SBATCH -c 4
 #SBATCH --mem=16G
 #SBATCH -t 2:00:00
-#SBATCH --output=/h/439/snasiri/ece1508/results/smollm2_%j.log
+#SBATCH --output=/h/439/snasiri/ece1508/results/smollm2_instruct_%j.log
 #SBATCH --exclude=gpunode4,gpunode5,gpunode7
 
 # Redirect caches to /tmp to avoid home directory quota issues
