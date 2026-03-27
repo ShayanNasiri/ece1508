@@ -25,6 +25,6 @@ cd /h/439/snasiri/ece1508/llm_evaluation
 mkdir -p ../results
 
 python mc_eval.py \
-    --model HuggingFaceTB/SmolLM2-135M \
+    --model HuggingFaceTB/SmolLM2-135M-Instruct \
     --backend huggingface \
     --split test

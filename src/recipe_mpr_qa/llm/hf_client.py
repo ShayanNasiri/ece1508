@@ -93,7 +93,8 @@ class HFClient:
 
         pipe = self._pipelines[model_name]
         gen_kwargs = {
-            "max_new_tokens": 256,
+            "max_new_tokens": 1024,
+            "max_length": None,
             "do_sample": temperature > 0,
         }
         if temperature > 0:
