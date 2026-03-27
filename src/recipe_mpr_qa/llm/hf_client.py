@@ -84,12 +84,16 @@ class HFClient:
 
     def _query_pipeline(self, model_name: str, prompt: str, temperature: float) -> str:
         if model_name not in self._pipelines:
-            self._pipelines[model_name] = pipeline(
+            pipe = pipeline(
                 "text-generation",
                 model=model_name,
                 device_map="auto",
                 trust_remote_code=True,
             )
+            # Override any model-level max_length (e.g. SmolLM2 has max_length=20)
+            # so that max_new_tokens is the sole generation length constraint.
+            pipe.model.generation_config.max_length = None
+            self._pipelines[model_name] = pipe
 
         pipe = self._pipelines[model_name]
         gen_kwargs = {
