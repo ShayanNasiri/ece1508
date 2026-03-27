@@ -1,106 +1,158 @@
-# Recipe-MPR QA Foundation Specification
+# Recipe-MPR QA Technical Specification
 
-## 1. Overview
+This document is the canonical technical contract for the repository. It defines the task artifacts, public data types, prompt and parsing behavior, and the invariants that the current codebase relies on.
 
-The project studies question answering on Recipe-MPR using a five-way recipe selection task. The current repository implementation defines the canonical dataset contract together with the preparation, loading, and formatting interfaces used by the codebase today.
+For project motivation and status, see [Project Overview](project_overview.md) and [Experiment Status](experiments_status.md).
 
-## 2. Current Scope
+## Overview
 
-The current implementation covers the data-facing foundation of the project:
+The repository studies Recipe-MPR as a five-way multiple-choice recipe recommendation task.
 
-- raw dataset validation
-- canonical example normalization
-- deterministic split generation
-- loader interfaces for downstream consumers
-- prompt and prediction formatting
-- CLI support for preparation and inspection
+- Raw dataset: `data/500QA.json`
+- Canonical processed dataset: `data/processed/recipe_mpr_qa.jsonl`
+- Canonical split manifest: `data/processed/primary_split.json`
+- Query-type flags: `Specific`, `Commonsense`, `Negated`, `Analogical`, `Temporal`
 
-## 3. Dataset Definition
+Each example contains one user query, five candidate recipe options, and one correct option id.
 
-- Source dataset: `data/500QA.json`
-- Task: five-way multiple-choice recipe selection
-- Example count: 500
-- Query types: `Specific`, `Commonsense`, `Negated`, `Analogical`, `Temporal`
-- Gold label: one correct option id per query
+## Canonical Data Artifacts
 
-### 3.1 Canonical Example Schema
+### Canonical processed dataset
 
-Each prepared example contains:
-
-- `example_id`: stable identifier `rmpr-0001` through `rmpr-0500`
-- `query`: normalized query text
-- `options`: ordered list of five candidate options with `option_id` and `text`
-- `answer_option_id`: gold option id
-- `query_type_flags`: boolean map for the five query categories
-- `correctness_explanation`: original gold evidence map from the raw dataset, preserving string or string-list evidence values
-- `source_metadata`: raw dataset path, raw row index, and any normalization applied
-
-Normalization policy:
-
-- Strip outer whitespace from `query`
-- Preserve option text, explanations, and `<INFERRED>` markers
-- Preserve raw option ordering
-
-Validation policy:
-
-- Required keys must be present
-- Exactly five options per example
-- Option ids must be unique within an example
-- `answer_option_id` must match one of the option ids
-- Query-type keys must match the expected five-category schema
-- Text fields must be non-empty after trimming for validation purposes
-
-## 4. Data Artifacts And Splits
-
-### 4.1 Canonical Processed Dataset
+The canonical processed dataset is the normalized source-of-truth artifact used by the rest of the repository.
 
 - Path: `data/processed/recipe_mpr_qa.jsonl`
-- Contents: normalized canonical examples derived from `data/500QA.json`
-- Identifier policy: stable `example_id` values `rmpr-0001` through `rmpr-0500`
+- Format: JSONL, one `RecipeExample` per line
+- Source: derived from `data/500QA.json`
+- Size: 500 examples
+- Stable ids: `rmpr-0001` through `rmpr-0500`
 
-### 4.2 Split Policy
+Normalization and preservation rules:
 
-The project uses one deterministic primary split committed to the repo:
+- `query` is stripped of outer whitespace
+- option text is preserved
+- correctness explanations are preserved, including `<INFERRED>` markers
+- raw option ordering is preserved in the canonical processed dataset
 
+The canonical processed dataset is intentionally not rewritten to reflect model-facing prompt shuffling. It remains a stable representation of the source data.
+
+### Split manifest
+
+The split manifest is the shared train, validation, and test partition used throughout the project.
+
+- Path: `data/processed/primary_split.json`
 - Train: 350 examples
 - Validation: 75 examples
 - Test: 75 examples
-- Strategy: stratified by query-type signature
 - Seed: `1508`
+- Strategy: stratified by query-type signature
 
-The split manifest is the shared contract for all later phases. No phase should create ad hoc splits unless explicitly documented as auxiliary analysis.
+The split manifest is the repo-wide contract. Evaluation and fine-tuning should not create ad hoc splits unless explicitly documented as auxiliary analysis.
 
-## 5. Implementation Structure
+### Train-only augmentation artifact
 
-The repository currently ships:
+The optional augmentation artifact reuses the `RecipeExample` schema and contains only synthetic training examples.
 
-- canonical JSONL dataset artifact
-- deterministic split manifest
-- CLI for prepare, validate, stats, and export
-- tokenizer-ready option-scoring loader
-- shared multiple-choice prompt format and response parser
-- canonical prediction record schema
-- tests covering data, loaders, prompt parsing, serialization, and CLI behavior
+- Example output path: `data/processed/train_augmented.jsonl`
+- Source: generated from train split parents in the canonical processed dataset
+- Scope: training only
+- Allowed changes: query rewrite only
+- Preserved fields: `options`, `answer_option_id`, `query_type_flags`, `correctness_explanation`
 
-### 5.1 Interfaces
+Augmented examples add provenance into `source_metadata`:
 
-- `RecipeExample`
-- `PreparedDataset`
-- `OptionScoringExample`
-- `PredictionRecord`
-- `PromptSpec`
+- `parent_example_id`
+- `augmentation_strategy`
+- `variant_index`
 
-### 5.2 Module Layout
+Augmented example ids are unique synthetic ids such as `rmpr-0123-aug-01`.
 
-- `src/recipe_mpr_qa/data`: dataset constants, schemas, preparation, and loaders
-- `src/recipe_mpr_qa/formats.py`: prompt and prediction record formatting
-- `src/recipe_mpr_qa/cli.py`: command-line entrypoints
+## Public Data Types
 
-## 6. Output Formats
+### `RecipeOption`
 
-### 6.1 PredictionRecord
+Represents one candidate option inside a multiple-choice example.
 
-Every model or prompt run should emit JSONL records with:
+- `option_id`: string identifier from the raw dataset
+- `text`: option text
+
+Invariants:
+
+- both fields must be non-empty strings
+
+### `RecipeExample`
+
+Represents one normalized Recipe-MPR example.
+
+- `example_id`
+- `query`
+- `options`
+- `answer_option_id`
+- `query_type_flags`
+- `correctness_explanation`
+- `source_metadata`
+
+Invariants:
+
+- exactly five options
+- option ids must be unique within an example
+- `answer_option_id` must match one of the option ids
+- `query_type_flags` must contain exactly the five expected query categories
+- `correctness_explanation` must be a non-empty mapping of strings to non-empty strings or non-empty string lists
+- `source_metadata` must be a mapping
+
+### `PreparedDataset`
+
+Represents a validated collection of canonical or augmented `RecipeExample` rows.
+
+- `examples`
+- `metadata`
+
+Invariant:
+
+- example ids must be unique within the dataset
+
+### `SplitManifest`
+
+Represents the shared partition of example ids across `train`, `validation`, and `test`.
+
+- `splits`
+- `metadata`
+
+Invariants:
+
+- only `train`, `validation`, and `test` are valid split names
+- no example id may appear in more than one split
+
+### `OptionScoringExample`
+
+Represents one query-option pair for option-scoring style consumers.
+
+- `example_id`
+- `option_id`
+- `option_index`
+- `group_size`
+- `query`
+- `option_text`
+- `label`
+- `tokenized_inputs`
+
+Invariant:
+
+- `label` is binary and indicates whether the option is correct for that query
+
+### `PromptSpec`
+
+Represents the shared multiple-choice prompt contract.
+
+- `version`
+- `template`
+
+The default prompt version is `recipe-mpr-mc-v1`.
+
+### `PredictionRecord`
+
+Represents a normalized prediction output row for model runs.
 
 - `run_id`
 - `phase`
@@ -117,28 +169,81 @@ Every model or prompt run should emit JSONL records with:
 - `latency_ms`
 - `metadata`
 
-## 7. CLI Contract
+## Prompt And Parsing Contract
+
+### Model-facing prompt
+
+The model-facing prompt is built from `PromptSpec` and rendered through `build_multiple_choice_prompt()`.
+
+Key rules:
+
+- the prompt always presents exactly five answer letters, `A` through `E`
+- the canonical processed dataset keeps source ordering
+- model-facing prompts use deterministic per-example option shuffling when `shuffle_key` is provided
+- the fine-tuning and LLM evaluation paths pass `shuffle_key=example.example_id`
+
+This separation is intentional:
+
+- canonical processed data stays stable and faithful to source order
+- model-facing prompts avoid answer-position leakage by using reproducible shuffling
+
+### Response parsing
+
+`parse_multiple_choice_response()` converts a raw model response into a choice letter when possible.
+
+Current high-level behavior:
+
+- accepts exact answer-only outputs like `A` or `Option C`
+- prefers explicit answer markers such as `Final answer: B`
+- allows a final trailing standalone letter when the response clearly ends with one
+- avoids treating chain-of-thought enumeration of multiple options as a valid answer by default
+- may fall back to a limited option-text overlap heuristic when option texts are provided
+
+The parser is designed to be conservative. Unclear outputs should fail to parse instead of being over-credited.
+
+## CLI Contract
+
+The repository CLI is implemented in `src/recipe_mpr_qa/cli.py` and exposed as `recipe-mpr-qa`.
 
 Supported commands:
 
-- `prepare-data`: create the canonical processed dataset and split manifest
-- `validate-data`: validate raw or prepared dataset inputs
-- `dataset-stats`: print dataset summary counts
-- `export-split`: export one manifest-defined split to JSONL
+- `prepare-data`
+- `validate-data`
+- `dataset-stats`
+- `export-split`
+- `augment-train`
 
-The CLI must remain dependency-light and runnable without non-standard-library runtime dependencies.
+Expected behavior:
 
-## 8. Testing Requirements
+- `prepare-data` writes the canonical processed dataset and split manifest
+- `validate-data` validates either raw or prepared inputs
+- `dataset-stats` prints dataset metadata
+- `export-split` writes one manifest-defined split to JSONL
+- `augment-train` writes a train-only augmentation artifact in `RecipeExample` format
 
-The test suite must cover:
+The CLI should remain dependency-light relative to the rest of the repo and should not require the SLM stack to prepare or inspect data artifacts.
 
-- malformed records and validation failures
-- whitespace normalization behavior
+## Output Locations
+
+Important repo-relative output locations:
+
+- `data/processed/recipe_mpr_qa.jsonl`: canonical processed dataset
+- `data/processed/primary_split.json`: split manifest
+- `data/processed/train_augmented.jsonl`: optional train-only augmentation artifact
+- `llm_evaluation/results/`: evaluation JSON outputs
+- `outputs/`: saved fine-tuning artifacts from prior runs
+
+## Testing Expectations
+
+The test suite should continue to cover the core repository contracts:
+
+- dataset validation failures
 - deterministic ids and split generation
 - split sizes, coverage, and disjointness
-- option-scoring expansion and tokenizer passthrough
-- prompt rendering and noisy response parsing
-- prediction record JSONL round-trips
-- CLI smoke behavior and artifact generation
+- option-scoring expansion
+- prompt rendering and response parsing
+- prediction record serialization
+- CLI smoke behavior
+- augmentation provenance and train-only behavior
 
-The committed processed artifacts must regenerate exactly from the raw dataset and split seed.
+The committed canonical processed dataset and split manifest should remain reproducible from the raw dataset and split seed.

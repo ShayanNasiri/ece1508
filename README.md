@@ -1,165 +1,110 @@
 # Recipe-MPR QA
 
-## Overview
+Recipe-MPR QA is a course project and research-style repository centered on one question: can a fine-tuned small language model outperform or remain competitive with a larger general-purpose language model on Recipe-MPR while staying lightweight enough for local use?
 
-This repository contains the current foundation for the Recipe-MPR project: dataset preparation, deterministic splits, tokenizer-ready loading, and standardized prompt/output formatting for model runs.
+Recipe-MPR is a five-way multiple-choice recipe recommendation task. Each example contains a natural-language food preference query, five candidate recipe descriptions, and one correct answer. The task is harder than keyword matching because many queries depend on commonsense reasoning, negation, analogical cues, or temporal constraints.
 
-The broader project compares specialized small language models against general LLMs on the Recipe-MPR multiple-choice recipe recommendation dataset. The code currently in the repo establishes the shared data contract and workflow for dataset preparation and model-facing inputs.
+## Current Repository Status
 
-## Current Scope
+The repository currently provides the shared project foundation:
 
-- Raw dataset validation and normalization
-- Canonical processed JSONL artifact with stable example ids
-- Deterministic 70/15/15 split manifest stratified by query-type signature
-- Tokenizer-ready option-scoring loader for downstream consumers
-- Standardized multiple-choice prompt formatting and output record schema
-- CLI commands for prepare, validate, stats, and split export
-- Regression tests for all implemented functionality
+- canonical processed dataset preparation from the raw Recipe-MPR source
+- deterministic train, validation, and test split generation
+- typed dataset contracts and loaders for downstream consumers
+- standardized model-facing prompt rendering and response parsing
+- local LLM evaluation utilities
+- SLM fine-tuning scaffolding for prompt-completion training
+- optional train-only query augmentation with conservative rule-based rewrites
+- regression tests covering the implemented data and workflow surfaces
 
-## Working With The Data
+## Quickstart
 
-### Quickstart
+Install the package from the repository root:
 
-Create the processed dataset and split manifest:
+```bash
+pip install -e .
+```
 
-```powershell
-python -m recipe_mpr_qa.cli prepare-data `
-  --input data/500QA.json `
-  --output data/processed/recipe_mpr_qa.jsonl `
+Install development tooling:
+
+```bash
+pip install -e ".[dev]"
+```
+
+Install the SLM stack:
+
+```bash
+pip install -e ".[slm]"
+```
+
+Prepare the canonical processed dataset and split manifest:
+
+```bash
+python -m recipe_mpr_qa.cli prepare-data \
+  --input data/500QA.json \
+  --output data/processed/recipe_mpr_qa.jsonl \
   --split-output data/processed/primary_split.json
 ```
 
-Validate the raw dataset:
+Create an optional train-only augmentation artifact:
 
-```powershell
-python -m recipe_mpr_qa.cli validate-data --input data/500QA.json --kind raw
-```
-
-Export the training split:
-
-```powershell
-python -m recipe_mpr_qa.cli export-split `
-  --dataset data/processed/recipe_mpr_qa.jsonl `
-  --split-manifest data/processed/primary_split.json `
-  --split train `
-  --output data/processed/train.jsonl
-```
-
-Create an optional augmented training artifact:
-
-```powershell
-python -m recipe_mpr_qa.cli augment-train `
-  --dataset data/processed/recipe_mpr_qa.jsonl `
-  --split-manifest data/processed/primary_split.json `
-  --output data/processed/train_augmented.jsonl `
+```bash
+python -m recipe_mpr_qa.cli augment-train \
+  --dataset data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest data/processed/primary_split.json \
+  --output data/processed/train_augmented.jsonl \
   --max-variants 2
 ```
 
 Run the test suite:
 
-```powershell
+```bash
 pytest
 ```
 
-### LLM Evaluation
-
-Evaluate any Ollama model on the prepared dataset splits. Requires Ollama running locally and the package installed (`pip install -e .`).
+Run LLM evaluation from the repository root with explicit paths:
 
 ```bash
-cd llm_evaluation
-
-# Evaluate on the test split — output auto-named results/smollm2_135m_test_75.json
-python mc_eval.py --model smollm2:135m
-
-# Evaluate on a different split
-python mc_eval.py --model smollm2:135m --split train
-
-# Use a different model
-python mc_eval.py --model deepseek-r1:7b
-
-# Run only the first 10 questions (useful for quick testing)
-python mc_eval.py --model smollm2:135m --limit 10
-
-# Explicit output path overrides auto-naming
-python mc_eval.py --model smollm2:135m --output results/custom_name.json
+python llm_evaluation/mc_eval.py \
+  --model deepseek-r1:7b \
+  --backend ollama \
+  --data data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest data/processed/primary_split.json \
+  --config llm_evaluation/config.json
 ```
 
-Output files are auto-named as `results/<Model>_<Split>_<N>.json` (e.g. `deepseek-r1_7b_test_10.json`). Use `--output` to override.
-
-**Arguments:**
-| Argument | Default | Description |
-|----------|---------|-------------|
-| `--model` | (required) | Ollama model name (e.g. `smollm2:135m`, `deepseek-r1:7b`) |
-| `--output` | auto | Output JSON path (default: `results/<Model>_<Split>_<N>.json`) |
-| `--split` | `test` | Which split to evaluate: `train`, `validation`, or `test` |
-| `--limit` | all | Limit the number of questions to evaluate |
-| `--data` | `../data/processed/recipe_mpr_qa.jsonl` | Path to prepared dataset |
-| `--split-manifest` | `../data/processed/primary_split.json` | Path to split manifest |
-| `--config` | `config.json` | Path to Ollama config (URL, temperature) |
-
-**Outputs:** A JSON file with per-question results and accuracy metrics breakdown by query type.
-
-### Current Data Outputs
-
-- `data/processed/recipe_mpr_qa.jsonl`: canonical normalized dataset artifact
-- `data/processed/primary_split.json`: deterministic 70/15/15 split manifest
-- `data/processed/train_augmented.jsonl`: optional synthetic train-only artifact generated from the canonical dataset
-
-## Project Structure
-
-- `data/500QA.json`: raw Recipe-MPR dataset
-- `docs/spec.md`: current project foundation specification
-- `src/recipe_mpr_qa/data`: preparation, validation, splits, and loader interfaces
-- `src/recipe_mpr_qa/formats.py`: prompt formatting, response parsing, and prediction record schema
-- `src/recipe_mpr_qa/cli.py`: command-line entrypoints for dataset preparation and inspection
-- `llm_evaluation`: original Ollama-based evaluation helpers preserved from the initial repo
-- `tests`: regression coverage for the current implementation
-
-## Current Implementation
-
-- Canonical example schema with stable `example_id` values
-- Deterministic stratified split manifest
-- Optional training-only query augmentation artifact with conservative query rewrites
-- Tokenizer-ready option-scoring loader for query-option scoring workflows
-- Standardized multiple-choice prompt format and parser for LLM outputs
-- Canonical prediction record schema for consistent model outputs
-- CLI workflow for preparing, validating, inspecting, and exporting dataset artifacts
-
-## Interfaces And Contracts
-
-### Core Data Types
-
-- `RecipeExample`: one normalized Recipe-MPR question with five ordered options
-- `PreparedDataset`: validated collection of canonical examples
-- `SplitManifest`: deterministic train/validation/test partition
-- `OptionScoringExample`: one query-option pair for downstream scoring models
-- `PromptSpec`: shared multiple-choice prompt contract
-- `PredictionRecord`: canonical serialized output format for model predictions
-
-## Project Notes
-
-### Ownership
-
-- Pedram: data preparation, loading, and formatting foundation
-
-### Installation
+Run SLM fine-tuning with the canonical train split only:
 
 ```bash
-# Core package (includes requests, tqdm)
-pip install -e .
-
-# Development (adds pytest)
-pip install -e ".[dev]"
-
-# SLM experiments (adds torch, transformers, datasets, trl)
-pip install -e ".[slm]"
-
-# Fine-tuning with optional training augmentation
-python finetuning/finetune.py --augmented-train-path data/processed/train_augmented.jsonl
-
-# Results dashboard (adds streamlit, plotly)
-pip install -e ".[dashboard]"
-
-# Everything
-pip install -e ".[dev,slm,dashboard]"
+python finetuning/finetune.py
 ```
+
+Run SLM fine-tuning with the optional train-only augmentation artifact:
+
+```bash
+python finetuning/finetune.py \
+  --augmented-train-path data/processed/train_augmented.jsonl
+```
+
+## Documentation Map
+
+- [Docs Hub](docs/index.md)
+- [Project Overview](docs/project_overview.md)
+- [Technical Spec](docs/spec.md)
+- [Workflows](docs/workflows.md)
+- [Architecture](docs/architecture.md)
+- [Experiment Status](docs/experiments_status.md)
+
+## Repository Structure
+
+- `data/`: raw and generated dataset artifacts
+- `docs/`: project overview, technical contract, workflows, and status notes
+- `src/recipe_mpr_qa/`: canonical data, formatting, and CLI implementation
+- `llm_evaluation/`: evaluation scripts and result artifacts
+- `finetuning/`: SLM fine-tuning and related utilities
+- `outputs/`: saved training artifacts from prior runs
+- `tests/`: regression coverage for the current implementation
+
+## Current Caveat
+
+The committed evaluation JSON files under `llm_evaluation/results/` and the saved training artifacts under `outputs/` should be treated as provisional historical outputs, not final benchmark evidence. The benchmark logic changed materially after the answer-position leakage fix and parser hardening, so experiments should be rerun before any reported numbers are treated as authoritative.
