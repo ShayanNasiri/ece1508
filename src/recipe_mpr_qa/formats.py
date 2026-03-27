@@ -103,6 +103,7 @@ def parse_multiple_choice_response(
         return option_match.group(1)
 
     explicit_patterns = (
+        r"\\BOXED\{([A-E])\}",
         r"\b(?:FINAL\s+ANSWER|ANSWER|CORRECT\s+ANSWER|BEST\s+OPTION|BEST\s+MATCHING\s+RECIPE|PREDICTION|CHOICE)\s*(?:IS|:)?\s*\(?([A-E])\)?[\)\.\:\-]?(?=\s|$)",
         r"\b(?:I\s+CHOOSE|I\s+PICK|I\s+SELECT|CHOOSE|PICK|SELECT)\s+(?:OPTION\s*)?\(?([A-E])\)?(?=\b)",
         r"\b(?:MY\s+ANSWER|MY\s+CHOICE)\s*(?:IS|:)\s*\(?([A-E])\)?[\)\.\:\-]?(?=\s|$)",

@@ -92,16 +92,27 @@ class HFClient:
             )
 
         pipe = self._pipelines[model_name]
+
+        # Wrap in chat template if the tokenizer has one (required for Instruct models).
+        tokenizer = pipe.tokenizer
+        if getattr(tokenizer, "chat_template", None):
+            messages = [{"role": "user", "content": prompt}]
+            formatted = tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True,
+            )
+        else:
+            formatted = prompt
+
         gen_kwargs = {
-            "max_new_tokens": 256,
+            "max_new_tokens": 1024,
             "do_sample": temperature > 0,
         }
         if temperature > 0:
             gen_kwargs["temperature"] = temperature
 
-        result = pipe(prompt, **gen_kwargs)
+        result = pipe(formatted, **gen_kwargs)
         full_text = result[0]["generated_text"]
-        return full_text[len(prompt) :]
+        return full_text[len(formatted):]
 
     def _query_peft(self, adapter_path: str, prompt: str, temperature: float) -> str:
         if adapter_path not in self._peft_models:
