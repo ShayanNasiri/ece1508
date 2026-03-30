@@ -1,0 +1,77 @@
+When trained with params:
+
+model_name = HuggingFaceTB/SmolLM2-135M-Instruct
+num_train_epochs = 5
+learning_rate = 2e-4
+lora_r = 16
+lora_alpha = 32
+lora_dropout = 0.05
+completion_only_loss = true
+no augmentation
+
+
+- Train loss drops fast at the beginning, then gets stuck around 0.79-0.89
+- Validation loss stays very close to train loss
+- Mean token accuracy stays around 0.6
+- There is no strong train/val divergence
+
+
+This does not look like overfitting, it looks more like the model 
+learns the structure somewhat, then plateaus
+
+- Suggests some underfitting or optimization-limited training/insuffucient adaptation capacity
+
+So, we should look into:
+1. More optimization budget: does training longer help?
+2. More adaptation capacity: Does larger LoRA help?
+3. Method ablation
+
+Different runs:
+Run A (baseline):
+- Hypothesis: Should learn prompt/answer structure, but may not have enough
+optimization budget or adaptation capacity to fit recipe-MPR strongly
+
+Run B (optimization):
+- run with 10 epochs, learning rate 1e-4, warmup ratio 0.1
+- Keep LoRA the same 
+- Motivation: Baseline starts high and decays to almost zero after 5 epochs
+Since the model plateaus wihtout fitting the training set very well, a more gradual
+optimization schedule may help 
+- This run tests whether the model needs more training time, and it the baseline LR 
+schedule is too aggressive early and too dead late 
+- Hypothesis: Should reduce training and validation further, hopefully improve final accuracy
+, if run successfuly we can argue baseline is optimization limited
+
+
+Run C (adaptation):
+- Use same as B, but now:
+LoRA_r = 32, lora_alpha = 64, lora_dropout = 0.05
+- Motivation: If the baseline underfits because adapter capacity is too small, increasing LoRA rank
+should let the model adapt more strongly
+Hypothesis: Should lower training loss, maybe val loss as well, should improve downstream accuracy if baseline is capacity limited.
+However, risks overfitting if capacity becomes too large. 
+
+Run D (objective ablation):
+- run same setup as B, but completion_only_loss = false
+
+Right now, task target is just answer letter. With complete_only_loss = true,
+the model is trained only on predicting that completion. Intuitively this is a good match,
+but this will test if that assumption is actually correct
+
+Hypothesis: Should perform worse or no better than Run B, as the model will spend training effort reconstructing 
+prompt tokens rather than focusing entirely on the answer token, and recipe-MPR is fundamentally an answer-selection task
+
+
+Run E (adjusting):
+- If run C shows lower train loss but worse validation accuracy,
+we run with more regularization AND data augmentation in the train set. 
+
+num_train_epochs = 10
+learning_rate = 1e-4
+lora_r = 32
+lora_alpha = 64
+lora_dropout = 0.1
+weight_decay = 0.01
+completion_only_loss = true
+
+

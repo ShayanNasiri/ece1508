@@ -3,6 +3,7 @@
   "data_path": "C:\\Users\\Jagri\\Documents\\Github\\ece1508\\data\\processed\\recipe_mpr_qa.jsonl",
   "split_manifest_path": "C:\\Users\\Jagri\\Documents\\Github\\ece1508\\data\\processed\\primary_split.json",
   "output_dir": "C:\\Users\\Jagri\\Documents\\Github\\ece1508\\outputs\\smollm2_recipe_mpr",
+  "augmented_train_path": null,
   "seed": 42,
   "max_seq_length": 512,
   "num_train_epochs": 5,
