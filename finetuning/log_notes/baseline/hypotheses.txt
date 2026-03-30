@@ -75,3 +75,26 @@ weight_decay = 0.01
 completion_only_loss = true
 
 
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+Run & Capacity & Augmentation & Regularization & Train Loss & Val Loss & Key Observation \\ \hline
+
+A & Low & No & Low & $\sim 0.80$ & $\sim 0.81$ & Stable baseline \\ \hline
+
+B & Low & No & Low & $\sim 0.75$ & $\sim 0.81$ & Better convergence, similar generalization \\ \hline
+
+C & Medium & No & Low & $\sim 0.74$ & $\sim 0.80$ & Best generalization \\ \hline
+
+D & Medium & Yes & Low & $\sim 0.70$ & $\sim 0.88$ & Augmentation increases overfitting \\ \hline
+
+E & High & Yes & Low & $\sim 0.60$ & $\sim 0.90$ & Severe overfitting \\ \hline
+
+F & High & Yes & Medium & $\sim 0.63$ & $\sim 0.91$ & Dropout delays but does not prevent overfitting \\ \hline
+
+\end{tabular}
+\caption{Comparison of training configurations and observed behavior.}
+\end{table}
