@@ -2,31 +2,27 @@
 
 This page documents the main repository workflows using the current commands and repo-relative paths. Run commands from the repository root unless stated otherwise.
 
-For the technical contract behind these workflows, see the [Technical Spec](spec.md).
+For the artifact and interface contract behind these workflows, see the [Technical Spec](spec.md).
 
-## Installation
+## Installation And Runtime Expectations
 
-Install the base package:
+Install the base package first:
 
 ```bash
 pip install -e .
 ```
 
-Install development dependencies:
+That editable install is the expected prerequisite for:
+
+- `recipe-mpr-qa`
+- `python -m recipe_mpr_qa.cli`
+- imports from `src/recipe_mpr_qa/*`
+
+Optional extras:
 
 ```bash
 pip install -e ".[dev]"
-```
-
-Install the SLM stack:
-
-```bash
 pip install -e ".[slm]"
-```
-
-Install the optional MLOps extra:
-
-```bash
 pip install -e ".[mlops]"
 ```
 
@@ -36,13 +32,14 @@ Current extras from `pyproject.toml`:
 - `dev`: `pytest`
 - `slm`: `torch`, `transformers`, `accelerate`, `peft`, `datasets`, `trl`
 - `mlops`: `mlflow`
+- `dashboard`: declared extra only; no first-class workflow is documented yet
 
-## Canonical Data Preparation
+## Base Data Commands
 
-Create the canonical processed dataset and split manifest:
+Prepare the canonical processed dataset and split manifest:
 
 ```bash
-python -m recipe_mpr_qa.cli prepare-data \
+recipe-mpr-qa prepare-data \
   --input data/500QA.json \
   --output data/processed/recipe_mpr_qa.jsonl \
   --split-output data/processed/primary_split.json
@@ -51,7 +48,7 @@ python -m recipe_mpr_qa.cli prepare-data \
 Validate the raw dataset:
 
 ```bash
-python -m recipe_mpr_qa.cli validate-data \
+recipe-mpr-qa validate-data \
   --input data/500QA.json \
   --kind raw
 ```
@@ -59,7 +56,7 @@ python -m recipe_mpr_qa.cli validate-data \
 Validate the canonical processed dataset:
 
 ```bash
-python -m recipe_mpr_qa.cli validate-data \
+recipe-mpr-qa validate-data \
   --input data/processed/recipe_mpr_qa.jsonl \
   --kind prepared
 ```
@@ -67,17 +64,15 @@ python -m recipe_mpr_qa.cli validate-data \
 Print dataset metadata:
 
 ```bash
-python -m recipe_mpr_qa.cli dataset-stats \
+recipe-mpr-qa dataset-stats \
   --input data/processed/recipe_mpr_qa.jsonl \
   --kind prepared
 ```
 
-## Split Export
-
 Export one split from the committed split manifest:
 
 ```bash
-python -m recipe_mpr_qa.cli export-split \
+recipe-mpr-qa export-split \
   --dataset data/processed/recipe_mpr_qa.jsonl \
   --split-manifest data/processed/primary_split.json \
   --split train \
@@ -86,12 +81,12 @@ python -m recipe_mpr_qa.cli export-split \
 
 Valid split names are `train`, `validation`, and `test`.
 
-## Train-Only Augmentation
+## Legacy Train-Only Augmentation
 
 Create a train-only augmentation artifact:
 
 ```bash
-python -m recipe_mpr_qa.cli augment-train \
+recipe-mpr-qa augment-train \
   --dataset data/processed/recipe_mpr_qa.jsonl \
   --split-manifest data/processed/primary_split.json \
   --output data/processed/train_augmented.jsonl \
@@ -104,15 +99,123 @@ Current behavior:
 - selects only train parents from the split manifest
 - rewrites queries conservatively
 - preserves options, labels, query-type flags, and correctness explanations
-- writes only synthetic `RecipeExample` rows
+- writes only derived `RecipeExample` rows intended for training use
 
-The augmentation artifact is optional. If you do not pass it later, the rest of the pipeline remains unchanged.
+## Synthetic Data R&D Workflow
+
+The synthetic-data workflow is approval-gated and requires the OpenAI API.
+
+Preferred setup: create a repo-root `.env` file from `.env.example` and set the key there:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+The synthetic-data client will search for `.env` starting from the current working directory and walk upward through parent directories until it finds an `OPENAI_API_KEY`.
+
+PowerShell alternative for the current shell only:
+
+```powershell
+$env:OPENAI_API_KEY="your_openai_api_key_here"
+```
+
+### Query-only track
+
+Generate candidate queries from train parents:
+
+```bash
+recipe-mpr-qa generate-synthetic-query \
+  --dataset data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest data/processed/primary_split.json \
+  --output data/processed/synthetic/query_candidates.jsonl \
+  --limit 75 \
+  --max-candidates-per-parent 3
+```
+
+Review the candidates:
+
+```bash
+recipe-mpr-qa review-synthetic-query \
+  --input data/processed/synthetic/query_candidates.jsonl \
+  --dataset data/processed/recipe_mpr_qa.jsonl \
+  --output data/processed/synthetic/query_reviewed.jsonl
+```
+
+Approve the reviewed candidates:
+
+```bash
+recipe-mpr-qa approve-synthetic-query \
+  --input data/processed/synthetic/query_reviewed.jsonl \
+  --dataset data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest data/processed/primary_split.json \
+  --output data/processed/synthetic/query_approved.jsonl \
+  --approval-batch-id pilot-q
+```
+
+### Full-generation track
+
+Generate candidate full synthetic items from train seeds:
+
+```bash
+recipe-mpr-qa generate-synthetic-full \
+  --dataset data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest data/processed/primary_split.json \
+  --output data/processed/synthetic/full_candidates.jsonl \
+  --limit 40 \
+  --max-candidates-per-seed 1
+```
+
+Review the candidates:
+
+```bash
+recipe-mpr-qa review-synthetic-full \
+  --input data/processed/synthetic/full_candidates.jsonl \
+  --dataset data/processed/recipe_mpr_qa.jsonl \
+  --output data/processed/synthetic/full_reviewed.jsonl
+```
+
+Approve the reviewed candidates:
+
+```bash
+recipe-mpr-qa approve-synthetic-full \
+  --input data/processed/synthetic/full_reviewed.jsonl \
+  --dataset data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest data/processed/primary_split.json \
+  --output data/processed/synthetic/full_approved.jsonl \
+  --approval-batch-id pilot-f
+```
+
+### Training admission
+
+Build one train-ready synthetic artifact from approved sources:
+
+```bash
+recipe-mpr-qa build-synthetic-train \
+  --dataset data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest data/processed/primary_split.json \
+  --query-approved-path data/processed/synthetic/query_approved.jsonl \
+  --full-approved-path data/processed/synthetic/full_approved.jsonl \
+  --target-ratio 0.25 \
+  --full-share 0.30 \
+  --output data/processed/synthetic/train_synthetic_025.jsonl
+```
+
+Notes:
+
+- query-only and full-generation artifacts stay separate until this step
+- reviewed artifacts are not automatically training-eligible
+- `build-synthetic-train` is the only synthetic step that produces a file intended for fine-tuning
+- the command also supports explicit caps through `--max-query-examples` and `--max-full-examples`
 
 ## LLM Evaluation
 
-The repository contains a multiple-choice evaluation script in `llm_evaluation/mc_eval.py`.
+The public evaluation entrypoint is the repo-root wrapper:
 
-Run evaluation from the repository root with explicit paths:
+- `python llm_evaluation/mc_eval.py`
+
+That script wraps `src/recipe_mpr_qa/evaluation/mc_eval.py`.
+
+### Generative mode
 
 ```bash
 python llm_evaluation/mc_eval.py \
@@ -123,31 +226,7 @@ python llm_evaluation/mc_eval.py \
   --config llm_evaluation/config.json
 ```
 
-Evaluate a different split:
-
-```bash
-python llm_evaluation/mc_eval.py \
-  --model deepseek-r1:7b \
-  --backend ollama \
-  --data data/processed/recipe_mpr_qa.jsonl \
-  --split-manifest data/processed/primary_split.json \
-  --config llm_evaluation/config.json \
-  --split validation
-```
-
-Limit the run length:
-
-```bash
-python llm_evaluation/mc_eval.py \
-  --model deepseek-r1:7b \
-  --backend ollama \
-  --data data/processed/recipe_mpr_qa.jsonl \
-  --split-manifest data/processed/primary_split.json \
-  --config llm_evaluation/config.json \
-  --limit 10
-```
-
-Run with the Hugging Face backend:
+### Loglikelihood mode
 
 ```bash
 python llm_evaluation/mc_eval.py \
@@ -155,7 +234,8 @@ python llm_evaluation/mc_eval.py \
   --backend huggingface \
   --data data/processed/recipe_mpr_qa.jsonl \
   --split-manifest data/processed/primary_split.json \
-  --config llm_evaluation/config.json
+  --config llm_evaluation/config.json \
+  --eval-mode loglikelihood
 ```
 
 Notes:
@@ -163,12 +243,15 @@ Notes:
 - `--model` is required
 - default `--backend` is `ollama`
 - default `--split` is `test`
-- if `--output` is omitted, the script writes `results/<Model>_<Split>_<N>.json` relative to the current working directory
-- `llm_evaluation/config.json` currently carries the local Ollama URL and default temperature
+- `--eval-mode generative` is the default
+- `--eval-mode loglikelihood` requires `--backend huggingface`
+- if `--output` is omitted, results are written under `results/<Model>_<Split>_<N>.json` relative to the current working directory
 
 ## SLM Fine-Tuning
 
-The fine-tuning entrypoint is `finetuning/finetune.py`.
+The fine-tuning entrypoint is:
+
+- `python finetuning/finetune.py`
 
 Run with defaults:
 
@@ -184,24 +267,33 @@ python finetuning/finetune.py \
   --output-dir outputs/smollm2_recipe_mpr
 ```
 
-Include the optional train-only augmentation artifact:
+Include a train-only augmentation artifact:
 
 ```bash
 python finetuning/finetune.py \
   --augmented-train-path data/processed/train_augmented.jsonl
 ```
 
-Important current behavior:
+Use a reviewed train-ready synthetic artifact instead:
+
+```bash
+python finetuning/finetune.py \
+  --augmented-train-path data/processed/synthetic/train_query_pilot_ratio010.jsonl
+```
+
+Important behavior:
 
 - fine-tuning reads the canonical processed dataset and split manifest by default
 - `--augmented-train-path` appends extra examples only to the training split
 - validation and test splits remain unchanged
 - model-facing prompts use deterministic per-example option shuffling
-- the script trains a causal LM in prompt-completion form, where the completion is the correct answer letter
+- the script reads an existing derived artifact; it does not generate synthetic data automatically
 
 ## Tracked MLOps Wrappers
 
-The repository also exposes tracked wrappers through `recipe-mpr-qa`. These commands add run manifests, registries, and artifact lineage on top of the existing training and evaluation workflow without changing the direct scripts.
+The `recipe-mpr-qa` CLI also exposes tracked wrappers. These commands add run manifests, registries, and artifact lineage on top of the direct scripts.
+
+Unknown flags are forwarded to the underlying training or evaluation entrypoint, so wrapper-specific flags and downstream script flags can be combined in one command.
 
 Run a tracked training job:
 
@@ -211,6 +303,17 @@ recipe-mpr-qa run-train \
   --model-name HuggingFaceTB/SmolLM2-135M-Instruct \
   --data-path data/processed/recipe_mpr_qa.jsonl \
   --split-manifest-path data/processed/primary_split.json
+```
+
+Run a tracked training job that uses a train-ready synthetic artifact:
+
+```bash
+recipe-mpr-qa run-train \
+  --stage candidate \
+  --model-name HuggingFaceTB/SmolLM2-135M-Instruct \
+  --data-path data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest-path data/processed/primary_split.json \
+  --augmented-train-path data/processed/synthetic/train_query_pilot_ratio010.jsonl
 ```
 
 Run a tracked evaluation job:
@@ -225,56 +328,67 @@ recipe-mpr-qa run-eval \
   --config llm_evaluation/config.json
 ```
 
-List tracked runs:
-
-```bash
-recipe-mpr-qa list-runs
-```
-
-Compare tracked runs:
-
-```bash
-recipe-mpr-qa compare-runs --run-id train-... --run-id eval-...
-```
-
-Promote a tracked run:
-
-```bash
-recipe-mpr-qa promote-run --run-id train-... --stage validated
-```
-
-Optional MLflow mirroring:
+Run tracked evaluation in loglikelihood mode:
 
 ```bash
 recipe-mpr-qa run-eval \
-  --enable-mlflow \
-  --mlflow-experiment recipe-mpr-qa \
-  --backend ollama \
-  --model deepseek-r1:7b \
+  --stage baseline \
+  --backend huggingface \
+  --model HuggingFaceTB/SmolLM2-135M-Instruct \
+  --data data/processed/recipe_mpr_qa.jsonl \
+  --split-manifest data/processed/primary_split.json \
+  --config llm_evaluation/config.json \
+  --eval-mode loglikelihood
+```
+
+Evaluate a tracked fine-tuned model by linking to a parent training run:
+
+```bash
+recipe-mpr-qa run-eval \
+  --parent-run-id train-... \
+  --backend huggingface \
   --data data/processed/recipe_mpr_qa.jsonl \
   --split-manifest data/processed/primary_split.json \
   --config llm_evaluation/config.json
 ```
 
+Registry and comparison commands:
+
+```bash
+recipe-mpr-qa list-runs
+recipe-mpr-qa compare-runs --run-id train-... --run-id eval-...
+recipe-mpr-qa promote-run --run-id train-... --stage validated
+```
+
 ## Common Output Locations
 
-Source-of-truth artifacts:
+Stable source-of-truth artifacts:
 
 - `data/processed/recipe_mpr_qa.jsonl`
 - `data/processed/primary_split.json`
 
-Optional generated artifacts:
+Derived train-only artifacts:
 
 - `data/processed/train_augmented.jsonl`
-- `data/processed/train.jsonl`
+- `data/processed/synthetic/query_candidates*.jsonl`
+- `data/processed/synthetic/query_reviewed*.jsonl`
+- `data/processed/synthetic/query_approved*.jsonl`
+- `data/processed/synthetic/full_candidates*.jsonl`
+- `data/processed/synthetic/full_reviewed*.jsonl`
+- `data/processed/synthetic/full_approved*.jsonl`
+- `data/processed/synthetic/train_*.jsonl`
+
+Run artifacts and registries:
+
 - `llm_evaluation/results/*.json`
 - `mlops/runs/*/run_manifest.json`
 - `mlops/registry/runs.json`
 - `mlops/registry/models.json`
-- `outputs/smollm2_recipe_mpr/`
+- `outputs/*`
 
 Interpretation notes:
 
-- the canonical processed dataset and split manifest are the primary stable artifacts
-- augmentation output is derived and optional
-- evaluation results and training outputs are run artifacts and must be interpreted in light of the current experiment-status caveats
+- canonical processed data and the split manifest are the primary stable artifacts
+- augmentation output is optional derived training input
+- synthetic artifacts are derived, experimental, and review-gated
+- run artifacts are meaningful only in light of the current caveats documented in [Experiment Status](experiments_status.md)

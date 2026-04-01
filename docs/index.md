@@ -1,32 +1,41 @@
 # Documentation Hub
 
-This directory contains the canonical project documentation for Recipe-MPR QA. The root [README](../README.md) is the landing page; the pages here provide the deeper project, workflow, and technical detail.
+This directory contains the canonical project documentation for Recipe-MPR QA. The root [README](../README.md) is the landing page; the pages here divide ownership by purpose so the docs can stay aligned with the live repository.
 
 ## Read This First
 
 Read based on what you need:
 
-- New to the project: start with [Project Overview](project_overview.md)
-- Running the repo: go to [Workflows](workflows.md)
-- Understanding data contracts and artifact invariants: read [Technical Spec](spec.md)
-- Understanding how the codebase fits together: read [Architecture](architecture.md)
-- Understanding current benchmark caveats and recent fixes: read [Experiment Status](experiments_status.md)
-- Understanding tracked runs and registries: read [MLOps Layer](mlops.md)
+- New collaborator or evaluator: start with [Project Overview](project_overview.md)
+- Running commands and reproducing artifacts: go to [Workflows](workflows.md)
+- Understanding artifact invariants and public interfaces: read [Technical Spec](spec.md)
+- Understanding package boundaries and end-to-end flow: read [Architecture](architecture.md)
+- Understanding the live repo state and current caveats: read [Experiment Status](experiments_status.md)
+- Understanding the synthetic-data methodology and current pilot state: read [Synthetic Data R&D](synthetic_data.md)
+- Understanding tracked wrappers, registries, and lineage: read [MLOps Layer](mlops.md)
+- Understanding how the documentation set itself is being reconciled: read [Documentation Audit](documentation_audit.md)
 
-## Documentation Set
+## Canonical Page Ownership
 
-- [Project Overview](project_overview.md): project motivation, task definition, scope, and work completed so far
-- [Technical Spec](spec.md): canonical artifact contracts, core types, prompt behavior, parser expectations, and CLI contract
-- [Workflows](workflows.md): installation, data preparation, augmentation, evaluation, and fine-tuning commands
-- [Architecture](architecture.md): high-level data flow and module responsibilities
-- [Experiment Status](experiments_status.md): current state of the experiment stack, corrective changes, and important caveats
-- [MLOps Layer](mlops.md): tracked wrapper commands, local artifact layout, run registries, and optional MLflow mirroring
+- [Project Overview](project_overview.md): project motivation, task framing, implemented scope, support tiers, and current narrative
+- [Technical Spec](spec.md): artifact contracts, public types, evaluation modes, command surface, and invariants
+- [Workflows](workflows.md): install prerequisites, runnable commands, required environment setup, and output expectations
+- [Architecture](architecture.md): module responsibilities, data flow, wrapper boundaries, and package layout
+- [Experiment Status](experiments_status.md): live snapshot of repo state, synthetic pilot outcomes, and what remains unvalidated
+- [Synthetic Data R&D](synthetic_data.md): literature grounding, method rationale, artifact lifecycle, approval rules, and pilot interpretation
+- [MLOps Layer](mlops.md): tracked run commands, manifest/registry layout, lineage behavior, and MLflow mirroring
+- [Documentation Audit](documentation_audit.md): maintainer-facing reconciliation matrix between live code surfaces and documentation ownership
 
-## Historical Project Context
+## Canonical Vs Historical
 
-The proposal artifacts remain in the repository as historical course context:
+These pages are the current source of truth for repository behavior:
+
+- `README.md`
+- `docs/*.md`
+
+These files remain historical course context:
 
 - [Project Briefing PDF](project_briefing.pdf)
 - [Project Briefing TeX](project_briefing.tex)
 
-These proposal files are useful for the original framing, but they are not the main source of truth for the current repository behavior. For that, use the docs pages in this directory and the root README.
+The proposal/report artifacts are still useful for the original project framing, but they should not be treated as the authoritative description of the current repo. Use the Markdown docs and the live code for that.

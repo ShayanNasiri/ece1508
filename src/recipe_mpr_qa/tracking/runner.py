@@ -1,3 +1,10 @@
+"""Tracked wrappers around the direct training and evaluation entrypoints.
+
+These helpers do not implement separate modeling logic. They run the existing
+train/eval scripts, capture their inputs and outputs as artifact references,
+and persist run manifests plus optional MLflow mirrors.
+"""
+
 from __future__ import annotations
 
 import sys
@@ -28,6 +35,7 @@ def run_tracked_train(
     mlflow_tracking_uri: str | None = None,
     mlflow_experiment: str = "recipe-mpr-qa",
 ) -> RunManifest:
+    """Run fine-tuning and persist a tracked manifest for the resulting run."""
     from recipe_mpr_qa.slm.finetune import build_arg_parser, namespace_to_run_config, run_training_from_arg_list
 
     run_id = generate_run_id("train")
@@ -108,6 +116,7 @@ def run_tracked_eval(
     mlflow_tracking_uri: str | None = None,
     mlflow_experiment: str = "recipe-mpr-qa",
 ) -> RunManifest:
+    """Run evaluation and persist a tracked manifest for the resulting run."""
     from recipe_mpr_qa.evaluation.mc_eval import build_arg_parser, run_evaluation_from_arg_list
 
     run_id = generate_run_id("eval")

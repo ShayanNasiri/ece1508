@@ -64,6 +64,8 @@ This project studies whether a small language model (SLM) can be adapted to outp
 a five-way recipe recommendation question-answering task, while remaining lightweight enough for local inference. By the briefing deadline, the repository already contains a reproducible data pipeline, standardized prompt and evaluation utilities, a local general-LLM baseline through Ollama, and initial SmolLM2 prototyping for the small language model direction. The main focus so far has been to turn the project idea into a reliable
 experimental foundation rather than to report final numerical results.
 \end{abstract}
+
+\noindent\textbf{Historical note.} This briefing is retained as course context. The live repository has continued beyond this snapshot, including an experimental synthetic-data R\&D extension and tracked workflow wrappers, so the Markdown docs in \texttt{docs/} should be treated as the current source of truth for repository behavior.
 %
 %
 %
@@ -132,6 +134,8 @@ experimental foundation. The project repository can be found \href{https://githu
 \end{itemize}
 
 Up until this stage, the emphasis has been on establishing a sound and reproducible design rather than on final numerical experiments. The team now has the data, prompting, and local evaluation infrastructure needed to continue fine-tuning and systematic comparison in the final report.
+
+The next repository phase extends this foundation into a synthetic-data R\&D track. Importantly, this is not framed as automatic augmentation. Instead, the repository now supports both query-only synthetic generation and full synthetic multiple-choice generation as separate experimental capabilities, each with explicit provenance, review, approval, and training-admission stages. The current repository also contains initial pilot artifacts for both tracks, but those remain pre-training experimental outputs rather than final benchmark evidence. This lets the final report argue for, or argue against, synthetic data on methodological grounds rather than treating it as an assumed improvement.
 
 
 \end{document}

@@ -1,31 +1,31 @@
 # Recipe-MPR QA Technical Specification
 
-This document is the canonical technical contract for the repository. It defines the task artifacts, public data types, prompt and parsing behavior, and the invariants that the current codebase relies on.
+This document is the canonical technical contract for the repository. It defines the task artifacts, public data types, evaluation modes, command surface, and the invariants that the current codebase relies on.
 
-For project motivation and status, see [Project Overview](project_overview.md) and [Experiment Status](experiments_status.md).
+For project motivation and live status, see [Project Overview](project_overview.md) and [Experiment Status](experiments_status.md).
 
 ## Overview
 
 The repository studies Recipe-MPR as a five-way multiple-choice recipe recommendation task.
 
-- Raw dataset: `data/500QA.json`
-- Canonical processed dataset: `data/processed/recipe_mpr_qa.jsonl`
-- Canonical split manifest: `data/processed/primary_split.json`
-- Query-type flags: `Specific`, `Commonsense`, `Negated`, `Analogical`, `Temporal`
+- raw dataset: `data/500QA.json`
+- canonical processed dataset: `data/processed/recipe_mpr_qa.jsonl`
+- canonical split manifest: `data/processed/primary_split.json`
+- query-type flags: `Specific`, `Commonsense`, `Negated`, `Analogical`, `Temporal`
 
 Each example contains one user query, five candidate recipe options, and one correct option id.
 
-## Canonical Data Artifacts
+## Artifact Contracts
 
 ### Canonical processed dataset
 
 The canonical processed dataset is the normalized source-of-truth artifact used by the rest of the repository.
 
-- Path: `data/processed/recipe_mpr_qa.jsonl`
-- Format: JSONL, one `RecipeExample` per line
-- Source: derived from `data/500QA.json`
-- Size: 500 examples
-- Stable ids: `rmpr-0001` through `rmpr-0500`
+- path: `data/processed/recipe_mpr_qa.jsonl`
+- format: JSONL, one `RecipeExample` per line
+- source: derived from `data/500QA.json`
+- size: 500 examples
+- stable ids: `rmpr-0001` through `rmpr-0500`
 
 Normalization and preservation rules:
 
@@ -34,30 +34,30 @@ Normalization and preservation rules:
 - correctness explanations are preserved, including `<INFERRED>` markers
 - raw option ordering is preserved in the canonical processed dataset
 
-The canonical processed dataset is intentionally not rewritten to reflect model-facing prompt shuffling. It remains a stable representation of the source data.
+The canonical processed dataset is intentionally not rewritten to reflect model-facing prompt shuffling.
 
 ### Split manifest
 
 The split manifest is the shared train, validation, and test partition used throughout the project.
 
-- Path: `data/processed/primary_split.json`
-- Train: 350 examples
-- Validation: 75 examples
-- Test: 75 examples
-- Seed: `1508`
-- Strategy: stratified by query-type signature
+- path: `data/processed/primary_split.json`
+- train: 350 examples
+- validation: 75 examples
+- test: 75 examples
+- seed: `1508`
+- strategy: stratified by query-type signature
 
-The split manifest is the repo-wide contract. Evaluation and fine-tuning should not create ad hoc splits unless explicitly documented as auxiliary analysis.
+Evaluation and fine-tuning should not create ad hoc splits unless explicitly documented as auxiliary analysis.
 
 ### Train-only augmentation artifact
 
 The optional augmentation artifact reuses the `RecipeExample` schema and contains only synthetic training examples.
 
-- Example output path: `data/processed/train_augmented.jsonl`
-- Source: generated from train split parents in the canonical processed dataset
-- Scope: training only
-- Allowed changes: query rewrite only
-- Preserved fields: `options`, `answer_option_id`, `query_type_flags`, `correctness_explanation`
+- example output path: `data/processed/train_augmented.jsonl`
+- source: generated from train split parents in the canonical processed dataset
+- scope: training only
+- allowed changes: query rewrite only
+- preserved fields: `options`, `answer_option_id`, `query_type_flags`, `correctness_explanation`
 
 Augmented examples add provenance into `source_metadata`:
 
@@ -65,7 +65,82 @@ Augmented examples add provenance into `source_metadata`:
 - `augmentation_strategy`
 - `variant_index`
 
-Augmented example ids are unique synthetic ids such as `rmpr-0123-aug-01`.
+### Query-only synthetic artifacts
+
+The query-only synthetic workflow also reuses the `RecipeExample` schema, but it is stricter than the legacy augmentation path.
+
+- example paths:
+  - `data/processed/synthetic/query_candidates.jsonl`
+  - `data/processed/synthetic/query_reviewed.jsonl`
+  - `data/processed/synthetic/query_approved.jsonl`
+- scope: training only
+- allowed changes: query only
+- preserved fields: `options`, `answer_option_id`, `query_type_flags`, `correctness_explanation`
+
+Required provenance fields in `source_metadata`:
+
+- `synthetic_mode`
+- `generator_model`
+- `generation_prompt_version`
+- `approval_batch_id`
+- `review_status`
+- `review_scores`
+- `created_at`
+- `intended_query_type_target`
+- `parent_example_id`
+
+Lifecycle meaning:
+
+- candidate: generated but not reviewed
+- reviewed: scored and labeled by the review step
+- approved: reviewed and also admitted by repo-side filters
+
+Reviewed artifacts are not automatically training-eligible.
+
+### Full-generation synthetic artifacts
+
+The full-generation workflow uses a separate nested record schema because it creates new multiple-choice items rather than rewriting existing queries.
+
+- example paths:
+  - `data/processed/synthetic/full_candidates.jsonl`
+  - `data/processed/synthetic/full_reviewed.jsonl`
+  - `data/processed/synthetic/full_approved.jsonl`
+- each row stores:
+  - `recipe_example`
+  - `provenance`
+
+Required provenance fields:
+
+- `synthetic_mode`
+- `generator_model`
+- `generation_prompt_version`
+- `approval_batch_id`
+- `review_status`
+- `review_scores`
+- `created_at`
+- `intended_query_type_target`
+- `seed_example_ids`
+- `distractor_generation_method`
+- `distribution_fit_score`
+
+### Train-ready synthetic artifact
+
+The training-admission step materializes one train-only `RecipeExample` JSONL artifact that can be passed to fine-tuning.
+
+- example path: `data/processed/synthetic/train_synthetic_025.jsonl`
+- source: approved query-only artifacts, approved full-generation artifacts, or both
+- use: append only to the training split through `--augmented-train-path`
+
+This is the only synthetic output that should be handed to the training script.
+
+### Historical run artifacts
+
+These files exist in the repo but are not part of the stable task contract:
+
+- `llm_evaluation/results/*.json`
+- `outputs/*`
+
+They should be interpreted using the caveats in [Experiment Status](experiments_status.md).
 
 ## Public Data Types
 
@@ -76,7 +151,7 @@ Represents one candidate option inside a multiple-choice example.
 - `option_id`: string identifier from the raw dataset
 - `text`: option text
 
-Invariants:
+Invariant:
 
 - both fields must be non-empty strings
 
@@ -103,7 +178,7 @@ Invariants:
 
 ### `PreparedDataset`
 
-Represents a validated collection of canonical or augmented `RecipeExample` rows.
+Represents a validated collection of canonical or derived `RecipeExample` rows.
 
 - `examples`
 - `metadata`
@@ -111,6 +186,31 @@ Represents a validated collection of canonical or augmented `RecipeExample` rows
 Invariant:
 
 - example ids must be unique within the dataset
+
+### `SyntheticFullRecord`
+
+Represents one full-generation synthetic item plus its review provenance.
+
+- `recipe_example`
+- `provenance`
+
+Invariants:
+
+- `recipe_example` must satisfy the `RecipeExample` contract
+- `provenance.synthetic_mode` must be `full_generation`
+- `seed_example_ids` must be non-empty
+- `distribution_fit_score` must be null or a number between `0` and `1`
+
+### `SyntheticFullDataset`
+
+Represents a validated collection of `SyntheticFullRecord` rows.
+
+- `records`
+- `metadata`
+
+Invariant:
+
+- synthetic example ids must be unique within the dataset
 
 ### `SplitManifest`
 
@@ -169,7 +269,7 @@ Represents a normalized prediction output row for model runs.
 - `latency_ms`
 - `metadata`
 
-## Prompt And Parsing Contract
+## Prompt And Evaluation Contract
 
 ### Model-facing prompt
 
@@ -177,84 +277,150 @@ The model-facing prompt is built from `PromptSpec` and rendered through `build_m
 
 Key rules:
 
-- the prompt always presents exactly five answer letters, `A` through `E`
-- the canonical processed dataset keeps source ordering
-- model-facing prompts use deterministic per-example option shuffling when `shuffle_key` is provided
-- the fine-tuning and LLM evaluation paths pass `shuffle_key=example.example_id`
-
-This separation is intentional:
-
-- canonical processed data stays stable and faithful to source order
-- model-facing prompts avoid answer-position leakage by using reproducible shuffling
+- prompts present options as letters `A` through `E`
+- model-facing option order is shuffled deterministically per example
+- canonical dataset ordering is not mutated
+- the same prompt contract is shared between evaluation and fine-tuning
 
 ### Response parsing
 
-`parse_multiple_choice_response()` converts a raw model response into a choice letter when possible.
+The response parser is intentionally conservative.
 
-Current high-level behavior:
+Expected behavior:
 
-- accepts exact answer-only outputs like `A` or `Option C`
-- prefers explicit answer markers such as `Final answer: B`
-- allows a final trailing standalone letter when the response clearly ends with one
-- avoids treating chain-of-thought enumeration of multiple options as a valid answer by default
-- may fall back to a limited option-text overlap heuristic when option texts are provided
+- prefer clear answer signals over loose mentions
+- avoid over-crediting chain-of-thought outputs that enumerate several choices
+- return `None` when a defensible answer letter cannot be recovered
 
-The parser is designed to be conservative. Unclear outputs should fail to parse instead of being over-credited.
+### Evaluation modes
 
-## CLI Contract
+The public evaluation surface supports two modes:
 
-The repository CLI is implemented in `src/recipe_mpr_qa/cli.py` and exposed as `recipe-mpr-qa`.
+- `generative`
+- `loglikelihood`
 
-Supported commands:
+Mode contract:
+
+- `generative` queries the backend for text and parses an answer letter
+- `loglikelihood` scores answer letters directly and requires the Hugging Face backend
+- both modes share the same dataset, split, prompt, and answer-mapping contract
+
+## Public Command Surface
+
+The package CLI is implemented in `src/recipe_mpr_qa/cli.py` and exposed as `recipe-mpr-qa` after editable installation.
+
+The current public commands are:
 
 - `prepare-data`
 - `validate-data`
 - `dataset-stats`
 - `export-split`
 - `augment-train`
+- `generate-synthetic-query`
+- `review-synthetic-query`
+- `approve-synthetic-query`
+- `generate-synthetic-full`
+- `review-synthetic-full`
+- `approve-synthetic-full`
+- `build-synthetic-train`
 - `run-train`
 - `run-eval`
 - `list-runs`
 - `compare-runs`
 - `promote-run`
 
-Expected behavior:
+Command behavior summary:
 
 - `prepare-data` writes the canonical processed dataset and split manifest
-- `validate-data` validates either raw or prepared inputs
+- `validate-data` validates either raw or prepared data
 - `dataset-stats` prints dataset metadata
-- `export-split` writes one manifest-defined split to JSONL
-- `augment-train` writes a train-only augmentation artifact in `RecipeExample` format
+- `export-split` writes one split-specific JSONL artifact
+- `augment-train` writes a derived train-only query-rewrite artifact
+- `generate-synthetic-query` writes query-only synthetic candidates through the OpenAI API
+- `review-synthetic-query` adds structured review decisions to query-only candidates
+- `approve-synthetic-query` filters reviewed query-only candidates into an approved artifact
+- `generate-synthetic-full` writes full-generation synthetic candidates through the OpenAI API
+- `review-synthetic-full` adds structured review decisions to full-generation candidates
+- `approve-synthetic-full` filters reviewed full-generation candidates into an approved artifact
+- `build-synthetic-train` combines approved synthetic artifacts into a train-ready `RecipeExample` JSONL file
 - `run-train` wraps the existing fine-tuning path with tracked manifests and registries
 - `run-eval` wraps the existing evaluation path with tracked manifests and registries
 - `list-runs`, `compare-runs`, and `promote-run` operate on the local run registry under `mlops/`
 
-The CLI should remain dependency-light relative to the rest of the repo and should not require the SLM stack to prepare or inspect data artifacts.
+Tracked wrapper note:
 
-## Output Locations
+- `run-train` and `run-eval` forward unknown flags to the underlying training or evaluation script
 
-Important repo-relative output locations:
+## Runtime And Environment Contract
 
-- `data/processed/recipe_mpr_qa.jsonl`: canonical processed dataset
-- `data/processed/primary_split.json`: split manifest
-- `data/processed/train_augmented.jsonl`: optional train-only augmentation artifact
-- `llm_evaluation/results/`: evaluation JSON outputs
-- `mlops/runs/`: tracked run manifests and summaries
-- `mlops/registry/`: run and model registry files
-- `mlops/reports/`: optional comparison reports
-- `outputs/`: saved fine-tuning artifacts from prior runs
+### Editable install expectation
 
-## Testing Expectations
+These package-level commands expect an editable install first:
 
-The test suite should continue to cover the core repository contracts:
+- `recipe-mpr-qa`
+- `python -m recipe_mpr_qa.cli`
 
-- dataset validation failures
-- deterministic ids and split generation
-- split sizes, coverage, and disjointness
-- option-scoring expansion
-- prompt rendering and response parsing
-- prediction record serialization
-- CLI smoke behavior
-- augmentation provenance and train-only behavior
+### OpenAI environment loading
 
-The committed canonical processed dataset and split manifest should remain reproducible from the raw dataset and split seed.
+The synthetic-data client resolves the API key in this order:
+
+1. explicit `api_key` argument
+2. `OPENAI_API_KEY` from the process environment
+3. repo-local `.env` discovery through upward directory search
+
+The supported `.env` key name is:
+
+- `OPENAI_API_KEY`
+
+### Package extras
+
+Declared extras in `pyproject.toml`:
+
+- `dev`
+- `slm`
+- `mlops`
+- `dashboard`
+
+Current documentation support level:
+
+- `dev`, `slm`, and `mlops` are active documented extras
+- `dashboard` is currently packaging-only and does not have a first-class documented workflow
+
+## Key Output Locations
+
+Stable source-of-truth artifacts:
+
+- `data/processed/recipe_mpr_qa.jsonl`
+- `data/processed/primary_split.json`
+
+Derived artifacts:
+
+- `data/processed/train_augmented.jsonl`
+- `data/processed/synthetic/query_candidates*.jsonl`
+- `data/processed/synthetic/query_reviewed*.jsonl`
+- `data/processed/synthetic/query_approved*.jsonl`
+- `data/processed/synthetic/full_candidates*.jsonl`
+- `data/processed/synthetic/full_reviewed*.jsonl`
+- `data/processed/synthetic/full_approved*.jsonl`
+- `data/processed/synthetic/train_*.jsonl`
+
+Tracked artifacts:
+
+- `mlops/runs/*/run_manifest.json`
+- `mlops/registry/runs.json`
+- `mlops/registry/models.json`
+
+Historical outputs:
+
+- `llm_evaluation/results/*.json`
+- `outputs/*`
+
+## Current Regression Coverage
+
+The repo currently includes regression tests covering:
+
+- dataset preparation and validation behavior
+- prompt and parser behavior
+- synthetic provenance validation
+- synthetic candidate-to-approved-to-train-ready workflow behavior
+- tracked wrapper behavior and registry updates

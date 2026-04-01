@@ -1,38 +1,77 @@
 # Experiment Status
 
-This page documents the current state of the experiment stack and the main caveats that matter when interpreting the repository's outputs.
+This page documents the live state of the experiment stack and the main caveats that matter when interpreting repository outputs.
 
 For project framing, see [Project Overview](project_overview.md). For runnable commands, see [Workflows](workflows.md).
 
-## What Is Implemented
+## Live Snapshot
+
+Date of this snapshot: April 1, 2026.
 
 The repository currently supports these experiment surfaces:
 
-- canonical processed dataset preparation from the raw Recipe-MPR source
-- deterministic train, validation, and test split generation
-- standardized model-facing prompt rendering
-- response parsing back into answer letters
-- local LLM evaluation through `llm_evaluation/mc_eval.py`
-- SLM fine-tuning through `finetuning/finetune.py`
-- optional train-only query augmentation for the fine-tuning path
+- canonical processed dataset preparation and deterministic splits
+- standardized prompt rendering and conservative answer parsing
+- direct local LLM evaluation through `llm_evaluation/mc_eval.py`
+- direct SLM fine-tuning through `finetuning/finetune.py`
+- optional train-only rule-based augmentation
+- experimental dual-track synthetic-data generation, review, approval, and train-admission commands
+- optional tracked train/eval wrappers with run manifests and registries
 
-This means the project has a reproducible data and workflow foundation, plus runnable evaluation and fine-tuning entrypoints.
+## Current Support Tiers
 
-## Recent Corrective Changes
+- stable: canonical dataset, split manifest, prompt/parsing contract, direct evaluation, direct fine-tuning
+- optional but supported: `augment-train` and the tracked MLOps layer
+- implemented but experimental: synthetic-data generation and the pilot synthetic artifacts
+- historical only: committed old result JSON files, saved model outputs, and the proposal/report artifacts
 
-The benchmark path has already been tightened by several important fixes:
+## Synthetic Pilot Status
+
+The synthetic-data workflow is no longer hypothetical. The repo now contains pilot outputs under `data/processed/synthetic/`.
+
+Main pilot artifacts:
+
+- query-only:
+  - `query_candidates_pilot.jsonl`: 75
+  - `query_reviewed_pilot.jsonl`: 75
+  - `query_approved_pilot.jsonl`: 60
+  - `train_query_pilot_all.jsonl`: 60
+  - `train_query_pilot_ratio010.jsonl`: 35
+- full-generation:
+  - `full_candidates_pilot.jsonl`: 40
+  - `full_reviewed_pilot.jsonl`: 40
+  - `full_approved_pilot.jsonl`: 15
+  - `train_full_pilot_all.jsonl`: 15
+- mixed handoff:
+  - `train_mixed_pilot_all.jsonl`: 75
+
+Interpretation:
+
+- dual-track synthetic capability exists in code and has been exercised on real pilot runs
+- query-only currently has the stronger approval yield under the present gates
+- full-generation remains materially weaker and should still be treated as the riskier experimental track
+- no training or held-out evaluation conclusions have been drawn from these artifacts yet
+
+Smoke artifacts also exist in the same directory, but they are debugging/probing outputs and should not be treated as the main project narrative.
+
+## Recent Corrective Changes That Still Matter
 
 ### Answer-position leakage mitigation
 
-The canonical processed dataset still preserves source option ordering, but model-facing prompts now use deterministic per-example option shuffling in the evaluation and fine-tuning paths. This removes the earlier shortcut where the correct answer position could be learned from raw ordering.
+The canonical processed dataset still preserves source option ordering, but model-facing prompts now use deterministic per-example option shuffling in evaluation and fine-tuning paths. This removes the earlier shortcut where the correct answer position could be learned from raw ordering.
 
 ### Parser hardening
 
 The response parser now prefers explicit answer signals and is less willing to over-credit chain-of-thought outputs that merely enumerate options. This makes multiple-choice scoring more conservative and more defensible.
 
-### Optional train-only augmentation
+### Expanded evaluation surface
 
-The repo now supports a separate augmentation artifact that rewrites only training queries. This expands the SLM training input space without modifying the canonical processed dataset, split manifest, evaluation workflow, or default fine-tuning behavior.
+The evaluation stack now supports both:
+
+- `generative` mode
+- `loglikelihood` mode through the Hugging Face backend
+
+Any documentation or interpretation that treats generative parsing as the only evaluation mode is now stale.
 
 ## Current Caveats
 
@@ -44,21 +83,18 @@ The JSON outputs currently committed under `llm_evaluation/results/` should be t
 
 The artifacts under `outputs/` reflect prior training runs and should be interpreted the same way: useful as historical context, but not as final project evidence after the benchmark corrections.
 
-### Workflow is more trustworthy than the old numbers
+### Synthetic artifacts are experimental handoff material
 
-The repository should currently be read as:
+The pilot synthetic files are real repo outputs, but they are still pre-training artifacts. They establish that the workflow works and that the repo now has candidate training inputs for future study. They do not establish that synthetic data improves the task.
 
-- a reliable workflow and data foundation
-- a runnable evaluation and fine-tuning stack
-- a benchmark path that still requires fresh experiment runs for final reporting
+## What Still Requires Fresh Evidence
 
-## Known Interpretation Limits
+These points still matter for any final benchmark story:
 
-These points still matter when discussing experimental conclusions:
-
-- the canonical processed dataset intentionally preserves source ordering, so fairness depends on using the model-facing prompt path rather than inspecting raw option position
-- the current evaluation path still uses free-form generation plus answer parsing rather than direct option scoring
-- fine-tuning and evaluation commands are implemented and documented, but reproducible final benchmark claims require rerunning them after the recent fixes
+- benchmark numbers need reruns after the recent fairness and parser corrections
+- query-only synthetic data still requires training/eval evidence before adoption
+- full-generation synthetic data requires even stronger evidence because answer validity and distractor quality are higher-risk
+- mixed synthetic training should only be considered if both tracks survive individual evaluation
 
 ## Recommended Reading Of Repo Outputs
 
@@ -66,4 +102,5 @@ Treat the repository in this order:
 
 1. trust the canonical data artifacts, split manifest, code, and tests as the current source of truth
 2. trust the documented workflows as the current reproduction path
-3. treat committed result JSON files and saved model outputs as historical context until the experiments are rerun
+3. treat pilot synthetic artifacts as experimental handoff material for future training/eval
+4. treat committed result JSON files and saved model outputs as historical context until experiments are rerun
