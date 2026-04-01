@@ -207,6 +207,19 @@ Notes:
 - `build-synthetic-train` is the only synthetic step that produces a file intended for fine-tuning
 - the command also supports explicit caps through `--max-query-examples` and `--max-full-examples`
 
+Current checked-in handoff files:
+
+- `data/processed/synthetic/query_approved_merged.jsonl`
+- `data/processed/synthetic/full_approved_merged.jsonl`
+- `data/processed/synthetic/train_query_ratio025.jsonl`
+- `data/processed/synthetic/train_full_ratio010.jsonl`
+- `data/processed/synthetic/train_mixed_ratio025.jsonl`
+
+Important note for multi-batch synthetic work:
+
+- approved artifacts from different generation batches should not be concatenated blindly because synthetic example ids are currently batch-local
+- the checked-in `*_merged.jsonl` pools already resolve those collisions for the current repo state
+
 ## LLM Evaluation
 
 The public evaluation entrypoint is the repo-root wrapper:
@@ -278,7 +291,7 @@ Use a reviewed train-ready synthetic artifact instead:
 
 ```bash
 python finetuning/finetune.py \
-  --augmented-train-path data/processed/synthetic/train_query_pilot_ratio010.jsonl
+  --augmented-train-path data/processed/synthetic/train_query_ratio025.jsonl
 ```
 
 Important behavior:
@@ -313,7 +326,7 @@ recipe-mpr-qa run-train \
   --model-name HuggingFaceTB/SmolLM2-135M-Instruct \
   --data-path data/processed/recipe_mpr_qa.jsonl \
   --split-manifest-path data/processed/primary_split.json \
-  --augmented-train-path data/processed/synthetic/train_query_pilot_ratio010.jsonl
+  --augmented-train-path data/processed/synthetic/train_query_ratio025.jsonl
 ```
 
 Run a tracked evaluation job:

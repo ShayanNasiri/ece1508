@@ -188,9 +188,9 @@ Manual audit policy:
 - after pilot, inspect at least 25% of approved query-only items
 - after pilot, inspect at least 50% of approved full-generation items, with a floor of 25 items when available
 
-## Current Pilot State
+## Current Repo State
 
-The repo now contains real pilot artifacts under `data/processed/synthetic/`.
+The repo now contains real synthetic-data outputs under `data/processed/synthetic/`.
 
 As of April 1, 2026:
 
@@ -200,20 +200,45 @@ As of April 1, 2026:
   - `query_approved_pilot.jsonl`: 60
   - `train_query_pilot_all.jsonl`: 60
   - `train_query_pilot_ratio010.jsonl`: 35
+- query-only second pass:
+  - `query_candidates_pass2.jsonl`: 120
+  - `query_reviewed_pass2.jsonl`: 120
+  - `query_approved_pass2.jsonl`: 94
+- query-only merged approved pool:
+  - `query_approved_merged.jsonl`: 154
 - full-generation pilot:
   - `full_candidates_pilot.jsonl`: 40
   - `full_reviewed_pilot.jsonl`: 40
   - `full_approved_pilot.jsonl`: 15
   - `train_full_pilot_all.jsonl`: 15
+- full-generation second pass:
+  - `full_candidates_pass2.jsonl`: 53
+  - `full_reviewed_pass2.jsonl`: 53
+  - `full_approved_pass2.jsonl`: 24
+- full-generation merged approved pool:
+  - `full_approved_merged.jsonl`: 39
 - mixed train-ready pilot handoff:
   - `train_mixed_pilot_all.jsonl`: 75
+- validated ratio-target handoff artifacts:
+  - `train_query_ratio025.jsonl`: 88
+  - `train_full_ratio010.jsonl`: 35
+  - `train_mixed_ratio025.jsonl`: 88
+    - query-only share: 62
+    - full-generation share: 26
 
 Interpretation:
 
 - the workflow has been exercised with a real OpenAI-backed run
+- a second pass materially improved the available handoff pool
 - query-only currently has the stronger approval yield
 - full-generation remains the more fragile and more experimental path
 - these artifacts support future training and evaluation, but they do not establish usefulness yet
+
+Batch-merging note:
+
+- the current generator produces ids that are unique within a generation batch, but not automatically across multiple batches
+- the checked-in `*_merged.jsonl` approved pools already resolve those collisions and are the correct source files for downstream training handoff
+- before any future pass beyond the current merged pools, id generation should either be patched in code or a new merge/dedup step should be documented explicitly
 
 Smoke files in the same directory should be treated as debug/probing artifacts, not as the main pilot record.
 
@@ -325,6 +350,19 @@ Then pass the built training artifact into fine-tuning:
 ```bash
 python finetuning/finetune.py \
   --augmented-train-path data/processed/synthetic/train_synthetic_025.jsonl
+```
+
+Current checked-in handoff examples:
+
+```bash
+python finetuning/finetune.py \
+  --augmented-train-path data/processed/synthetic/train_query_ratio025.jsonl
+
+python finetuning/finetune.py \
+  --augmented-train-path data/processed/synthetic/train_full_ratio010.jsonl
+
+python finetuning/finetune.py \
+  --augmented-train-path data/processed/synthetic/train_mixed_ratio025.jsonl
 ```
 
 ## Reporting Expectations

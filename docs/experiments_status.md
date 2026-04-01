@@ -22,35 +22,45 @@ The repository currently supports these experiment surfaces:
 
 - stable: canonical dataset, split manifest, prompt/parsing contract, direct evaluation, direct fine-tuning
 - optional but supported: `augment-train` and the tracked MLOps layer
-- implemented but experimental: synthetic-data generation and the pilot synthetic artifacts
+- implemented but experimental: synthetic-data generation and the current synthetic handoff artifacts
 - historical only: committed old result JSON files, saved model outputs, and the proposal/report artifacts
 
-## Synthetic Pilot Status
+## Synthetic Data Status
 
-The synthetic-data workflow is no longer hypothetical. The repo now contains pilot outputs under `data/processed/synthetic/`.
+The synthetic-data workflow is no longer hypothetical. The repo now contains pilot outputs, second-pass outputs, merged approved pools, and train-ready ratio artifacts under `data/processed/synthetic/`.
 
-Main pilot artifacts:
+Current approved pools:
 
 - query-only:
-  - `query_candidates_pilot.jsonl`: 75
-  - `query_reviewed_pilot.jsonl`: 75
-  - `query_approved_pilot.jsonl`: 60
-  - `train_query_pilot_all.jsonl`: 60
-  - `train_query_pilot_ratio010.jsonl`: 35
+  - pilot approved: `60`
+  - second-pass approved: `94`
+  - merged approved pool: `154`
 - full-generation:
-  - `full_candidates_pilot.jsonl`: 40
-  - `full_reviewed_pilot.jsonl`: 40
-  - `full_approved_pilot.jsonl`: 15
-  - `train_full_pilot_all.jsonl`: 15
-- mixed handoff:
-  - `train_mixed_pilot_all.jsonl`: 75
+  - pilot approved: `15`
+  - second-pass approved: `24`
+  - merged approved pool: `39`
+
+Current validated train-ready handoff artifacts:
+
+- `train_query_ratio025.jsonl`: `88`
+- `train_full_ratio010.jsonl`: `35`
+- `train_mixed_ratio025.jsonl`: `88`
+  - query-only share: `62`
+  - full-generation share: `26`
 
 Interpretation:
 
-- dual-track synthetic capability exists in code and has been exercised on real pilot runs
-- query-only currently has the stronger approval yield under the present gates
+- dual-track synthetic capability exists in code and has been exercised on real runs
+- a second pass materially improved the handoff pool, especially for query-only
+- query-only still has the stronger approval yield under the present gates
 - full-generation remains materially weaker and should still be treated as the riskier experimental track
 - no training or held-out evaluation conclusions have been drawn from these artifacts yet
+
+Operational note:
+
+- the current generator produces ids that are unique within a batch, not automatically across batches
+- the checked-in merged approved pools already resolve those collisions and are the right source files for future multi-batch training handoff
+- future multi-batch generation should either reuse those merged pools or patch id generation before another expansion pass
 
 Smoke artifacts also exist in the same directory, but they are debugging/probing outputs and should not be treated as the main project narrative.
 
@@ -85,7 +95,7 @@ The artifacts under `outputs/` reflect prior training runs and should be interpr
 
 ### Synthetic artifacts are experimental handoff material
 
-The pilot synthetic files are real repo outputs, but they are still pre-training artifacts. They establish that the workflow works and that the repo now has candidate training inputs for future study. They do not establish that synthetic data improves the task.
+The synthetic files now checked into the repo are real handoff outputs, but they are still pre-training artifacts. They establish that the workflow works and that the repo now has candidate training inputs for future study. They do not establish that synthetic data improves the task.
 
 ## What Still Requires Fresh Evidence
 
@@ -102,5 +112,5 @@ Treat the repository in this order:
 
 1. trust the canonical data artifacts, split manifest, code, and tests as the current source of truth
 2. trust the documented workflows as the current reproduction path
-3. treat pilot synthetic artifacts as experimental handoff material for future training/eval
+3. treat the merged approved pools and train-ready synthetic artifacts as experimental handoff material for future training/eval
 4. treat committed result JSON files and saved model outputs as historical context until experiments are rerun

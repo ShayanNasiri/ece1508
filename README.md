@@ -21,7 +21,7 @@ Support levels in the current repo:
 
 - stable: canonical dataset, split manifest, prompt/parsing contract, direct evaluation and direct fine-tuning
 - optional but supported: train-only augmentation and tracked MLOps wrappers
-- implemented but experimental: synthetic-data generation and the pilot artifacts under `data/processed/synthetic/`
+- implemented but experimental: synthetic-data generation plus the current handoff artifacts under `data/processed/synthetic/`
 - historical only: old JSON result files under `llm_evaluation/results/`, saved model outputs under `outputs/`, and the proposal/report artifacts in `docs/`
 
 ## Quickstart
@@ -85,11 +85,11 @@ Run fine-tuning on the canonical train split only:
 python finetuning/finetune.py
 ```
 
-Use an existing train-only augmentation or approved synthetic artifact:
+Use an existing train-only augmentation or train-ready synthetic artifact:
 
 ```bash
 python finetuning/finetune.py \
-  --augmented-train-path data/processed/synthetic/train_query_pilot_ratio010.jsonl
+  --augmented-train-path data/processed/synthetic/train_query_ratio025.jsonl
 ```
 
 For the synthetic-data R&D workflow, see [docs/synthetic_data.md](docs/synthetic_data.md). That workflow requires an `OPENAI_API_KEY`, either in the shell environment or in a repo-root `.env` file. A template lives at [.env.example](.env.example).
@@ -102,15 +102,26 @@ pytest -q
 
 ## Current Experimental State
 
-The repo now contains real pilot synthetic artifacts under `data/processed/synthetic/`.
+The repo now contains real synthetic-data handoff artifacts under `data/processed/synthetic/`.
 
 As of April 1, 2026:
 
-- query-only pilot: 75 candidates, 75 reviewed, 60 approved
-- full-generation pilot: 40 candidates, 40 reviewed, 15 approved
-- train-ready pilot outputs exist for query-only, full-generation, and mixed handoff artifacts
+- pilot plus second-pass query-only approvals: `154` total approved
+- pilot plus second-pass full-generation approvals: `39` total approved
+- validated train-ready handoff artifacts now exist for:
+  - query-only `0.25`
+  - full-generation `0.10`
+  - mixed `0.25` at `70/30`
 
 Those files are useful for future training and evaluation handoff, but they are not benchmark evidence. No training or held-out evaluation conclusions have been drawn from them yet.
+
+The main handoff artifacts are:
+
+- `data/processed/synthetic/query_approved_merged.jsonl`
+- `data/processed/synthetic/full_approved_merged.jsonl`
+- `data/processed/synthetic/train_query_ratio025.jsonl`
+- `data/processed/synthetic/train_full_ratio010.jsonl`
+- `data/processed/synthetic/train_mixed_ratio025.jsonl`
 
 The old committed evaluation JSON files under `llm_evaluation/results/` and the saved training outputs under `outputs/` remain historical context only. The benchmark path changed materially after answer-position leakage mitigation and parser hardening, so any final benchmark claims still require fresh reruns.
 
