@@ -26,6 +26,20 @@ from recipe_mpr_qa.data.preparation import (
     write_prepared_dataset,
     write_split_manifest,
 )
+from recipe_mpr_qa.synthetic import (
+    DEFAULT_FULL_GENERATION_MODEL,
+    DEFAULT_FULL_REVIEW_MODEL,
+    DEFAULT_QUERY_GENERATION_MODEL,
+    DEFAULT_QUERY_REVIEW_MODEL,
+    OpenAIResponsesClient,
+    approve_synthetic_full_candidates,
+    approve_synthetic_query_candidates,
+    build_synthetic_training_artifact,
+    generate_synthetic_full_candidates,
+    generate_synthetic_query_candidates,
+    review_synthetic_full_candidates,
+    review_synthetic_query_candidates,
+)
 from recipe_mpr_qa.tracking import (
     DEFAULT_MLOPS_ROOT,
     build_run_comparison,
@@ -38,6 +52,10 @@ from recipe_mpr_qa.tracking import (
     write_comparison_report,
 )
 from recipe_mpr_qa.tracking.models import REGISTRY_STAGES, RUN_STATUSES, RUN_TYPES
+
+
+def _build_openai_client() -> OpenAIResponsesClient:
+    return OpenAIResponsesClient()
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -83,6 +101,94 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     augment_parser.add_argument("--output", type=Path, required=True)
     augment_parser.add_argument("--max-variants", type=int, default=2)
+
+    synthetic_query_generate_parser = subparsers.add_parser("generate-synthetic-query")
+    synthetic_query_generate_parser.add_argument(
+        "--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH
+    )
+    synthetic_query_generate_parser.add_argument(
+        "--split-manifest", type=Path, default=DEFAULT_SPLIT_MANIFEST_PATH
+    )
+    synthetic_query_generate_parser.add_argument("--output", type=Path, required=True)
+    synthetic_query_generate_parser.add_argument(
+        "--model", type=str, default=DEFAULT_QUERY_GENERATION_MODEL
+    )
+    synthetic_query_generate_parser.add_argument("--limit", type=int, default=75)
+    synthetic_query_generate_parser.add_argument("--max-candidates-per-parent", type=int, default=3)
+    synthetic_query_generate_parser.add_argument("--seed", type=int, default=DEFAULT_SPLIT_SEED)
+
+    synthetic_query_review_parser = subparsers.add_parser("review-synthetic-query")
+    synthetic_query_review_parser.add_argument("--input", type=Path, required=True)
+    synthetic_query_review_parser.add_argument(
+        "--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH
+    )
+    synthetic_query_review_parser.add_argument("--output", type=Path, required=True)
+    synthetic_query_review_parser.add_argument("--model", type=str, default=DEFAULT_QUERY_REVIEW_MODEL)
+
+    synthetic_query_approve_parser = subparsers.add_parser("approve-synthetic-query")
+    synthetic_query_approve_parser.add_argument("--input", type=Path, required=True)
+    synthetic_query_approve_parser.add_argument(
+        "--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH
+    )
+    synthetic_query_approve_parser.add_argument(
+        "--split-manifest", type=Path, default=DEFAULT_SPLIT_MANIFEST_PATH
+    )
+    synthetic_query_approve_parser.add_argument("--output", type=Path, required=True)
+    synthetic_query_approve_parser.add_argument("--approval-batch-id", required=True)
+    synthetic_query_approve_parser.add_argument("--max-examples", type=int, default=None)
+    synthetic_query_approve_parser.add_argument("--seed", type=int, default=DEFAULT_SPLIT_SEED)
+
+    synthetic_full_generate_parser = subparsers.add_parser("generate-synthetic-full")
+    synthetic_full_generate_parser.add_argument(
+        "--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH
+    )
+    synthetic_full_generate_parser.add_argument(
+        "--split-manifest", type=Path, default=DEFAULT_SPLIT_MANIFEST_PATH
+    )
+    synthetic_full_generate_parser.add_argument("--output", type=Path, required=True)
+    synthetic_full_generate_parser.add_argument(
+        "--model", type=str, default=DEFAULT_FULL_GENERATION_MODEL
+    )
+    synthetic_full_generate_parser.add_argument("--limit", type=int, default=40)
+    synthetic_full_generate_parser.add_argument("--max-candidates-per-seed", type=int, default=1)
+    synthetic_full_generate_parser.add_argument("--seed", type=int, default=DEFAULT_SPLIT_SEED)
+
+    synthetic_full_review_parser = subparsers.add_parser("review-synthetic-full")
+    synthetic_full_review_parser.add_argument("--input", type=Path, required=True)
+    synthetic_full_review_parser.add_argument(
+        "--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH
+    )
+    synthetic_full_review_parser.add_argument("--output", type=Path, required=True)
+    synthetic_full_review_parser.add_argument("--model", type=str, default=DEFAULT_FULL_REVIEW_MODEL)
+
+    synthetic_full_approve_parser = subparsers.add_parser("approve-synthetic-full")
+    synthetic_full_approve_parser.add_argument("--input", type=Path, required=True)
+    synthetic_full_approve_parser.add_argument(
+        "--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH
+    )
+    synthetic_full_approve_parser.add_argument(
+        "--split-manifest", type=Path, default=DEFAULT_SPLIT_MANIFEST_PATH
+    )
+    synthetic_full_approve_parser.add_argument("--output", type=Path, required=True)
+    synthetic_full_approve_parser.add_argument("--approval-batch-id", required=True)
+    synthetic_full_approve_parser.add_argument("--max-examples", type=int, default=None)
+    synthetic_full_approve_parser.add_argument("--seed", type=int, default=DEFAULT_SPLIT_SEED)
+
+    synthetic_build_parser = subparsers.add_parser("build-synthetic-train")
+    synthetic_build_parser.add_argument(
+        "--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH
+    )
+    synthetic_build_parser.add_argument(
+        "--split-manifest", type=Path, default=DEFAULT_SPLIT_MANIFEST_PATH
+    )
+    synthetic_build_parser.add_argument("--query-approved-path", type=Path, default=None)
+    synthetic_build_parser.add_argument("--full-approved-path", type=Path, default=None)
+    synthetic_build_parser.add_argument("--output", type=Path, required=True)
+    synthetic_build_parser.add_argument("--max-query-examples", type=int, default=None)
+    synthetic_build_parser.add_argument("--max-full-examples", type=int, default=None)
+    synthetic_build_parser.add_argument("--target-ratio", type=float, default=None)
+    synthetic_build_parser.add_argument("--full-share", type=float, default=0.0)
+    synthetic_build_parser.add_argument("--seed", type=int, default=DEFAULT_SPLIT_SEED)
 
     run_train_parser = subparsers.add_parser("run-train")
     run_train_parser.add_argument("--stage", choices=REGISTRY_STAGES, default="candidate")
@@ -193,6 +299,105 @@ def _command_augment_train(args: argparse.Namespace) -> int:
     return 0
 
 
+def _command_generate_synthetic_query(args: argparse.Namespace) -> int:
+    summary = generate_synthetic_query_candidates(
+        dataset_path=args.dataset,
+        split_manifest_path=args.split_manifest,
+        output_path=args.output,
+        client=_build_openai_client(),
+        model=args.model,
+        limit=args.limit,
+        max_candidates_per_parent=args.max_candidates_per_parent,
+        seed=args.seed,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
+def _command_review_synthetic_query(args: argparse.Namespace) -> int:
+    summary = review_synthetic_query_candidates(
+        input_path=args.input,
+        dataset_path=args.dataset,
+        output_path=args.output,
+        client=_build_openai_client(),
+        model=args.model,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
+def _command_approve_synthetic_query(args: argparse.Namespace) -> int:
+    summary = approve_synthetic_query_candidates(
+        input_path=args.input,
+        dataset_path=args.dataset,
+        split_manifest_path=args.split_manifest,
+        output_path=args.output,
+        approval_batch_id=args.approval_batch_id,
+        max_examples=args.max_examples,
+        seed=args.seed,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
+def _command_generate_synthetic_full(args: argparse.Namespace) -> int:
+    summary = generate_synthetic_full_candidates(
+        dataset_path=args.dataset,
+        split_manifest_path=args.split_manifest,
+        output_path=args.output,
+        client=_build_openai_client(),
+        model=args.model,
+        limit=args.limit,
+        max_candidates_per_seed=args.max_candidates_per_seed,
+        seed=args.seed,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
+def _command_review_synthetic_full(args: argparse.Namespace) -> int:
+    summary = review_synthetic_full_candidates(
+        input_path=args.input,
+        dataset_path=args.dataset,
+        output_path=args.output,
+        client=_build_openai_client(),
+        model=args.model,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
+def _command_approve_synthetic_full(args: argparse.Namespace) -> int:
+    summary = approve_synthetic_full_candidates(
+        input_path=args.input,
+        dataset_path=args.dataset,
+        split_manifest_path=args.split_manifest,
+        output_path=args.output,
+        approval_batch_id=args.approval_batch_id,
+        max_examples=args.max_examples,
+        seed=args.seed,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
+def _command_build_synthetic_train(args: argparse.Namespace) -> int:
+    summary = build_synthetic_training_artifact(
+        dataset_path=args.dataset,
+        split_manifest_path=args.split_manifest,
+        output_path=args.output,
+        query_approved_path=args.query_approved_path,
+        full_approved_path=args.full_approved_path,
+        max_query_examples=args.max_query_examples,
+        max_full_examples=args.max_full_examples,
+        target_ratio=args.target_ratio,
+        full_share=args.full_share,
+        seed=args.seed,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
 def _command_run_train(args: argparse.Namespace, script_args: Sequence[str]) -> int:
     manifest = run_tracked_train(
         script_args=script_args,
@@ -293,6 +498,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _command_export_split(args)
         if args.command == "augment-train":
             return _command_augment_train(args)
+        if args.command == "generate-synthetic-query":
+            return _command_generate_synthetic_query(args)
+        if args.command == "review-synthetic-query":
+            return _command_review_synthetic_query(args)
+        if args.command == "approve-synthetic-query":
+            return _command_approve_synthetic_query(args)
+        if args.command == "generate-synthetic-full":
+            return _command_generate_synthetic_full(args)
+        if args.command == "review-synthetic-full":
+            return _command_review_synthetic_full(args)
+        if args.command == "approve-synthetic-full":
+            return _command_approve_synthetic_full(args)
+        if args.command == "build-synthetic-train":
+            return _command_build_synthetic_train(args)
         if args.command == "run-train":
             return _command_run_train(args, script_args)
         if args.command == "run-eval":

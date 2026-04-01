@@ -13,6 +13,9 @@ __pycache__/
 venv/
 env/
 ENV/
+.env
+.env.*
+!.env.example
 
 # Build and packaging artifacts
 build/
@@ -42,6 +45,5 @@ Thumbs.db
 CLAUDE.md
 TODO.md
 finetuning/Training_Notes.md
-
 
 

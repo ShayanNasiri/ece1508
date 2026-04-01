@@ -116,9 +116,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         type=str,
         default=None,
         help=(
-            "Optional path to a pre-generated augmented train JSONL artifact in "
-            "RecipeExample format. This script reads an existing file; it does "
-            "not create augmentation automatically."
+            "Optional path to a pre-generated train-only synthetic JSONL artifact "
+            "in RecipeExample format. This can be the legacy rule-based augmentation "
+            "artifact or a reviewed synthetic artifact built through the synthetic "
+            "data workflow. The script reads an existing file; it does not create "
+            "synthetic data automatically."
         ),
     )
 
