@@ -12,6 +12,7 @@ enabled = false
 experiment_name = "recipe-mpr-qa"
 
 [judge]
+provider = "ollama"
 model_name = "llama3.1:8b"
 prompt_version = "recipe-mpr-judge-v1"
 temperature = 0.0

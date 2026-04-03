@@ -18,6 +18,10 @@ class RunLayout:
     judge_dir: Path
     checkpoints_dir: Path
     manifests_dir: Path
+    benchmark_dir: Path
+    reports_dir: Path
+    logs_dir: Path
+    slurm_dir: Path
 
     def component_metrics_path(self, component: str) -> Path:
         return self.run_dir / component / "metrics.json"
@@ -31,6 +35,15 @@ class RunLayout:
     def summary_path(self) -> Path:
         return self.manifests_dir / "run_summary.json"
 
+    def benchmark_manifest_path(self) -> Path:
+        return self.benchmark_dir / "benchmark_manifest.json"
+
+    def benchmark_registry_path(self) -> Path:
+        return self.root_dir / "registry.jsonl"
+
+    def benchmark_report_path(self, file_name: str = "benchmark_table.json") -> Path:
+        return self.reports_dir / file_name
+
 
 def ensure_run_layout(run_id: str, root_dir: Path | str = Path("artifacts/runs")) -> RunLayout:
     base_dir = Path(root_dir)
@@ -42,6 +55,10 @@ def ensure_run_layout(run_id: str, root_dir: Path | str = Path("artifacts/runs")
     judge_dir = run_dir / "judge"
     checkpoints_dir = slm_dir / "checkpoints"
     manifests_dir = run_dir / "manifests"
+    benchmark_dir = run_dir / "benchmark"
+    reports_dir = root_dir / "reports"
+    logs_dir = run_dir / "logs"
+    slurm_dir = run_dir / "slurm"
     for path in (
         run_dir,
         configs_dir,
@@ -51,6 +68,10 @@ def ensure_run_layout(run_id: str, root_dir: Path | str = Path("artifacts/runs")
         judge_dir,
         checkpoints_dir,
         manifests_dir,
+        benchmark_dir,
+        reports_dir,
+        logs_dir,
+        slurm_dir,
     ):
         path.mkdir(parents=True, exist_ok=True)
     return RunLayout(
@@ -64,6 +85,10 @@ def ensure_run_layout(run_id: str, root_dir: Path | str = Path("artifacts/runs")
         judge_dir=judge_dir,
         checkpoints_dir=checkpoints_dir,
         manifests_dir=manifests_dir,
+        benchmark_dir=benchmark_dir,
+        reports_dir=reports_dir,
+        logs_dir=logs_dir,
+        slurm_dir=slurm_dir,
     )
 
 

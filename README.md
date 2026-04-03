@@ -4,6 +4,8 @@ This repository implements an end-to-end experiment stack for comparing speciali
 
 The codebase is structured so the full workflow can be developed and validated locally, then executed on a GPU machine for actual experiments. That includes deterministic data preparation, augmentation artifact generation, DistilBERT baselines, SmolLM2-style causal SLM baselines, fine-tuning, Ollama inference, LLM-as-a-judge evaluation, and MLflow logging.
 
+The branch now also includes benchmark-governance infrastructure: deterministic per-example option shuffling for generative evaluation, richer prediction provenance, benchmark manifests and a registry, synthetic query candidate-review-approval admission, benchmark table generation, and Slurm script rendering.
+
 ## What Is In Scope
 
 - Canonical processed dataset and fixed split manifest
@@ -82,6 +84,12 @@ Run the SmolLM2-style causal SLM baseline:
 recipe-mpr-qa evaluate-slm --config configs/slm_smollm2_baseline.toml
 ```
 
+Run the same baseline in loglikelihood mode:
+
+```powershell
+recipe-mpr-qa evaluate-slm --config configs/slm_smollm2_baseline_loglikelihood.toml
+```
+
 Run the general LLM baseline:
 
 ```powershell
@@ -100,6 +108,22 @@ Run the non-training test suite:
 
 ```powershell
 pytest
+```
+
+Generate reviewed synthetic query candidates and build a train-ready synthetic artifact:
+
+```powershell
+recipe-mpr-qa generate-synthetic --output artifacts/synthetic/candidates.jsonl --model-name llama3.1:8b
+recipe-mpr-qa review-synthetic --input artifacts/synthetic/candidates.jsonl --reviewed-output artifacts/synthetic/reviewed.jsonl --review-predictions artifacts/synthetic/review_predictions.jsonl --model-name llama3.1:8b
+recipe-mpr-qa approve-synthetic --input artifacts/synthetic/reviewed.jsonl --output artifacts/synthetic/approved.jsonl --approval-batch-id batch-001
+recipe-mpr-qa build-train-ready --approved-input artifacts/synthetic/approved.jsonl --output artifacts/synthetic/train_query_ratio010.jsonl --manifest-output artifacts/synthetic/train_query_ratio010_manifest.json --synthetic-ratio 0.10
+```
+
+Render a Slurm launch script and aggregate completed benchmark rows:
+
+```powershell
+recipe-mpr-qa render-slurm --job-name smollm2-canary --command python -m recipe_mpr_qa.cli evaluate-slm --config configs/slm_smollm2_baseline.toml --output slurm/smollm2_canary.sbatch
+recipe-mpr-qa benchmark-table --root artifacts/runs --output artifacts/runs/reports/benchmark_table.json
 ```
 
 ## Repo Structure

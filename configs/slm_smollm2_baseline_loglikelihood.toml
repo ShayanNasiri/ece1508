@@ -1,5 +1,5 @@
 [output]
-run_id = "llm-baseline"
+run_id = "smollm2-baseline-loglikelihood"
 artifacts_root = "artifacts/runs"
 
 [data]
@@ -11,10 +11,12 @@ split = "test"
 enabled = false
 experiment_name = "recipe-mpr-qa"
 
-[llm]
-provider = "ollama"
-model_name = "llama3.1:8b"
-prompt_version = "recipe-mpr-mc-v2"
+[slm]
+mode = "causal_baseline"
+model_name = "HuggingFaceTB/SmolLM2-135M-Instruct"
+prompt_version = "recipe-mpr-chat-mc-v2"
+max_length = 512
+max_new_tokens = 8
 temperature = 0.0
-max_retries = 3
-resume = true
+top_p = 0.9
+decoding_mode = "loglikelihood"

@@ -13,6 +13,8 @@ from recipe_mpr_qa.data.constants import (
 VALID_SPLITS = {"train", "validation", "test"}
 VALID_SLM_MODES = {"vanilla", "finetune", "causal_baseline", "causal_finetune"}
 VALID_VERDICTS = {"correct", "partially_correct", "incorrect"}
+VALID_PROVIDERS = {"ollama", "huggingface"}
+VALID_DECODING_MODES = {"generate", "loglikelihood"}
 
 
 class ConfigError(ValueError):
@@ -167,27 +169,31 @@ class FineTuneConfig:
 @dataclass(frozen=True)
 class CausalBaselineConfig:
     model_name: str = "HuggingFaceTB/SmolLM2-135M-Instruct"
-    prompt_version: str = "recipe-mpr-chat-mc-v1"
+    prompt_version: str = "recipe-mpr-chat-mc-v2"
     max_length: int = 512
     max_new_tokens: int = 8
     temperature: float = 0.0
     top_p: float = 0.9
+    decoding_mode: str = "generate"
 
     def __post_init__(self) -> None:
         if self.max_length <= 0:
             raise ConfigError("max_length must be > 0")
         if self.max_new_tokens <= 0:
             raise ConfigError("max_new_tokens must be > 0")
+        if self.decoding_mode not in VALID_DECODING_MODES:
+            raise ConfigError(f"decoding_mode must be one of {sorted(VALID_DECODING_MODES)}")
 
 
 @dataclass(frozen=True)
 class CausalFineTuneConfig:
     model_name: str = "HuggingFaceTB/SmolLM2-135M-Instruct"
-    prompt_version: str = "recipe-mpr-chat-mc-v1"
+    prompt_version: str = "recipe-mpr-chat-mc-v2"
     max_length: int = 512
     max_new_tokens: int = 8
     temperature: float = 0.0
     top_p: float = 0.9
+    decoding_mode: str = "generate"
     learning_rate: float = 2e-4
     train_batch_size: int = 2
     eval_batch_size: int = 2
@@ -210,12 +216,15 @@ class CausalFineTuneConfig:
             raise ConfigError("num_train_epochs must be > 0")
         if self.lora_r <= 0 or self.lora_alpha <= 0:
             raise ConfigError("lora_r and lora_alpha must be > 0")
+        if self.decoding_mode not in VALID_DECODING_MODES:
+            raise ConfigError(f"decoding_mode must be one of {sorted(VALID_DECODING_MODES)}")
 
 
 @dataclass(frozen=True)
 class LLMRunConfig:
     model_name: str
-    prompt_version: str = "recipe-mpr-mc-v1"
+    provider: str = "ollama"
+    prompt_version: str = "recipe-mpr-mc-v2"
     temperature: float = 0.0
     max_retries: int = 3
     resume: bool = True
@@ -223,11 +232,14 @@ class LLMRunConfig:
     def __post_init__(self) -> None:
         if self.max_retries <= 0:
             raise ConfigError("max_retries must be > 0")
+        if self.provider not in VALID_PROVIDERS:
+            raise ConfigError(f"provider must be one of {sorted(VALID_PROVIDERS)}")
 
 
 @dataclass(frozen=True)
 class JudgeConfig:
     model_name: str
+    provider: str = "ollama"
     prompt_version: str = "recipe-mpr-judge-v1"
     temperature: float = 0.0
     max_retries: int = 3
@@ -239,6 +251,8 @@ class JudgeConfig:
             raise ConfigError("max_retries must be > 0")
         if set(self.verdict_labels) != VALID_VERDICTS:
             raise ConfigError(f"verdict_labels must equal {sorted(VALID_VERDICTS)}")
+        if self.provider not in VALID_PROVIDERS:
+            raise ConfigError(f"provider must be one of {sorted(VALID_PROVIDERS)}")
 
 
 @dataclass(frozen=True)
@@ -438,7 +452,7 @@ def load_slm_experiment_config(path: Path | str) -> SLMExperimentConfig:
             prompt_version=_coerce_str(
                 slm.get("prompt_version"),
                 name="slm.prompt_version",
-                default="recipe-mpr-chat-mc-v1",
+                default="recipe-mpr-chat-mc-v2",
             ),
             max_length=_coerce_int(slm.get("max_length"), name="slm.max_length", default=512),
             max_new_tokens=_coerce_int(
@@ -452,6 +466,11 @@ def load_slm_experiment_config(path: Path | str) -> SLMExperimentConfig:
                 default=0.0,
             ),
             top_p=_coerce_float(slm.get("top_p"), name="slm.top_p", default=0.9),
+            decoding_mode=_coerce_str(
+                slm.get("decoding_mode"),
+                name="slm.decoding_mode",
+                default="generate",
+            ),
         )
     elif mode == "causal_finetune":
         checkpoint_dir = slm.get("checkpoint_dir")
@@ -464,7 +483,7 @@ def load_slm_experiment_config(path: Path | str) -> SLMExperimentConfig:
             prompt_version=_coerce_str(
                 slm.get("prompt_version"),
                 name="slm.prompt_version",
-                default="recipe-mpr-chat-mc-v1",
+                default="recipe-mpr-chat-mc-v2",
             ),
             max_length=_coerce_int(slm.get("max_length"), name="slm.max_length", default=512),
             max_new_tokens=_coerce_int(
@@ -478,6 +497,11 @@ def load_slm_experiment_config(path: Path | str) -> SLMExperimentConfig:
                 default=0.0,
             ),
             top_p=_coerce_float(slm.get("top_p"), name="slm.top_p", default=0.9),
+            decoding_mode=_coerce_str(
+                slm.get("decoding_mode"),
+                name="slm.decoding_mode",
+                default="generate",
+            ),
             learning_rate=_coerce_float(
                 slm.get("learning_rate"),
                 name="slm.learning_rate",
@@ -541,10 +565,15 @@ def load_llm_experiment_config(path: Path | str) -> LLMExperimentConfig:
         tracking=_parse_tracking_config(payload),
         llm=LLMRunConfig(
             model_name=_coerce_str(llm.get("model_name"), name="llm.model_name"),
+            provider=_coerce_str(
+                llm.get("provider"),
+                name="llm.provider",
+                default="ollama",
+            ),
             prompt_version=_coerce_str(
                 llm.get("prompt_version"),
                 name="llm.prompt_version",
-                default="recipe-mpr-mc-v1",
+                default="recipe-mpr-mc-v2",
             ),
             temperature=_coerce_float(
                 llm.get("temperature"),
@@ -566,6 +595,11 @@ def load_judge_experiment_config(path: Path | str) -> JudgeExperimentConfig:
         tracking=_parse_tracking_config(payload),
         judge=JudgeConfig(
             model_name=_coerce_str(judge.get("model_name"), name="judge.model_name"),
+            provider=_coerce_str(
+                judge.get("provider"),
+                name="judge.provider",
+                default="ollama",
+            ),
             prompt_version=_coerce_str(
                 judge.get("prompt_version"),
                 name="judge.prompt_version",

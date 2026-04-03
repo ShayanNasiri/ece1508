@@ -2,11 +2,25 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from recipe_mpr_qa.artifacts import ensure_run_layout, write_json
+from recipe_mpr_qa.benchmark import (
+    SlurmJobSpec,
+    build_benchmark_contract,
+    build_benchmark_table_rows,
+    build_run_manifest,
+    collect_benchmark_manifests,
+    read_benchmark_registry,
+    register_benchmark_run,
+    render_sbatch_script,
+    summarize_registry_statuses,
+    write_benchmark_table,
+    write_run_manifest,
+)
 from recipe_mpr_qa.augmentation import (
     build_augmented_examples,
     read_augmented_dataset,
@@ -44,7 +58,8 @@ from recipe_mpr_qa.evaluation import (
     summarize_prediction_metrics,
     write_run_summary,
 )
-from recipe_mpr_qa.llm import OllamaClient, judge_predictions, run_llm_predictions
+from recipe_mpr_qa.llm import HFClient, OllamaClient, judge_predictions, run_llm_predictions
+from recipe_mpr_qa.llm.prompts import DEFAULT_PARSER_VERSION, OPTION_ORDER_SHUFFLE_SEED
 from recipe_mpr_qa.slm import (
     evaluate_causal_slm,
     evaluate_finetuned_model,
@@ -52,6 +67,12 @@ from recipe_mpr_qa.slm import (
     evaluate_vanilla_slm,
     train_causal_slm,
     train_finetuned_model,
+)
+from recipe_mpr_qa.synthetic import (
+    approve_synthetic_query_candidates,
+    build_train_ready_dataset,
+    generate_synthetic_query_candidates,
+    review_synthetic_query_candidates,
 )
 from recipe_mpr_qa.tracking.mlflow import ExperimentContext, MLflowLogger, build_mlflow_tags
 
@@ -117,6 +138,60 @@ def _build_parser() -> argparse.ArgumentParser:
     summary_parser.add_argument("--judgments", type=Path)
     summary_parser.add_argument("--output-dir", type=Path)
 
+    synthetic_generate_parser = subparsers.add_parser("generate-synthetic")
+    synthetic_generate_parser.add_argument("--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH)
+    synthetic_generate_parser.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT_MANIFEST_PATH)
+    synthetic_generate_parser.add_argument("--output", type=Path, required=True)
+    synthetic_generate_parser.add_argument("--provider", choices=("ollama", "huggingface"), default="ollama")
+    synthetic_generate_parser.add_argument("--model-name", required=True)
+    synthetic_generate_parser.add_argument("--parent-limit", type=int, default=75)
+    synthetic_generate_parser.add_argument("--variants-per-example", type=int, default=2)
+    synthetic_generate_parser.add_argument("--temperature", type=float, default=0.2)
+
+    synthetic_review_parser = subparsers.add_parser("review-synthetic")
+    synthetic_review_parser.add_argument("--input", type=Path, required=True)
+    synthetic_review_parser.add_argument("--reviewed-output", type=Path, required=True)
+    synthetic_review_parser.add_argument("--review-predictions", type=Path, required=True)
+    synthetic_review_parser.add_argument("--provider", choices=("ollama", "huggingface"), default="ollama")
+    synthetic_review_parser.add_argument("--model-name", required=True)
+    synthetic_review_parser.add_argument("--temperature", type=float, default=0.0)
+    synthetic_review_parser.add_argument("--resume", action="store_true")
+
+    synthetic_approve_parser = subparsers.add_parser("approve-synthetic")
+    synthetic_approve_parser.add_argument("--input", type=Path, required=True)
+    synthetic_approve_parser.add_argument("--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH)
+    synthetic_approve_parser.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT_MANIFEST_PATH)
+    synthetic_approve_parser.add_argument("--output", type=Path, required=True)
+    synthetic_approve_parser.add_argument("--approval-batch-id", required=True)
+    synthetic_approve_parser.add_argument("--max-examples", type=int)
+    synthetic_approve_parser.add_argument("--near-duplicate-threshold", type=float, default=0.95)
+
+    train_ready_parser = subparsers.add_parser("build-train-ready")
+    train_ready_parser.add_argument("--dataset", type=Path, default=DEFAULT_PROCESSED_DATASET_PATH)
+    train_ready_parser.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT_MANIFEST_PATH)
+    train_ready_parser.add_argument("--approved-input", type=Path, required=True)
+    train_ready_parser.add_argument("--output", type=Path, required=True)
+    train_ready_parser.add_argument("--manifest-output", type=Path, required=True)
+    train_ready_parser.add_argument("--synthetic-ratio", type=float, required=True)
+
+    benchmark_table_parser = subparsers.add_parser("benchmark-table")
+    benchmark_table_parser.add_argument("--root", type=Path, default=Path("artifacts/runs"))
+    benchmark_table_parser.add_argument("--output", type=Path, required=True)
+
+    benchmark_status_parser = subparsers.add_parser("benchmark-status")
+    benchmark_status_parser.add_argument("--registry", type=Path, default=Path("artifacts/runs/registry.jsonl"))
+
+    slurm_parser = subparsers.add_parser("render-slurm")
+    slurm_parser.add_argument("--job-name", required=True)
+    slurm_parser.add_argument("--command", dest="slurm_command", nargs="+", required=True)
+    slurm_parser.add_argument("--output", type=Path, required=True)
+    slurm_parser.add_argument("--partition", default="gpu")
+    slurm_parser.add_argument("--time-limit", default="04:00:00")
+    slurm_parser.add_argument("--gpus", type=int, default=1)
+    slurm_parser.add_argument("--cpus-per-task", type=int, default=4)
+    slurm_parser.add_argument("--mem-gb", type=int, default=32)
+    slurm_parser.add_argument("--workdir", type=Path)
+
     return parser
 
 
@@ -152,6 +227,71 @@ def _flatten_metrics(metrics: Mapping[str, Any], prefix: str = "") -> dict[str, 
         elif isinstance(value, (int, float)):
             flattened[full_key] = float(value)
     return flattened
+
+
+def _build_inference_client(provider: str, *, max_retries: int = 3):
+    if provider == "ollama":
+        return OllamaClient(max_retries=max_retries)
+    if provider == "huggingface":
+        return HFClient()
+    raise ValueError(f"Unsupported provider: {provider}")
+
+
+def _slurm_metadata_from_env() -> dict[str, Any]:
+    return {
+        key.lower(): value
+        for key, value in {
+            "job_id": os.environ.get("SLURM_JOB_ID"),
+            "array_job_id": os.environ.get("SLURM_ARRAY_JOB_ID"),
+            "array_task_id": os.environ.get("SLURM_ARRAY_TASK_ID"),
+        }.items()
+        if value
+    }
+
+
+def _write_benchmark_manifest(
+    *,
+    run_layout,
+    run_id: str,
+    component: str,
+    config_payload: Mapping[str, Any],
+    dataset_path: Path,
+    split_manifest_path: Path,
+    split: str | None,
+    prompt_version: str,
+    parser_version: str | None,
+    option_shuffle_strategy: str,
+    option_shuffle_seed: int | None,
+    model: Mapping[str, Any],
+    summary: Mapping[str, Any],
+    artifact_paths: Mapping[str, str],
+    notes: tuple[str, ...] = (),
+) -> None:
+    contract = build_benchmark_contract(
+        dataset_path=dataset_path,
+        split_manifest_path=split_manifest_path,
+        prompt_version=prompt_version,
+        parser_version=parser_version,
+        option_shuffle_seed=option_shuffle_seed,
+        option_shuffle_strategy=option_shuffle_strategy,
+        split_name=split,
+    )
+    manifest = build_run_manifest(
+        run_id=run_id,
+        component=component,
+        status="completed",
+        contract=contract,
+        dataset_path=dataset_path,
+        split_manifest_path=split_manifest_path,
+        config_payload=config_payload,
+        model=model,
+        artifact_paths={**artifact_paths, "summary": run_layout.summary_path().as_posix()},
+        metrics=summary.get("prediction_metrics", {}),
+        slurm=_slurm_metadata_from_env(),
+        notes=notes,
+    )
+    write_run_manifest(manifest, run_layout.benchmark_manifest_path())
+    register_benchmark_run(manifest, registry_path=run_layout.benchmark_registry_path())
 
 
 def _maybe_log_mlflow(*, tracking_config, context: ExperimentContext, summary: Mapping[str, Any]) -> None:
@@ -318,6 +458,8 @@ def _command_train_slm(args: argparse.Namespace) -> int:
         )
         model_name = config.finetune.model_name
         prompt_version = "distilbert-cross-encoder-v1"
+        decoding_mode = "pairwise_logits"
+        model_interface = "classifier"
         params = {
             "learning_rate": config.finetune.learning_rate,
             "num_train_epochs": config.finetune.num_train_epochs,
@@ -345,9 +487,12 @@ def _command_train_slm(args: argparse.Namespace) -> int:
             lora_r=config.causal_finetune.lora_r,
             lora_alpha=config.causal_finetune.lora_alpha,
             lora_dropout=config.causal_finetune.lora_dropout,
+            decoding_mode=config.causal_finetune.decoding_mode,
         )
         model_name = config.causal_finetune.model_name
         prompt_version = config.causal_finetune.prompt_version
+        decoding_mode = config.causal_finetune.decoding_mode
+        model_interface = "generative"
         params = {
             "learning_rate": config.causal_finetune.learning_rate,
             "num_train_epochs": config.causal_finetune.num_train_epochs,
@@ -376,12 +521,39 @@ def _command_train_slm(args: argparse.Namespace) -> int:
             "validation_predictions": (run_layout.slm_dir / "validation_predictions.jsonl").as_posix(),
             "test_predictions": (run_layout.slm_dir / "test_predictions.jsonl").as_posix(),
             "checkpoints": run_layout.checkpoints_dir.as_posix(),
+            "best_checkpoint": result.get("best_checkpoint_dir", run_layout.checkpoints_dir).as_posix(),
+            "checkpoint_manifest": (run_layout.slm_dir / "checkpoint_manifest.json").as_posix(),
             "metrics": metrics_path.as_posix(),
         },
         prediction_records=result["test_records"],
         extra_metadata={"validation_metrics": validation_metrics},
     )
     write_run_summary(summary, run_layout.summary_path())
+    _write_benchmark_manifest(
+        run_layout=run_layout,
+        run_id=config.output.run_id,
+        component="slm",
+        config_payload=config_to_dict(config),
+        dataset_path=config.data.dataset_path,
+        split_manifest_path=config.data.split_manifest_path,
+        split="test",
+        prompt_version=prompt_version,
+        parser_version=DEFAULT_PARSER_VERSION if model_interface == "generative" else None,
+        option_shuffle_strategy=(
+            "deterministic_per_example" if model_interface == "generative" else "not_applicable"
+        ),
+        option_shuffle_seed=OPTION_ORDER_SHUFFLE_SEED if model_interface == "generative" else None,
+        model={
+            "name": model_name,
+            "provider": "huggingface",
+            "interface": model_interface,
+            "decoding_mode": decoding_mode,
+            "train_data": "original+synthetic" if use_augmentation else "original_only",
+            "synthetic_policy": "query_only_or_legacy_augmentation" if use_augmentation else "none",
+        },
+        summary=summary,
+        artifact_paths=summary["artifact_paths"],
+    )
     _maybe_log_mlflow(
         tracking_config=config.tracking,
         context=ExperimentContext(
@@ -389,7 +561,7 @@ def _command_train_slm(args: argparse.Namespace) -> int:
             run_name=config.output.run_id,
             tags=build_mlflow_tags(
                 phase="phase2",
-                provider="slm",
+                provider="huggingface",
                 model_name=model_name,
                 split="test",
                 prompt_version=prompt_version,
@@ -429,6 +601,8 @@ def _command_evaluate_slm(args: argparse.Namespace) -> int:
         )
         model_name = config.vanilla.model_name
         prompt_version = config.vanilla.prompt_version
+        decoding_mode = "embedding_similarity"
+        model_interface = "classifier"
     elif config.mode == "finetune" and config.finetune is not None:
         checkpoint_dir = config.finetune.checkpoint_dir or run_layout.checkpoints_dir
         prediction_records = evaluate_finetuned_model(
@@ -442,6 +616,8 @@ def _command_evaluate_slm(args: argparse.Namespace) -> int:
         )
         model_name = config.finetune.model_name
         prompt_version = "distilbert-cross-encoder-v1"
+        decoding_mode = "pairwise_logits"
+        model_interface = "classifier"
     elif config.mode == "causal_baseline" and config.causal_baseline is not None:
         prediction_records = evaluate_causal_slm(
             examples=split_examples,
@@ -454,9 +630,12 @@ def _command_evaluate_slm(args: argparse.Namespace) -> int:
             max_new_tokens=config.causal_baseline.max_new_tokens,
             temperature=config.causal_baseline.temperature,
             top_p=config.causal_baseline.top_p,
+            decoding_mode=config.causal_baseline.decoding_mode,
         )
         model_name = config.causal_baseline.model_name
         prompt_version = config.causal_baseline.prompt_version
+        decoding_mode = config.causal_baseline.decoding_mode
+        model_interface = "generative"
     elif config.mode == "causal_finetune" and config.causal_finetune is not None:
         checkpoint_dir = config.causal_finetune.checkpoint_dir or run_layout.checkpoints_dir
         prediction_records = evaluate_finetuned_causal_model(
@@ -471,9 +650,12 @@ def _command_evaluate_slm(args: argparse.Namespace) -> int:
             max_new_tokens=config.causal_finetune.max_new_tokens,
             temperature=config.causal_finetune.temperature,
             top_p=config.causal_finetune.top_p,
+            decoding_mode=config.causal_finetune.decoding_mode,
         )
         model_name = config.causal_finetune.model_name
         prompt_version = config.causal_finetune.prompt_version
+        decoding_mode = config.causal_finetune.decoding_mode
+        model_interface = "generative"
     else:
         raise ConfigError("Invalid SLM config")
     metrics = summarize_prediction_metrics(prediction_records, dataset)
@@ -492,6 +674,31 @@ def _command_evaluate_slm(args: argparse.Namespace) -> int:
         prediction_records=prediction_records,
     )
     write_run_summary(summary, run_layout.summary_path())
+    _write_benchmark_manifest(
+        run_layout=run_layout,
+        run_id=config.output.run_id,
+        component="slm",
+        config_payload=config_to_dict(config),
+        dataset_path=config.data.dataset_path,
+        split_manifest_path=config.data.split_manifest_path,
+        split=split,
+        prompt_version=prompt_version,
+        parser_version=DEFAULT_PARSER_VERSION if model_interface == "generative" else None,
+        option_shuffle_strategy=(
+            "deterministic_per_example" if model_interface == "generative" else "not_applicable"
+        ),
+        option_shuffle_seed=OPTION_ORDER_SHUFFLE_SEED if model_interface == "generative" else None,
+        model={
+            "name": model_name,
+            "provider": "huggingface",
+            "interface": model_interface,
+            "decoding_mode": decoding_mode,
+            "train_data": "n/a",
+            "synthetic_policy": "n/a",
+        },
+        summary=summary,
+        artifact_paths=summary["artifact_paths"],
+    )
     _maybe_log_mlflow(
         tracking_config=config.tracking,
         context=ExperimentContext(
@@ -499,7 +706,7 @@ def _command_evaluate_slm(args: argparse.Namespace) -> int:
             run_name=config.output.run_id,
             tags=build_mlflow_tags(
                 phase="phase2",
-                provider="slm",
+                provider="huggingface",
                 model_name=model_name,
                 split=split,
                 prompt_version=prompt_version,
@@ -526,12 +733,12 @@ def _command_run_llm(args: argparse.Namespace) -> int:
     )
     config_path = _write_resolved_config(config, run_layout, "llm_config.json")
     output_path = run_layout.component_predictions_path("llm", split)
-    client = OllamaClient(max_retries=config.llm.max_retries)
+    client = _build_inference_client(config.llm.provider, max_retries=config.llm.max_retries)
     prediction_records = run_llm_predictions(
         examples=split_examples,
         client=client,
         run_id=config.output.run_id,
-        provider="ollama",
+        provider=config.llm.provider,
         model_name=config.llm.model_name,
         split=split,
         output_path=output_path,
@@ -555,6 +762,29 @@ def _command_run_llm(args: argparse.Namespace) -> int:
         prediction_records=prediction_records,
     )
     write_run_summary(summary, run_layout.summary_path())
+    _write_benchmark_manifest(
+        run_layout=run_layout,
+        run_id=config.output.run_id,
+        component="llm",
+        config_payload=config_to_dict(config),
+        dataset_path=config.data.dataset_path,
+        split_manifest_path=config.data.split_manifest_path,
+        split=split,
+        prompt_version=config.llm.prompt_version,
+        parser_version=DEFAULT_PARSER_VERSION,
+        option_shuffle_strategy="deterministic_per_example",
+        option_shuffle_seed=OPTION_ORDER_SHUFFLE_SEED,
+        model={
+            "name": config.llm.model_name,
+            "provider": config.llm.provider,
+            "interface": "generative",
+            "decoding_mode": "generate",
+            "train_data": "n/a",
+            "synthetic_policy": "n/a",
+        },
+        summary=summary,
+        artifact_paths=summary["artifact_paths"],
+    )
     _maybe_log_mlflow(
         tracking_config=config.tracking,
         context=ExperimentContext(
@@ -562,7 +792,7 @@ def _command_run_llm(args: argparse.Namespace) -> int:
             run_name=config.output.run_id,
             tags=build_mlflow_tags(
                 phase="phase3",
-                provider="ollama",
+                provider=config.llm.provider,
                 model_name=config.llm.model_name,
                 split=split,
                 prompt_version=config.llm.prompt_version,
@@ -588,7 +818,7 @@ def _command_judge_predictions(args: argparse.Namespace) -> int:
         predictions_path = run_layout.component_predictions_path("llm", config.data.split)
     prediction_records = read_prediction_records(predictions_path)
     output_path = run_layout.judge_dir / "judgments.jsonl"
-    client = OllamaClient(max_retries=config.judge.max_retries)
+    client = _build_inference_client(config.judge.provider, max_retries=config.judge.max_retries)
     judgment_records = judge_predictions(
         dataset=dataset,
         prediction_records=prediction_records,
@@ -596,6 +826,7 @@ def _command_judge_predictions(args: argparse.Namespace) -> int:
         run_id=config.output.run_id,
         model_name=config.judge.model_name,
         output_path=output_path,
+        provider=config.judge.provider,
         temperature=config.judge.temperature,
         resume=args.resume or config.judge.resume,
     )
@@ -617,6 +848,29 @@ def _command_judge_predictions(args: argparse.Namespace) -> int:
         judgment_records=judgment_records,
     )
     write_run_summary(summary, run_layout.summary_path())
+    _write_benchmark_manifest(
+        run_layout=run_layout,
+        run_id=config.output.run_id,
+        component="judge",
+        config_payload=config_to_dict(config),
+        dataset_path=config.data.dataset_path,
+        split_manifest_path=config.data.split_manifest_path,
+        split=config.data.split,
+        prompt_version=config.judge.prompt_version,
+        parser_version=None,
+        option_shuffle_strategy="not_applicable",
+        option_shuffle_seed=None,
+        model={
+            "name": config.judge.model_name,
+            "provider": config.judge.provider,
+            "interface": "judge",
+            "decoding_mode": "json",
+            "train_data": "n/a",
+            "synthetic_policy": "n/a",
+        },
+        summary=summary,
+        artifact_paths=summary["artifact_paths"],
+    )
     _maybe_log_mlflow(
         tracking_config=config.tracking,
         context=ExperimentContext(
@@ -624,7 +878,7 @@ def _command_judge_predictions(args: argparse.Namespace) -> int:
             run_name=config.output.run_id,
             tags=build_mlflow_tags(
                 phase="phase4",
-                provider="ollama",
+                provider=config.judge.provider,
                 model_name=config.judge.model_name,
                 split=config.data.split,
                 prompt_version=config.judge.prompt_version,
@@ -674,6 +928,108 @@ def _command_summarize_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _command_generate_synthetic(args: argparse.Namespace) -> int:
+    client = _build_inference_client(args.provider)
+    summary = generate_synthetic_query_candidates(
+        dataset_path=args.dataset,
+        split_manifest_path=args.split_manifest,
+        output_path=args.output,
+        client=client,
+        model_name=args.model_name,
+        parent_limit=args.parent_limit,
+        variants_per_example=args.variants_per_example,
+        temperature=args.temperature,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
+def _command_review_synthetic(args: argparse.Namespace) -> int:
+    client = _build_inference_client(args.provider)
+    summary = review_synthetic_query_candidates(
+        input_path=args.input,
+        reviewed_output_path=args.reviewed_output,
+        review_predictions_path=args.review_predictions,
+        reviewer_client=client,
+        reviewer_provider=args.provider,
+        reviewer_model_name=args.model_name,
+        temperature=args.temperature,
+        resume=args.resume,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
+def _command_approve_synthetic(args: argparse.Namespace) -> int:
+    summary = approve_synthetic_query_candidates(
+        input_path=args.input,
+        dataset_path=args.dataset,
+        split_manifest_path=args.split_manifest,
+        output_path=args.output,
+        approval_batch_id=args.approval_batch_id,
+        max_examples=args.max_examples,
+        near_duplicate_threshold=args.near_duplicate_threshold,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
+def _command_build_train_ready(args: argparse.Namespace) -> int:
+    summary = build_train_ready_dataset(
+        dataset_path=args.dataset,
+        split_manifest_path=args.split_manifest,
+        approved_input_path=args.approved_input,
+        output_path=args.output,
+        manifest_output_path=args.manifest_output,
+        synthetic_ratio=args.synthetic_ratio,
+    )
+    print(json.dumps(summary, ensure_ascii=True, indent=2))
+    return 0
+
+
+def _command_benchmark_table(args: argparse.Namespace) -> int:
+    manifests = collect_benchmark_manifests(args.root)
+    rows = build_benchmark_table_rows(manifests)
+    write_benchmark_table(rows, output_path=args.output)
+    print(f"Wrote {len(rows)} benchmark rows to {args.output.as_posix()}.")
+    return 0
+
+
+def _command_benchmark_status(args: argparse.Namespace) -> int:
+    manifests = read_benchmark_registry(args.registry)
+    print(
+        json.dumps(
+            {
+                "registry_path": args.registry.as_posix(),
+                "run_count": len(manifests),
+                "status_counts": summarize_registry_statuses(manifests),
+            },
+            ensure_ascii=True,
+            indent=2,
+        )
+    )
+    return 0
+
+
+def _command_render_slurm(args: argparse.Namespace) -> int:
+    spec = SlurmJobSpec(
+        job_name=args.job_name,
+        command=tuple(args.slurm_command),
+        partition=args.partition,
+        time_limit=args.time_limit,
+        gpus=args.gpus,
+        cpus_per_task=args.cpus_per_task,
+        mem_gb=args.mem_gb,
+        workdir=args.workdir.as_posix() if args.workdir is not None else None,
+        output_path=(args.output.parent / f"{args.job_name}.out").as_posix(),
+        error_path=(args.output.parent / f"{args.job_name}.err").as_posix(),
+    )
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(render_sbatch_script(spec), encoding="utf-8")
+    print(f"Wrote Slurm script to {args.output.as_posix()}.")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -698,6 +1054,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _command_judge_predictions(args)
         if args.command == "summarize-run":
             return _command_summarize_run(args)
+        if args.command == "generate-synthetic":
+            return _command_generate_synthetic(args)
+        if args.command == "review-synthetic":
+            return _command_review_synthetic(args)
+        if args.command == "approve-synthetic":
+            return _command_approve_synthetic(args)
+        if args.command == "build-train-ready":
+            return _command_build_train_ready(args)
+        if args.command == "benchmark-table":
+            return _command_benchmark_table(args)
+        if args.command == "benchmark-status":
+            return _command_benchmark_status(args)
+        if args.command == "render-slurm":
+            return _command_render_slurm(args)
     except (
         ConfigError,
         DatasetValidationError,
