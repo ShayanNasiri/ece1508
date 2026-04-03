@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from recipe_mpr_qa.benchmark.provenance import BENCHMARK_CONTRACT_VERSION
 from recipe_mpr_qa.data.loaders import build_option_scoring_examples
 from recipe_mpr_qa.data.models import RecipeExample
+from recipe_mpr_qa.evaluation.metrics import summarize_prediction_metrics
 from recipe_mpr_qa.evaluation.records import PredictionRecord, write_prediction_records
 
 
@@ -107,6 +110,10 @@ def _prediction_records_from_logits(
                 gold_option_id=example.answer_option_id,
                 is_correct=predicted_option_id == example.answer_option_id,
                 latency_ms=None,
+                model_interface="classifier",
+                decoding_mode="pairwise_logits",
+                parse_status="not_applicable",
+                contract_version=BENCHMARK_CONTRACT_VERSION,
                 metadata={
                     "option_scores": [
                         {"option_index": index, "option_id": option_id, "score": score}
@@ -207,34 +214,50 @@ def train_finetuned_model(
     trainer.train()
     trainer.save_model(checkpoint_dir.as_posix())
     tokenizer.save_pretrained(checkpoint_dir.as_posix())
-    validation_output = trainer.predict(_RowDataset(validation_rows))
-    validation_records = _prediction_records_from_logits(
-        logits=validation_output.predictions,
-        metadata=validation_meta,
+    best_checkpoint_dir, checkpoint_scores = _select_best_finetune_checkpoint(
+        checkpoint_root=checkpoint_dir,
+        validation_examples=validation_examples,
+        run_id=run_id,
+        model_name=model_name,
+        max_length=max_length,
+    )
+    validation_records = evaluate_finetuned_model(
         examples=validation_examples,
         run_id=run_id,
-        model_name=model_name,
         split="validation",
+        checkpoint_dir=best_checkpoint_dir,
+        output_path=checkpoint_dir.parent / "validation_predictions.jsonl",
+        model_name=model_name,
+        max_length=max_length,
     )
-    write_prediction_records(
-        validation_records,
-        checkpoint_dir.parent / "validation_predictions.jsonl",
-    )
-    test_output = trainer.predict(_RowDataset(test_rows))
-    test_records = _prediction_records_from_logits(
-        logits=test_output.predictions,
-        metadata=test_meta,
+    test_records = evaluate_finetuned_model(
         examples=test_examples,
         run_id=run_id,
-        model_name=model_name,
         split="test",
+        checkpoint_dir=best_checkpoint_dir,
+        output_path=checkpoint_dir.parent / "test_predictions.jsonl",
+        model_name=model_name,
+        max_length=max_length,
     )
-    write_prediction_records(test_records, checkpoint_dir.parent / "test_predictions.jsonl")
+    (checkpoint_dir.parent / "checkpoint_manifest.json").write_text(
+        json.dumps(
+            {
+                "best_checkpoint_dir": best_checkpoint_dir.as_posix(),
+                "checkpoints": checkpoint_scores,
+            },
+            ensure_ascii=True,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     return {
         "trainer": trainer,
         "validation_records": validation_records,
         "test_records": test_records,
         "checkpoint_dir": checkpoint_dir,
+        "best_checkpoint_dir": best_checkpoint_dir,
+        "checkpoint_scores": checkpoint_scores,
     }
 
 
@@ -244,7 +267,7 @@ def evaluate_finetuned_model(
     run_id: str,
     split: str,
     checkpoint_dir: Path | str,
-    output_path: Path | str,
+    output_path: Path | str | None,
     model_name: str = "distilbert-base-uncased",
     max_length: int = 128,
 ):
@@ -256,7 +279,8 @@ def evaluate_finetuned_model(
         TrainingArguments,
     ) = _require_transformers()
     checkpoint_dir = Path(checkpoint_dir)
-    tokenizer = AutoTokenizer.from_pretrained(checkpoint_dir.as_posix())
+    tokenizer_source = _resolve_tokenizer_source(checkpoint_dir, model_name=model_name)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_source)
     model = AutoModelForSequenceClassification.from_pretrained(checkpoint_dir.as_posix())
     rows, metadata = _build_rows(examples, tokenizer, max_length=max_length)
     trainer = Trainer(
@@ -283,7 +307,8 @@ def evaluate_finetuned_model(
         model_name=model_name,
         split=split,
     )
-    write_prediction_records(records, output_path)
+    if output_path is not None:
+        write_prediction_records(records, output_path)
     return records
 
 
@@ -295,3 +320,64 @@ def _add_eval_strategy_kwargs(training_arguments_cls, kwargs: Mapping[str, Any])
     elif "eval_strategy" in init_parameters:
         resolved["eval_strategy"] = "epoch"
     return resolved
+
+
+def _resolve_tokenizer_source(checkpoint_dir: Path, *, model_name: str) -> str:
+    for candidate in (checkpoint_dir, checkpoint_dir.parent):
+        if any((candidate / file_name).exists() for file_name in ("tokenizer.json", "tokenizer_config.json")):
+            return candidate.as_posix()
+    return model_name
+
+
+def _list_checkpoint_dirs(checkpoint_root: Path) -> list[Path]:
+    checkpoint_dirs = [
+        path
+        for path in checkpoint_root.iterdir()
+        if path.is_dir() and path.name.startswith("checkpoint-")
+    ] if checkpoint_root.exists() else []
+    def sort_key(path: Path) -> tuple[int, str]:
+        suffix = path.name.split("-", 1)[-1]
+        return (int(suffix) if suffix.isdigit() else -1, path.name)
+    ordered = sorted(checkpoint_dirs, key=sort_key)
+    if checkpoint_root.exists():
+        ordered.append(checkpoint_root)
+    return ordered or [checkpoint_root]
+
+
+def _select_best_finetune_checkpoint(
+    *,
+    checkpoint_root: Path,
+    validation_examples: Sequence[RecipeExample],
+    run_id: str,
+    model_name: str,
+    max_length: int,
+) -> tuple[Path, list[dict[str, Any]]]:
+    checkpoint_scores: list[dict[str, Any]] = []
+    best_checkpoint_dir = checkpoint_root
+    best_accuracy = float("-inf")
+    for checkpoint_dir in _list_checkpoint_dirs(checkpoint_root):
+        records = evaluate_finetuned_model(
+            examples=validation_examples,
+            run_id=run_id,
+            split="validation",
+            checkpoint_dir=checkpoint_dir,
+            output_path=None,
+            model_name=model_name,
+            max_length=max_length,
+        )
+        metrics = summarize_prediction_metrics(
+            records,
+            type("Dataset", (), {"examples": tuple(validation_examples)})(),
+        )
+        checkpoint_scores.append(
+            {
+                "checkpoint_dir": checkpoint_dir.as_posix(),
+                "accuracy": metrics["accuracy"],
+                "correct_count": metrics["correct_count"],
+                "parse_failure_count": metrics["parse_failure_count"],
+            }
+        )
+        if metrics["accuracy"] > best_accuracy:
+            best_accuracy = metrics["accuracy"]
+            best_checkpoint_dir = checkpoint_dir
+    return best_checkpoint_dir, checkpoint_scores

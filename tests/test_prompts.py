@@ -7,6 +7,7 @@ import pytest
 from recipe_mpr_qa.data.models import RecipeOption
 from recipe_mpr_qa.llm.prompts import (
     build_augmentation_prompt,
+    benchmark_prompt_metadata,
     build_causal_multiple_choice_prompt,
     build_judge_prompt,
     DEFAULT_PROMPT_SPEC,
@@ -17,6 +18,7 @@ from recipe_mpr_qa.llm.prompts import (
     parse_augmentation_response,
     parse_judge_response,
     parse_multiple_choice_response,
+    parse_multiple_choice_response_detail,
 )
 from recipe_mpr_qa.data.preparation import read_prepared_dataset
 
@@ -53,6 +55,35 @@ def test_build_multiple_choice_prompt_renders_expected_format() -> None:
     }
 
 
+def test_build_multiple_choice_prompt_supports_deterministic_shuffle() -> None:
+    options = (
+        RecipeOption("id-a", "Option A"),
+        RecipeOption("id-b", "Option B"),
+        RecipeOption("id-c", "Option C"),
+        RecipeOption("id-d", "Option D"),
+        RecipeOption("id-e", "Option E"),
+    )
+    metadata = benchmark_prompt_metadata(example_id="rmpr-0001", prompt_version=DEFAULT_PROMPT_SPEC.version)
+
+    _prompt_a, mapping_a = build_multiple_choice_prompt(
+        query="Need a roasted fish recipe",
+        options=options,
+        prompt_spec=DEFAULT_PROMPT_SPEC,
+        shuffle_key=metadata["shuffle_key"],
+        shuffle_seed=metadata["shuffle_seed"],
+    )
+    _prompt_b, mapping_b = build_multiple_choice_prompt(
+        query="Need a roasted fish recipe",
+        options=options,
+        prompt_spec=DEFAULT_PROMPT_SPEC,
+        shuffle_key=metadata["shuffle_key"],
+        shuffle_seed=metadata["shuffle_seed"],
+    )
+
+    assert mapping_a == mapping_b
+    assert set(mapping_a.values()) == {"id-a", "id-b", "id-c", "id-d", "id-e"}
+
+
 @pytest.mark.parametrize(
     ("response_text", "expected"),
     [
@@ -69,6 +100,13 @@ def test_parse_multiple_choice_response_handles_noisy_output(
     response_text: str, expected: str | None
 ) -> None:
     assert parse_multiple_choice_response(response_text) == expected
+
+
+def test_parse_multiple_choice_response_marks_ambiguous_outputs() -> None:
+    parsed = parse_multiple_choice_response_detail("I think A or B could work")
+
+    assert parsed.parsed_choice is None
+    assert parsed.status == "ambiguous"
 
 
 def test_augmentation_prompt_and_parser_round_trip() -> None:

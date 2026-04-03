@@ -21,6 +21,13 @@ class PredictionRecord:
     gold_option_id: str
     is_correct: bool
     latency_ms: float | None
+    model_interface: str = "unknown"
+    decoding_mode: str | None = None
+    parse_status: str | None = None
+    contract_version: str | None = None
+    parser_version: str | None = None
+    shuffle_key: str | None = None
+    shuffle_seed: int | None = None
     response_rationale: str | None = None
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
@@ -39,6 +46,13 @@ class PredictionRecord:
             "gold_option_id": self.gold_option_id,
             "is_correct": self.is_correct,
             "latency_ms": self.latency_ms,
+            "model_interface": self.model_interface,
+            "decoding_mode": self.decoding_mode,
+            "parse_status": self.parse_status,
+            "contract_version": self.contract_version,
+            "parser_version": self.parser_version,
+            "shuffle_key": self.shuffle_key,
+            "shuffle_seed": self.shuffle_seed,
             "response_rationale": self.response_rationale,
             "metadata": dict(self.metadata),
         }
@@ -59,6 +73,13 @@ class PredictionRecord:
             gold_option_id=payload["gold_option_id"],
             is_correct=bool(payload["is_correct"]),
             latency_ms=payload.get("latency_ms"),
+            model_interface=payload.get("model_interface", "unknown"),
+            decoding_mode=payload.get("decoding_mode"),
+            parse_status=payload.get("parse_status"),
+            contract_version=payload.get("contract_version"),
+            parser_version=payload.get("parser_version"),
+            shuffle_key=payload.get("shuffle_key"),
+            shuffle_seed=payload.get("shuffle_seed"),
             response_rationale=payload.get("response_rationale"),
             metadata=payload.get("metadata", {}),
         )

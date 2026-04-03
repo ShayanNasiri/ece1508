@@ -22,6 +22,7 @@ def judge_predictions(
     run_id: str,
     model_name: str,
     output_path: Path | str,
+    provider: str = "ollama",
     temperature: float = 0.0,
     resume: bool = True,
 ) -> tuple[JudgmentRecord, ...]:
@@ -60,7 +61,7 @@ def judge_predictions(
         completed[record.example_id] = JudgmentRecord(
             run_id=run_id,
             phase="phase4",
-            provider="ollama",
+            provider=provider,
             model_name=record.model_name,
             split=record.split,
             example_id=record.example_id,

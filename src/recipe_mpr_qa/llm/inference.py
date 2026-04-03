@@ -12,8 +12,10 @@ from recipe_mpr_qa.evaluation.records import (
 )
 from recipe_mpr_qa.llm.prompts import (
     DEFAULT_PROMPT_SPEC,
+    OPTION_ORDER_SHUFFLE_SEED,
+    benchmark_prompt_metadata,
     build_multiple_choice_prompt,
-    parse_multiple_choice_response,
+    parse_multiple_choice_response_detail,
 )
 
 
@@ -29,6 +31,7 @@ def run_llm_predictions(
     prompt_version: str = DEFAULT_PROMPT_SPEC.version,
     temperature: float = 0.0,
     resume: bool = True,
+    decoding_mode: str = "generate",
 ) -> tuple[PredictionRecord, ...]:
     output_path = Path(output_path)
     existing_records: dict[str, PredictionRecord] = {}
@@ -41,9 +44,16 @@ def run_llm_predictions(
     for example in examples:
         if example.example_id in completed:
             continue
+        prompt_metadata = benchmark_prompt_metadata(
+            example_id=example.example_id,
+            prompt_version=prompt_version,
+            shuffle_seed=OPTION_ORDER_SHUFFLE_SEED,
+        )
         prompt, letter_to_option_id = build_multiple_choice_prompt(
             query=example.query,
             options=example.options,
+            shuffle_key=prompt_metadata["shuffle_key"],
+            shuffle_seed=prompt_metadata["shuffle_seed"],
         )
         started = time.perf_counter()
         response_text = client.generate(
@@ -52,7 +62,8 @@ def run_llm_predictions(
             temperature=temperature,
         )
         latency_ms = (time.perf_counter() - started) * 1000.0
-        parsed_choice = parse_multiple_choice_response(response_text)
+        parse_result = parse_multiple_choice_response_detail(response_text)
+        parsed_choice = parse_result.parsed_choice
         predicted_option_id = (
             letter_to_option_id[parsed_choice] if parsed_choice in letter_to_option_id else None
         )
@@ -70,6 +81,13 @@ def run_llm_predictions(
             gold_option_id=example.answer_option_id,
             is_correct=predicted_option_id == example.answer_option_id,
             latency_ms=latency_ms,
+            model_interface="generative",
+            decoding_mode=decoding_mode,
+            parse_status=parse_result.status,
+            contract_version=prompt_metadata["contract_version"],
+            parser_version=prompt_metadata["parser_version"],
+            shuffle_key=prompt_metadata["shuffle_key"],
+            shuffle_seed=prompt_metadata["shuffle_seed"],
             metadata={"option_mapping": letter_to_option_id},
         )
         ordered_records = tuple(completed[key] for key in sorted(completed))

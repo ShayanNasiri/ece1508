@@ -1,15 +1,20 @@
 from __future__ import annotations
 
+import json
 import time
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from recipe_mpr_qa.benchmark.provenance import BENCHMARK_CONTRACT_VERSION
 from recipe_mpr_qa.data.models import RecipeExample
+from recipe_mpr_qa.evaluation.metrics import summarize_prediction_metrics
 from recipe_mpr_qa.evaluation.records import PredictionRecord, write_prediction_records
 from recipe_mpr_qa.llm.prompts import (
     CAUSAL_SLM_PROMPT_SPEC,
+    OPTION_ORDER_SHUFFLE_SEED,
+    benchmark_prompt_metadata,
     build_causal_multiple_choice_prompt,
-    parse_multiple_choice_response,
+    parse_multiple_choice_response_detail,
 )
 
 
@@ -79,11 +84,23 @@ def _apply_chat_template(tokenizer, messages: Sequence[Mapping[str, str]], *, ad
     return "\n\n".join(rendered)
 
 
-def build_causal_chat_example(example: RecipeExample, tokenizer=None) -> dict[str, Any]:
+def build_causal_chat_example(
+    example: RecipeExample,
+    tokenizer=None,
+    *,
+    prompt_version: str = CAUSAL_SLM_PROMPT_SPEC.version,
+) -> dict[str, Any]:
+    prompt_metadata = benchmark_prompt_metadata(
+        example_id=example.example_id,
+        prompt_version=prompt_version,
+        shuffle_seed=OPTION_ORDER_SHUFFLE_SEED,
+    )
     prompt_text, letter_to_option_id = build_causal_multiple_choice_prompt(
         query=example.query,
         options=example.options,
         prompt_spec=CAUSAL_SLM_PROMPT_SPEC,
+        shuffle_key=prompt_metadata["shuffle_key"],
+        shuffle_seed=prompt_metadata["shuffle_seed"],
     )
     gold_letter = next(
         letter
@@ -107,6 +124,7 @@ def build_causal_chat_example(example: RecipeExample, tokenizer=None) -> dict[st
         "training_text": training_text,
         "gold_letter": gold_letter,
         "letter_to_option_id": letter_to_option_id,
+        "prompt_metadata": prompt_metadata,
     }
 
 
@@ -136,7 +154,7 @@ def _load_causal_model_bundle(
         _require_transformers()
     )
     resolved_checkpoint = checkpoint_dir if checkpoint_dir is not None else Path(model_name)
-    tokenizer_source = resolved_checkpoint.as_posix() if resolved_checkpoint.exists() else model_name
+    tokenizer_source = _resolve_tokenizer_source(resolved_checkpoint, model_name=model_name)
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_source)
     _ensure_tokenizer_padding(tokenizer)
     if resolved_checkpoint.exists() and (resolved_checkpoint / "adapter_config.json").exists():
@@ -153,13 +171,14 @@ def evaluate_causal_slm(
     examples: Sequence[RecipeExample],
     run_id: str,
     split: str,
-    output_path: Path | str,
+    output_path: Path | str | None,
     model_name: str = "HuggingFaceTB/SmolLM2-135M-Instruct",
     prompt_version: str = CAUSAL_SLM_PROMPT_SPEC.version,
     max_length: int = 512,
     max_new_tokens: int = 8,
     temperature: float = 0.0,
     top_p: float = 0.9,
+    decoding_mode: str = "generate",
     tokenizer=None,
     model=None,
     device: str | None = None,
@@ -175,7 +194,11 @@ def evaluate_causal_slm(
 
     records: list[PredictionRecord] = []
     for example in examples:
-        chat_example = build_causal_chat_example(example, tokenizer=tokenizer)
+        chat_example = build_causal_chat_example(
+            example,
+            tokenizer=tokenizer,
+            prompt_version=prompt_version,
+        )
         encoded = tokenizer(
             chat_example["generation_prompt"],
             return_tensors="pt",
@@ -190,17 +213,22 @@ def evaluate_causal_slm(
             "top_p": top_p,
             "do_sample": bool(temperature > 0),
         }
-        if getattr(tokenizer, "pad_token_id", None) is not None:
-            generation_kwargs["pad_token_id"] = tokenizer.pad_token_id
         started = time.perf_counter()
-        with torch.no_grad():
-            outputs = model.generate(**generation_kwargs)
+        if decoding_mode == "loglikelihood":
+            parsed_choice = _score_choice_letters(encoded, tokenizer, model)
+            response_text = f"[loglikelihood] {parsed_choice}"
+            parse_status = "not_applicable"
+        else:
+            if getattr(tokenizer, "pad_token_id", None) is not None:
+                generation_kwargs["pad_token_id"] = tokenizer.pad_token_id
+            with torch.no_grad():
+                outputs = model.generate(**generation_kwargs)
+            response_text = _decode_generated_text(outputs, encoded, tokenizer)
+            parse_result = parse_multiple_choice_response_detail(response_text)
+            parsed_choice = parse_result.parsed_choice
+            parse_status = parse_result.status
         latency_ms = (time.perf_counter() - started) * 1000.0
-        response_text = _decode_generated_text(outputs, encoded, tokenizer)
-        parsed_choice = parse_multiple_choice_response(response_text)
-        predicted_option_id = (
-            chat_example["letter_to_option_id"].get(parsed_choice) if parsed_choice is not None else None
-        )
+        predicted_option_id = chat_example["letter_to_option_id"].get(parsed_choice) if parsed_choice is not None else None
         records.append(
             PredictionRecord(
                 run_id=run_id,
@@ -216,13 +244,21 @@ def evaluate_causal_slm(
                 gold_option_id=example.answer_option_id,
                 is_correct=predicted_option_id == example.answer_option_id,
                 latency_ms=latency_ms,
+                model_interface="generative",
+                decoding_mode=decoding_mode,
+                parse_status=parse_status,
+                contract_version=BENCHMARK_CONTRACT_VERSION,
+                parser_version=chat_example["prompt_metadata"]["parser_version"],
+                shuffle_key=chat_example["prompt_metadata"]["shuffle_key"],
+                shuffle_seed=chat_example["prompt_metadata"]["shuffle_seed"],
                 metadata={
                     "architecture": "causal_lm",
                     "option_mapping": chat_example["letter_to_option_id"],
                 },
             )
         )
-    write_prediction_records(tuple(records), output_path)
+    if output_path is not None:
+        write_prediction_records(tuple(records), output_path)
     return tuple(records)
 
 
@@ -231,11 +267,16 @@ def _build_causal_rows(
     tokenizer,
     *,
     max_length: int,
+    prompt_version: str = CAUSAL_SLM_PROMPT_SPEC.version,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rows: list[dict[str, Any]] = []
     metadata: list[dict[str, Any]] = []
     for example in examples:
-        chat_example = build_causal_chat_example(example, tokenizer=tokenizer)
+        chat_example = build_causal_chat_example(
+            example,
+            tokenizer=tokenizer,
+            prompt_version=prompt_version,
+        )
         prompt_tokens = tokenizer(
             chat_example["generation_prompt"],
             truncation=True,
@@ -364,6 +405,7 @@ def train_causal_slm(
     lora_r: int = 16,
     lora_alpha: int = 32,
     lora_dropout: float = 0.05,
+    decoding_mode: str = "generate",
 ):
     _AutoModelForCausalLM, AutoTokenizer, _Trainer, _TrainingArguments, _default_data_collator = (
         _require_transformers()
@@ -372,11 +414,17 @@ def train_causal_slm(
     _ensure_tokenizer_padding(tokenizer)
     checkpoint_dir = Path(output_dir)
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    train_rows, _train_meta = _build_causal_rows(train_examples, tokenizer, max_length=max_length)
+    train_rows, _train_meta = _build_causal_rows(
+        train_examples,
+        tokenizer,
+        max_length=max_length,
+        prompt_version=prompt_version,
+    )
     validation_rows, _validation_meta = _build_causal_rows(
         validation_examples,
         tokenizer,
         max_length=max_length,
+        prompt_version=prompt_version,
     )
     trainer = _build_causal_trainer(
         model_name=model_name,
@@ -396,10 +444,23 @@ def train_causal_slm(
     trainer.train()
     trainer.save_model(checkpoint_dir.as_posix())
     tokenizer.save_pretrained(checkpoint_dir.as_posix())
-    validation_records = evaluate_causal_slm(
+    best_checkpoint_dir, checkpoint_scores = _select_best_causal_checkpoint(
+        checkpoint_root=checkpoint_dir,
+        validation_examples=validation_examples,
+        run_id=run_id,
+        model_name=model_name,
+        prompt_version=prompt_version,
+        max_length=max_length,
+        max_new_tokens=max_new_tokens,
+        temperature=temperature,
+        top_p=top_p,
+        decoding_mode=decoding_mode,
+    )
+    validation_records = evaluate_finetuned_causal_model(
         examples=validation_examples,
         run_id=run_id,
         split="validation",
+        checkpoint_dir=best_checkpoint_dir,
         output_path=checkpoint_dir.parent / "validation_predictions.jsonl",
         model_name=model_name,
         prompt_version=prompt_version,
@@ -407,13 +468,13 @@ def train_causal_slm(
         max_new_tokens=max_new_tokens,
         temperature=temperature,
         top_p=top_p,
-        tokenizer=tokenizer,
-        model=trainer.model,
+        decoding_mode=decoding_mode,
     )
-    test_records = evaluate_causal_slm(
+    test_records = evaluate_finetuned_causal_model(
         examples=test_examples,
         run_id=run_id,
         split="test",
+        checkpoint_dir=best_checkpoint_dir,
         output_path=checkpoint_dir.parent / "test_predictions.jsonl",
         model_name=model_name,
         prompt_version=prompt_version,
@@ -421,14 +482,27 @@ def train_causal_slm(
         max_new_tokens=max_new_tokens,
         temperature=temperature,
         top_p=top_p,
-        tokenizer=tokenizer,
-        model=trainer.model,
+        decoding_mode=decoding_mode,
+    )
+    (checkpoint_dir.parent / "checkpoint_manifest.json").write_text(
+        json.dumps(
+            {
+                "best_checkpoint_dir": best_checkpoint_dir.as_posix(),
+                "checkpoints": checkpoint_scores,
+            },
+            ensure_ascii=True,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
     )
     return {
         "trainer": trainer,
         "validation_records": validation_records,
         "test_records": test_records,
         "checkpoint_dir": checkpoint_dir,
+        "best_checkpoint_dir": best_checkpoint_dir,
+        "checkpoint_scores": checkpoint_scores,
     }
 
 
@@ -438,13 +512,14 @@ def evaluate_finetuned_causal_model(
     run_id: str,
     split: str,
     checkpoint_dir: Path | str,
-    output_path: Path | str,
+    output_path: Path | str | None,
     model_name: str = "HuggingFaceTB/SmolLM2-135M-Instruct",
     prompt_version: str = CAUSAL_SLM_PROMPT_SPEC.version,
     max_length: int = 512,
     max_new_tokens: int = 8,
     temperature: float = 0.0,
     top_p: float = 0.9,
+    decoding_mode: str = "generate",
 ):
     tokenizer, model = _load_causal_model_bundle(
         model_name=model_name,
@@ -461,6 +536,96 @@ def evaluate_finetuned_causal_model(
         max_new_tokens=max_new_tokens,
         temperature=temperature,
         top_p=top_p,
+        decoding_mode=decoding_mode,
         tokenizer=tokenizer,
         model=model,
     )
+
+
+def _resolve_tokenizer_source(checkpoint_dir: Path, *, model_name: str) -> str:
+    for candidate in (checkpoint_dir, checkpoint_dir.parent):
+        if any((candidate / file_name).exists() for file_name in ("tokenizer.json", "tokenizer_config.json")):
+            return candidate.as_posix()
+    return model_name
+
+
+def _score_choice_letters(encoded_prompt: Mapping[str, Any], tokenizer, model) -> str:
+    torch = _require_torch()
+    with torch.no_grad():
+        logits = model(**encoded_prompt).logits
+    last_logits = logits[0, -1, :]
+    best_letter = "A"
+    best_score = float("-inf")
+    for letter in ("A", "B", "C", "D", "E"):
+        token_ids = tokenizer.encode(letter, add_special_tokens=False)
+        if not token_ids:
+            continue
+        score = float(last_logits[token_ids[-1]].item())
+        if score > best_score:
+            best_score = score
+            best_letter = letter
+    return best_letter
+
+
+def _list_checkpoint_dirs(checkpoint_root: Path) -> list[Path]:
+    checkpoint_dirs = [
+        path
+        for path in checkpoint_root.iterdir()
+        if path.is_dir() and path.name.startswith("checkpoint-")
+    ] if checkpoint_root.exists() else []
+    def sort_key(path: Path) -> tuple[int, str]:
+        suffix = path.name.split("-", 1)[-1]
+        return (int(suffix) if suffix.isdigit() else -1, path.name)
+    ordered = sorted(checkpoint_dirs, key=sort_key)
+    if checkpoint_root.exists():
+        ordered.append(checkpoint_root)
+    return ordered or [checkpoint_root]
+
+
+def _select_best_causal_checkpoint(
+    *,
+    checkpoint_root: Path,
+    validation_examples: Sequence[RecipeExample],
+    run_id: str,
+    model_name: str,
+    prompt_version: str,
+    max_length: int,
+    max_new_tokens: int,
+    temperature: float,
+    top_p: float,
+    decoding_mode: str,
+) -> tuple[Path, list[dict[str, Any]]]:
+    checkpoint_scores: list[dict[str, Any]] = []
+    best_checkpoint_dir = checkpoint_root
+    best_accuracy = float("-inf")
+    for checkpoint_dir in _list_checkpoint_dirs(checkpoint_root):
+        records = evaluate_finetuned_causal_model(
+            examples=validation_examples,
+            run_id=run_id,
+            split="validation",
+            checkpoint_dir=checkpoint_dir,
+            output_path=None,
+            model_name=model_name,
+            prompt_version=prompt_version,
+            max_length=max_length,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            decoding_mode=decoding_mode,
+        )
+        metrics = summarize_prediction_metrics(
+            records,
+            type("Dataset", (), {"examples": tuple(validation_examples)})(),
+        )
+        checkpoint_scores.append(
+            {
+                "checkpoint_dir": checkpoint_dir.as_posix(),
+                "accuracy": metrics["accuracy"],
+                "correct_count": metrics["correct_count"],
+                "parse_failure_count": metrics["parse_failure_count"],
+            }
+        )
+        if metrics["accuracy"] > best_accuracy:
+            best_accuracy = metrics["accuracy"]
+            best_checkpoint_dir = checkpoint_dir
+    return best_checkpoint_dir, checkpoint_scores

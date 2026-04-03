@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 from typing import Sequence
 
+from recipe_mpr_qa.benchmark.provenance import BENCHMARK_CONTRACT_VERSION
 from recipe_mpr_qa.data.models import RecipeExample
 from recipe_mpr_qa.evaluation.records import PredictionRecord, write_prediction_records
 
@@ -83,7 +84,7 @@ def evaluate_vanilla_slm(
     examples: Sequence[RecipeExample],
     run_id: str,
     split: str,
-    output_path: Path | str,
+    output_path: Path | str | None,
     model_name: str = "distilbert-base-uncased",
     prompt_version: str = "embedding-similarity-v1",
     batch_size: int = 8,
@@ -127,8 +128,13 @@ def evaluate_vanilla_slm(
                 gold_option_id=example.answer_option_id,
                 is_correct=predicted_option_id == example.answer_option_id,
                 latency_ms=latency_ms,
+                model_interface="classifier",
+                decoding_mode="embedding_similarity",
+                parse_status="not_applicable",
+                contract_version=BENCHMARK_CONTRACT_VERSION,
                 metadata={"scores": scores},
             )
         )
-    write_prediction_records(tuple(records), output_path)
+    if output_path is not None:
+        write_prediction_records(tuple(records), output_path)
     return tuple(records)

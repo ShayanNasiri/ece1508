@@ -1,13 +1,18 @@
 from __future__ import annotations
 
-import re
+import hashlib
 import json
+import random
+import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from recipe_mpr_qa.benchmark.provenance import BENCHMARK_CONTRACT_VERSION
 from recipe_mpr_qa.data.models import RecipeExample, RecipeOption
 
 LETTER_MAP = ("A", "B", "C", "D", "E")
+OPTION_ORDER_SHUFFLE_SEED = 1508
+DEFAULT_PARSER_VERSION = "recipe-mpr-mc-parser-v2"
 
 
 @dataclass(frozen=True)
@@ -16,13 +21,24 @@ class PromptSpec:
     template: str
 
     def render(
-        self, *, query: str, options: Sequence[RecipeOption] | Mapping[str, str]
+        self,
+        *,
+        query: str,
+        options: Sequence[RecipeOption] | Mapping[str, str],
+        shuffle_key: str | None = None,
+        shuffle_seed: int = OPTION_ORDER_SHUFFLE_SEED,
     ) -> tuple[str, dict[str, str]]:
-        return build_multiple_choice_prompt(query=query, options=options, prompt_spec=self)
+        return build_multiple_choice_prompt(
+            query=query,
+            options=options,
+            prompt_spec=self,
+            shuffle_key=shuffle_key,
+            shuffle_seed=shuffle_seed,
+        )
 
 
 DEFAULT_PROMPT_SPEC = PromptSpec(
-    version="recipe-mpr-mc-v1",
+    version="recipe-mpr-mc-v2",
     template=(
         "Given the following recipe preference query, select the best matching recipe.\n\n"
         "Query: {query}\n\n"
@@ -70,7 +86,7 @@ JUDGE_PROMPT_SPEC = PromptSpec(
 )
 
 CAUSAL_SLM_PROMPT_SPEC = PromptSpec(
-    version="recipe-mpr-chat-mc-v1",
+    version="recipe-mpr-chat-mc-v2",
     template=(
         "User request: {query}\n\n"
         "Options:\n"
@@ -84,11 +100,21 @@ CAUSAL_SLM_PROMPT_SPEC = PromptSpec(
 )
 
 
+@dataclass(frozen=True)
+class ParseResult:
+    parsed_choice: str | None
+    status: str
+    parser_version: str = DEFAULT_PARSER_VERSION
+    candidate_letters: tuple[str, ...] = ()
+
+
 def build_multiple_choice_prompt(
     *,
     query: str,
     options: Sequence[RecipeOption] | Mapping[str, str],
     prompt_spec: PromptSpec = DEFAULT_PROMPT_SPEC,
+    shuffle_key: str | None = None,
+    shuffle_seed: int = OPTION_ORDER_SHUFFLE_SEED,
 ) -> tuple[str, dict[str, str]]:
     if isinstance(options, Mapping):
         option_items = list(options.items())
@@ -96,6 +122,14 @@ def build_multiple_choice_prompt(
         option_items = [(option.option_id, option.text) for option in options]
     if len(option_items) != 5:
         raise ValueError(f"Expected exactly 5 options, got {len(option_items)}")
+    if shuffle_key is not None:
+        derived_seed = int(
+            hashlib.sha256(f"{shuffle_seed}:{shuffle_key}".encode("utf-8")).hexdigest()[:16],
+            16,
+        )
+        shuffled = list(option_items)
+        random.Random(derived_seed).shuffle(shuffled)
+        option_items = shuffled
     letter_to_option_id = {
         LETTER_MAP[index]: option_items[index][0] for index in range(len(LETTER_MAP))
     }
@@ -115,30 +149,82 @@ def build_causal_multiple_choice_prompt(
     query: str,
     options: Sequence[RecipeOption] | Mapping[str, str],
     prompt_spec: PromptSpec = CAUSAL_SLM_PROMPT_SPEC,
+    shuffle_key: str | None = None,
+    shuffle_seed: int = OPTION_ORDER_SHUFFLE_SEED,
 ) -> tuple[str, dict[str, str]]:
-    return build_multiple_choice_prompt(query=query, options=options, prompt_spec=prompt_spec)
+    return build_multiple_choice_prompt(
+        query=query,
+        options=options,
+        prompt_spec=prompt_spec,
+        shuffle_key=shuffle_key,
+        shuffle_seed=shuffle_seed,
+    )
 
 
 def parse_multiple_choice_response(response_text: str) -> str | None:
+    return parse_multiple_choice_response_detail(response_text).parsed_choice
+
+
+def parse_multiple_choice_response_detail(response_text: str) -> ParseResult:
     text = response_text.strip().upper()
     if not text:
-        return None
-    if text in LETTER_MAP:
-        return text
-    patterns = (
-        r"^\s*([A-E])[\)\.\:\-]?\s*$",
+        return ParseResult(parsed_choice=None, status="empty")
+
+    exact_match = re.fullmatch(r"\(?([A-E])\)?[\)\.\:\-]?", text)
+    if exact_match:
+        return ParseResult(parsed_choice=exact_match.group(1), status="parsed")
+
+    disjunctive_letters = tuple(
+        sorted({match.group(1) for match in re.finditer(r"\b([A-E])\b", text)})
+    )
+    if len(disjunctive_letters) > 1 and (re.search(r"\b(?:OR|AND)\b", text) or "/" in text):
+        return ParseResult(parsed_choice=None, status="ambiguous", candidate_letters=disjunctive_letters)
+
+    candidates: list[str] = []
+    explicit_patterns = (
+        r"\b(?:FINAL\s+ANSWER|ANSWER|CORRECT\s+ANSWER|BEST\s+OPTION|BEST\s+MATCH|PREDICTION|CHOICE)\s*(?:IS|:)?\s*\(?([A-E])\)?",
+        r"\b(?:I\s+CHOOSE|I\s+PICK|I\s+SELECT|CHOOSE|PICK|SELECT)\s+(?:OPTION\s*)?\(?([A-E])\)?",
+        r"\bOPTION\s+([A-E])\b",
         r"\(([A-E])\)",
-        r"ANSWER\s*(?:IS|:)?\s*([A-E])\b",
-        r"OPTION\s*([A-E])\b",
         r"\b([A-E])\)",
         r"\b([A-E])\.",
-        r"\b([A-E])\b",
+        r"^\s*([A-E])[\)\.\:\-]?\s+\S",
     )
-    for pattern in patterns:
-        match = re.search(pattern, text)
-        if match:
-            return match.group(1)
-    return None
+    for pattern in explicit_patterns:
+        candidates.extend(match.group(1) for match in re.finditer(pattern, text))
+    distinct_candidates = tuple(sorted(set(candidates)))
+    if len(distinct_candidates) == 1:
+        return ParseResult(parsed_choice=distinct_candidates[0], status="parsed", candidate_letters=distinct_candidates)
+    if len(distinct_candidates) > 1:
+        return ParseResult(parsed_choice=None, status="ambiguous", candidate_letters=distinct_candidates)
+
+    standalone_letters = tuple(
+        sorted(
+            {
+                match.group(1)
+                for match in re.finditer(r"(?:^|[\s>])\(?([A-E])\)?(?:[\)\.\:\-]|\s|$)", text)
+            }
+        )
+    )
+    if len(standalone_letters) == 1 and text.count(standalone_letters[0]) == 1:
+        return ParseResult(parsed_choice=standalone_letters[0], status="parsed", candidate_letters=standalone_letters)
+    if len(standalone_letters) > 1:
+        return ParseResult(parsed_choice=None, status="ambiguous", candidate_letters=standalone_letters)
+    return ParseResult(parsed_choice=None, status="invalid")
+
+
+def benchmark_prompt_metadata(
+    *,
+    example_id: str,
+    prompt_version: str,
+    shuffle_seed: int = OPTION_ORDER_SHUFFLE_SEED,
+) -> dict[str, Any]:
+    return {
+        "contract_version": BENCHMARK_CONTRACT_VERSION,
+        "parser_version": DEFAULT_PARSER_VERSION,
+        "shuffle_key": f"{prompt_version}:{example_id}",
+        "shuffle_seed": shuffle_seed,
+    }
 
 
 def build_augmentation_prompt(
