@@ -241,7 +241,7 @@ def _load_augmented_train_examples(augmented_train_path: str, train_examples):
         )
     for example in augmented_examples:
         parent_example_id = example.source_metadata.get("parent_example_id")
-        if parent_example_id not in train_example_ids:
+        if parent_example_id is not None and parent_example_id not in train_example_ids:
             raise DatasetValidationError(
                 f"augmented example {example.example_id} must reference a train parent_example_id"
             )
