@@ -1,5 +1,5 @@
 [output]
-run_id = "smollm2-135m-baseline-generate"
+run_id = "smollm2-360m-baseline-loglikelihood"
 artifacts_root = "artifacts/runs"
 
 [data]
@@ -13,10 +13,10 @@ experiment_name = "recipe-mpr-qa"
 
 [slm]
 mode = "causal_baseline"
-model_name = "HuggingFaceTB/SmolLM2-135M-Instruct"
+model_name = "HuggingFaceTB/SmolLM2-360M-Instruct"
 prompt_version = "recipe-mpr-chat-mc-v2"
 max_length = 512
 max_new_tokens = 8
 temperature = 0.0
 top_p = 0.9
-decoding_mode = "generate"
+decoding_mode = "loglikelihood"

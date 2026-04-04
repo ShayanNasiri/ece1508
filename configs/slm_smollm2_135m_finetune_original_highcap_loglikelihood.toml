@@ -1,5 +1,5 @@
 [output]
-run_id = "smollm2-135m-baseline-generate"
+run_id = "smollm2-135m-finetune-original-highcap-loglikelihood"
 artifacts_root = "artifacts/runs"
 
 [data]
@@ -12,11 +12,20 @@ enabled = false
 experiment_name = "recipe-mpr-qa"
 
 [slm]
-mode = "causal_baseline"
+mode = "causal_finetune"
 model_name = "HuggingFaceTB/SmolLM2-135M-Instruct"
 prompt_version = "recipe-mpr-chat-mc-v2"
 max_length = 512
 max_new_tokens = 8
 temperature = 0.0
 top_p = 0.9
-decoding_mode = "generate"
+decoding_mode = "loglikelihood"
+learning_rate = 1e-4
+train_batch_size = 2
+eval_batch_size = 2
+num_train_epochs = 10.0
+use_augmentation = false
+use_lora = true
+lora_r = 32
+lora_alpha = 64
+lora_dropout = 0.05

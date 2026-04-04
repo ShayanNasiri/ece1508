@@ -87,16 +87,26 @@ class HFClient:
         rendered_prompt = self._format_prompt(prompt, tokenizer)
         encoded = tokenizer(rendered_prompt, return_tensors="pt")
         encoded = {key: value.to(model.device) for key, value in encoded.items()}
-        with torch.no_grad():
-            logits = model(**encoded).logits
-        last_logits = logits[0, -1, :]
         best_choice = None
         best_score = float("-inf")
         for choice in choices:
-            token_ids = tokenizer.encode(choice, add_special_tokens=False)
-            if not token_ids:
+            variants = [choice]
+            if len(choice) == 1 and choice.isalpha():
+                variants.extend((f" {choice}", f"\n{choice}"))
+            score = max(
+                (
+                    self._sequence_logprob(
+                        tokenizer=tokenizer,
+                        model=model,
+                        prompt_ids=encoded["input_ids"][0],
+                        candidate_text=variant,
+                    )
+                    for variant in variants
+                ),
+                default=float("-inf"),
+            )
+            if score == float("-inf"):
                 continue
-            score = float(last_logits[token_ids[-1]].item())
             if score > best_score:
                 best_score = score
                 best_choice = choice
@@ -104,12 +114,30 @@ class HFClient:
             raise RuntimeError("Unable to score any loglikelihood choices")
         return best_choice
 
+    def _sequence_logprob(self, *, tokenizer, model, prompt_ids, candidate_text: str) -> float:
+        torch = _require_torch()
+        candidate_ids = tokenizer.encode(candidate_text, add_special_tokens=False)
+        if not candidate_ids:
+            return float("-inf")
+        prompt_id_list = prompt_ids.tolist() if hasattr(prompt_ids, "tolist") else list(prompt_ids)
+        full_ids = torch.tensor([prompt_id_list + list(candidate_ids)], dtype=torch.long, device=model.device)
+        attention_mask = torch.ones_like(full_ids, device=model.device)
+        with torch.no_grad():
+            logits = model(input_ids=full_ids, attention_mask=attention_mask).logits
+        log_probs = torch.log_softmax(logits.float(), dim=-1)
+        prompt_length = len(prompt_id_list)
+        total = 0.0
+        for token_offset, token_id in enumerate(candidate_ids):
+            total += float(log_probs[0, prompt_length - 1 + token_offset, token_id].item())
+        return total
+
     def _load_bundle(self, model_name: str):
         if model_name not in self._bundles:
             self._bundles[model_name] = self._load_model_and_tokenizer(model_name)
         return self._bundles[model_name]
 
     def _load_model_and_tokenizer(self, model_name: str):
+        torch = _require_torch()
         AutoModelForCausalLM, AutoTokenizer = _require_transformers()
         model_path = Path(model_name)
         if model_path.is_dir() and (model_path / "adapter_config.json").is_file():
@@ -119,6 +147,7 @@ class HFClient:
             model = AutoModelForCausalLM.from_pretrained(
                 base_model_name,
                 device_map="auto",
+                torch_dtype=torch.float32,
                 trust_remote_code=True,
             )
             PeftModel = _require_peft()
@@ -128,6 +157,7 @@ class HFClient:
             model = AutoModelForCausalLM.from_pretrained(
                 model_name,
                 device_map="auto",
+                torch_dtype=torch.float32,
                 trust_remote_code=True,
             )
         if getattr(tokenizer, "pad_token", None) is None and getattr(tokenizer, "eos_token", None) is not None:

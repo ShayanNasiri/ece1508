@@ -11,6 +11,7 @@ from recipe_mpr_qa.evaluation.metrics import summarize_prediction_metrics
 from recipe_mpr_qa.evaluation.records import PredictionRecord, write_prediction_records
 from recipe_mpr_qa.llm.prompts import (
     CAUSAL_SLM_PROMPT_SPEC,
+    LETTER_MAP,
     OPTION_ORDER_SHUFFLE_SEED,
     benchmark_prompt_metadata,
     build_causal_multiple_choice_prompt,
@@ -145,11 +146,51 @@ def _decode_generated_text(outputs, encoded_prompt: Mapping[str, Any], tokenizer
     return tokenizer.decode(generated, skip_special_tokens=True).strip()
 
 
+def _candidate_variants_for_letter(letter: str) -> tuple[str, ...]:
+    return (
+        letter,
+        f" {letter}",
+        f"\n{letter}",
+    )
+
+
+def _batched_sequence_logprob_scores(
+    *,
+    prompt_ids: Sequence[int],
+    candidate_token_ids: Sequence[Sequence[int]],
+    model,
+    device: str,
+    pad_token_id: int,
+) -> list[float]:
+    torch = _require_torch()
+    if not prompt_ids:
+        raise ValueError("prompt_ids must be non-empty")
+    if not candidate_token_ids:
+        raise ValueError("candidate_token_ids must be non-empty")
+
+    scores: list[float] = []
+    prompt_length = len(prompt_ids)
+    for candidate_ids in candidate_token_ids:
+        sequence = list(prompt_ids) + list(candidate_ids)
+        input_ids = torch.tensor([sequence], dtype=torch.long, device=device)
+        attention_mask = torch.ones_like(input_ids, dtype=torch.long, device=device)
+        with torch.no_grad():
+            logits = model(input_ids=input_ids, attention_mask=attention_mask).logits
+        log_probs = torch.log_softmax(logits.float(), dim=-1)
+        total_score = 0.0
+        for token_offset, token_id in enumerate(candidate_ids):
+            logits_index = prompt_length - 1 + token_offset
+            total_score += float(log_probs[0, logits_index, token_id].item())
+        scores.append(total_score)
+    return scores
+
+
 def _load_causal_model_bundle(
     *,
     model_name: str,
     checkpoint_dir: Path | None = None,
 ):
+    torch = _require_torch()
     AutoModelForCausalLM, AutoTokenizer, _Trainer, _TrainingArguments, _default_data_collator = (
         _require_transformers()
     )
@@ -159,10 +200,16 @@ def _load_causal_model_bundle(
     _ensure_tokenizer_padding(tokenizer)
     if resolved_checkpoint.exists() and (resolved_checkpoint / "adapter_config.json").exists():
         AutoPeftModelForCausalLM, _LoraConfig, _TaskType, _get_peft_model = _require_peft()
-        model = AutoPeftModelForCausalLM.from_pretrained(resolved_checkpoint.as_posix())
+        model = AutoPeftModelForCausalLM.from_pretrained(
+            resolved_checkpoint.as_posix(),
+            torch_dtype=torch.float32,
+        )
     else:
         model_source = resolved_checkpoint.as_posix() if resolved_checkpoint.exists() else model_name
-        model = AutoModelForCausalLM.from_pretrained(model_source)
+        model = AutoModelForCausalLM.from_pretrained(
+            model_source,
+            torch_dtype=torch.float32,
+        )
     return tokenizer, model
 
 
@@ -209,14 +256,22 @@ def evaluate_causal_slm(
         generation_kwargs = {
             **encoded,
             "max_new_tokens": max_new_tokens,
-            "temperature": temperature,
-            "top_p": top_p,
             "do_sample": bool(temperature > 0),
         }
+        if temperature > 0:
+            generation_kwargs["temperature"] = temperature
+            generation_kwargs["top_p"] = top_p
         started = time.perf_counter()
         if decoding_mode == "loglikelihood":
-            parsed_choice = _score_choice_letters(encoded, tokenizer, model)
-            response_text = f"[loglikelihood] {parsed_choice}"
+            parsed_choice, choice_scores = _score_choice_letters(encoded, tokenizer, model, resolved_device)
+            response_text = json.dumps(
+                {
+                    "selected_choice": parsed_choice,
+                    "choice_scores": choice_scores,
+                },
+                ensure_ascii=True,
+                sort_keys=True,
+            )
             parse_status = "not_applicable"
         else:
             if getattr(tokenizer, "pad_token_id", None) is not None:
@@ -254,6 +309,7 @@ def evaluate_causal_slm(
                 metadata={
                     "architecture": "causal_lm",
                     "option_mapping": chat_example["letter_to_option_id"],
+                    **({"choice_scores": choice_scores} if decoding_mode == "loglikelihood" else {}),
                 },
             )
         )
@@ -549,22 +605,42 @@ def _resolve_tokenizer_source(checkpoint_dir: Path, *, model_name: str) -> str:
     return model_name
 
 
-def _score_choice_letters(encoded_prompt: Mapping[str, Any], tokenizer, model) -> str:
-    torch = _require_torch()
-    with torch.no_grad():
-        logits = model(**encoded_prompt).logits
-    last_logits = logits[0, -1, :]
-    best_letter = "A"
-    best_score = float("-inf")
-    for letter in ("A", "B", "C", "D", "E"):
-        token_ids = tokenizer.encode(letter, add_special_tokens=False)
-        if not token_ids:
-            continue
-        score = float(last_logits[token_ids[-1]].item())
-        if score > best_score:
-            best_score = score
-            best_letter = letter
-    return best_letter
+def _score_choice_letters(
+    encoded_prompt: Mapping[str, Any],
+    tokenizer,
+    model,
+    device: str,
+) -> tuple[str, dict[str, float]]:
+    prompt_ids_tensor = encoded_prompt["input_ids"][0]
+    prompt_ids = (
+        prompt_ids_tensor.tolist() if hasattr(prompt_ids_tensor, "tolist") else list(prompt_ids_tensor)
+    )
+    pad_token_id = getattr(tokenizer, "pad_token_id", None)
+    if pad_token_id is None:
+        pad_token_id = getattr(tokenizer, "eos_token_id", 0) or 0
+
+    variant_letters: list[str] = []
+    variant_token_ids: list[Sequence[int]] = []
+    for letter in LETTER_MAP:
+        for candidate_text in _candidate_variants_for_letter(letter):
+            token_ids = tokenizer.encode(candidate_text, add_special_tokens=False)
+            if token_ids:
+                variant_letters.append(letter)
+                variant_token_ids.append(token_ids)
+
+    scores = _batched_sequence_logprob_scores(
+        prompt_ids=prompt_ids,
+        candidate_token_ids=variant_token_ids,
+        model=model,
+        device=device,
+        pad_token_id=pad_token_id,
+    )
+    letter_scores = {letter: float("-inf") for letter in LETTER_MAP}
+    for letter, score in zip(variant_letters, scores):
+        if score > letter_scores[letter]:
+            letter_scores[letter] = score
+    best_letter = max(letter_scores.items(), key=lambda item: item[1])[0]
+    return best_letter, letter_scores
 
 
 def _list_checkpoint_dirs(checkpoint_root: Path) -> list[Path]:

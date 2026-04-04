@@ -1,5 +1,5 @@
 [output]
-run_id = "smollm2-baseline-loglikelihood"
+run_id = "smollm2-135m-baseline-loglikelihood"
 artifacts_root = "artifacts/runs"
 
 [data]

@@ -62,6 +62,11 @@ class FakeCausalTokenizer:
             tokens = [tokens]
         return "".join(chr(token) for token in tokens if token)
 
+    def encode(self, text: str, add_special_tokens: bool = False):
+        del add_special_tokens
+        text = text.replace(" ", "").replace("\n", "")
+        return [ord(char) for char in text]
+
     def save_pretrained(self, path: str) -> None:
         Path(path).mkdir(parents=True, exist_ok=True)
         (Path(path) / "tokenizer.json").write_text("{}", encoding="utf-8")
@@ -87,6 +92,15 @@ class FakeCausalGenerateModel:
         input_ids = kwargs["input_ids"]
         suffix = torch.tensor([[ord(self.letter)]], dtype=input_ids.dtype)
         return torch.cat([input_ids, suffix], dim=1)
+
+
+class FakeCausalLogLikelihoodModel(FakeCausalGenerateModel):
+    def __call__(self, input_ids, attention_mask=None):
+        del attention_mask
+        batch_size, sequence_length = input_ids.shape
+        logits = torch.zeros((batch_size, sequence_length, 256), dtype=torch.float32)
+        logits[:, :, ord(self.letter)] = 10.0
+        return type("Output", (), {"logits": logits})()
 
 
 class FakeTrainingArguments:
@@ -134,6 +148,33 @@ def test_evaluate_causal_slm_writes_predictions(tmp_path: Path) -> None:
     assert len(records) == 1
     assert records[0].predicted_option_id == example.answer_option_id
     assert read_prediction_records(output_path) == records
+
+
+def test_evaluate_causal_slm_loglikelihood_scores_single_letter_choices(tmp_path: Path) -> None:
+    example = read_prepared_dataset(PROCESSED_DATASET_PATH).examples[0]
+    _, letter_to_option_id = build_causal_multiple_choice_prompt(
+        query=example.query,
+        options=example.options,
+    )
+    correct_letter = next(
+        letter for letter, option_id in letter_to_option_id.items() if option_id == example.answer_option_id
+    )
+    output_path = tmp_path / "predictions_loglikelihood.jsonl"
+
+    records = causal_module.evaluate_causal_slm(
+        examples=(example,),
+        run_id="smollm2-run-loglikelihood",
+        split="test",
+        output_path=output_path,
+        tokenizer=FakeCausalTokenizer(),
+        model=FakeCausalLogLikelihoodModel(correct_letter),
+        decoding_mode="loglikelihood",
+    )
+
+    assert len(records) == 1
+    assert records[0].predicted_option_id == example.answer_option_id
+    assert records[0].parse_status == "not_applicable"
+    assert "choice_scores" in (records[0].metadata or {})
 
 
 def test_train_and_evaluate_causal_slm_smoke(monkeypatch, tmp_path: Path) -> None:
