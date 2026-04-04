@@ -16,4 +16,8 @@ bash "${REPO_ROOT}/slurm/bootstrap_train_env.sh"
 source "${RECIPE_MPR_QA_VENV_DIR}/bin/activate"
 source "${REPO_ROOT}/slurm/common_env.sh"
 
-python -m recipe_mpr_qa.cli evaluate-slm --config configs/slm_smollm2_360m_baseline.toml
+CMD=(python -m recipe_mpr_qa.cli evaluate-slm --config configs/slm_smollm2_360m_baseline.toml)
+if [ -n "${RECIPE_MPR_QA_OUTPUT_ROOT:-}" ]; then
+  CMD+=(--output-dir "${RECIPE_MPR_QA_OUTPUT_ROOT}")
+fi
+"${CMD[@]}"

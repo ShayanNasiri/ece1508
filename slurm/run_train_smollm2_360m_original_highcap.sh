@@ -16,4 +16,12 @@ bash "${REPO_ROOT}/slurm/bootstrap_train_env.sh"
 source "${RECIPE_MPR_QA_VENV_DIR}/bin/activate"
 source "${REPO_ROOT}/slurm/common_env.sh"
 
-python -m recipe_mpr_qa.cli train-slm --config configs/slm_smollm2_360m_finetune_original_highcap.toml
+OUTPUT_ROOT="${RECIPE_MPR_QA_OUTPUT_ROOT:-}"
+CMD=(python -m recipe_mpr_qa.cli train-slm --config configs/slm_smollm2_360m_finetune_original_highcap.toml)
+if [ -n "${OUTPUT_ROOT}" ]; then
+  CMD+=(--output-dir "${OUTPUT_ROOT}")
+fi
+"${CMD[@]}"
+python "${REPO_ROOT}/slurm/prune_run_checkpoints.py" \
+  --artifacts-root "${OUTPUT_ROOT:-artifacts/runs}" \
+  --run-id "smollm2-360m-finetune-original-highcap"
