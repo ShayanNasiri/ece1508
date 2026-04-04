@@ -132,6 +132,7 @@ recipe-mpr-qa benchmark-table --root artifacts/runs --output artifacts/runs/repo
 - `data/processed/`: committed normalized dataset and split manifest
 - `configs/`: reusable TOML experiment configs
 - `docs/spec.md`: detailed project specification and contracts
+- `docs/benchmark_run_inventory.md`: current benchmark-relevant local run inventory and cleanup state
 - `src/recipe_mpr_qa/data`: schemas, validation, loaders, and split generation
 - `src/recipe_mpr_qa/slm`: DistilBERT pipelines plus causal SmolLM2-style SLM support
 - `src/recipe_mpr_qa/llm`: prompts, Ollama client, inference, and judge logic

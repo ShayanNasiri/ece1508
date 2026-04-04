@@ -8,4 +8,5 @@ mlruns/
 results/
 .tmp_pytest/
 artifacts/
+logs/
 *.pyc
