@@ -133,6 +133,7 @@ recipe-mpr-qa benchmark-table --root artifacts/runs --output artifacts/runs/repo
 - `configs/`: reusable TOML experiment configs
 - `docs/spec.md`: detailed project specification and contracts
 - `docs/benchmark_run_inventory.md`: current benchmark-relevant local run inventory and cleanup state
+- `docs/phase1_branch_status.md`: branch wrap-up, executed validations, retained results, and remaining gaps
 - `src/recipe_mpr_qa/data`: schemas, validation, loaders, and split generation
 - `src/recipe_mpr_qa/slm`: DistilBERT pipelines plus causal SmolLM2-style SLM support
 - `src/recipe_mpr_qa/llm`: prompts, Ollama client, inference, and judge logic
@@ -179,3 +180,4 @@ Optional extras:
 - The branch is designed to be GPU-ready without forcing heavy training or live model calls in the local test suite.
 - The SLM stack now supports both the original DistilBERT path and a SmolLM2-style causal chat path inspired by the notebook work on `main`.
 - DVC is intentionally not implemented in this pass.
+- The current branch wrap-up and retained benchmark evidence are summarized in `docs/phase1_branch_status.md` and `docs/benchmark_run_inventory.md`.
