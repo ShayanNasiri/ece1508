@@ -1,0 +1,214 @@
+\documentclass{article}
+\usepackage[final]{neurips}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{multirow}
+
+\title{Evaluating Small Language Models for Recipe Recommendation:\\A Scaling Study on Recipe-MPR QA}
+
+\author{%
+  Shayan Nasiri\\
+  Department of Electrical and\\Computer Engineering\\
+  University of Toronto\\
+  \texttt{shayan.nasiri@mail.utoronto.ca} \\
+  \And
+  Jagrit Rai\\
+  Department of Electrical and\\Computer Engineering\\
+  University of Toronto\\
+  \texttt{jagrit.rai@mail.utoronto.ca} \\
+  \And
+  Pedram Yazdinia\\
+  Department of Electrical and\\Computer Engineering\\
+  University of Toronto\\
+  \texttt{pedram.yazdinia@mail.utoronto.ca} \\
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We investigate whether small language models (SLMs) with fewer than 2 billion parameters can perform multi-choice recipe recommendation, a task requiring commonsense reasoning over natural-language preference queries. Using Recipe-MPR QA, a dataset of 500 multiple-choice questions spanning five query types, we evaluate SmolLM2 models at 135M, 360M, and 1.7B parameters alongside Qwen2.5-3B and DeepSeek-R1-7B. We apply Low-Rank Adaptation (LoRA) finetuning with systematic ablation over seven configurations and augment training data with LLM-generated synthetic examples. Our results reveal a sharp capability threshold between 360M and 1.7B parameters: below it, all models perform at chance level ($\sim$20\%) regardless of finetuning, augmentation, or evaluation strategy. Above it, finetuning yields a 60-percentage-point improvement (18.7\% to 78.7\% at 1.7B), and accuracy scales further with model size---86.7\% at 3B and 97.3\% at 7B without any finetuning. We additionally find that larger models risk catastrophic overfitting on small datasets, with Qwen2.5-3B memorizing the entire 350-example training set within a single epoch. These findings highlight fundamental capacity limitations that cannot be overcome through training strategies alone.
+\end{abstract}
+
+\section*{Attestation of Teamwork}
+
+This project was a collaborative effort with clearly divided responsibilities. \textbf{Shayan Nasiri} designed and implemented the model-agnostic evaluation pipeline supporting both Ollama and HuggingFace backends, ran all model evaluations across the full scaling study, managed the Slurm cluster infrastructure on the UofT CS GPU cluster, designed the scaling study from 135M to 7B parameters, and executed finetuning runs for the 1.7B, 3B, and 360M+synthetic configurations. \textbf{Jagrit Rai} conducted the systematic finetuning ablation study for SmolLM2-135M across seven configurations (Runs A--G), varying LoRA rank, learning rate, dropout, and data augmentation, and performed initial model exploration. \textbf{Pedram Yazdinia} built the core data pipeline and installable Python package, designed the dataset preparation and splitting infrastructure, and developed the LLM-powered synthetic data generation pipeline that produced 88 diverse training examples. All team members contributed to the analysis and interpretation of results.
+
+\section{Introduction}
+
+Recipe recommendation systems must reason over diverse user preferences expressed in natural language, including specific ingredient requests, commonsense dietary knowledge, negated constraints, analogical comparisons, and temporal meal-planning considerations. While large language models (LLMs) with billions of parameters have demonstrated strong performance on such reasoning tasks~[1,2], deploying them in resource-constrained settings---such as mobile devices or embedded kitchen systems---motivates the investigation of small language models (SLMs) as alternatives.
+
+Recent work on model scaling has established that language model capabilities often emerge discontinuously as parameter counts increase~[3], raising a practical question: what is the minimum model size required for a given reasoning task? This question has important implications for deployment, as smaller models offer advantages in latency, memory footprint, energy consumption, and privacy through on-device inference.
+
+In this work, we address this question in the context of recipe recommendation by evaluating models ranging from 135 million to 7 billion parameters on Recipe-MPR QA, a multiple-choice benchmark requiring preference-based recipe selection. We systematically investigate whether LoRA finetuning~[4], data augmentation, and synthetic data generation can compensate for limited model capacity, and we characterize the scaling behavior across this parameter range.
+
+\section{Preliminaries and Problem Formulation}
+
+\textbf{Task definition.} Given a natural-language query $q$ expressing a recipe preference and a set of five candidate recipes $\{r_1, r_2, r_3, r_4, r_5\}$, the task is to select the recipe $r^*$ that best satisfies the expressed preference. Each query is annotated with one or more of five types: \textit{Specific} (explicit ingredient or technique requests), \textit{Commonsense} (requiring world knowledge about food), \textit{Negated} (constraints expressed through negation), \textit{Analogical} (comparisons to known dishes), and \textit{Temporal} (meal-timing or preparation-time constraints).
+
+\textbf{Dataset.} Recipe-MPR QA consists of 500 multiple-choice questions with deterministic stratified splitting into 350 training, 75 validation, and 75 test examples (seed 1508, stratified by query type signature). Each question includes five recipe options with one correct answer and an expert-written correctness explanation.
+
+\textbf{Low-Rank Adaptation.} LoRA~[4] enables parameter-efficient finetuning by decomposing weight updates as $\Delta W = BA$ where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$, with rank $r \ll \min(d, k)$. This reduces trainable parameters from $d \times k$ to $r(d + k)$, enabling finetuning of large models on limited hardware.
+
+\section{Design}
+
+Our system comprises three components: a data pipeline, a finetuning module, and an evaluation framework.
+
+The \textbf{data pipeline} normalizes the raw 500-question dataset into a structured format with stable identifiers, generates deterministic train/validation/test splits, and supports augmentation through both rule-based query rewrites and LLM-generated synthetic examples. The synthetic data pipeline uses OpenAI's API to generate novel query-recipe pairs that are reviewed and filtered for quality, producing 88 diverse examples that augment the 350-example training set.
+
+The \textbf{finetuning module} applies LoRA adapters to pretrained transformer models using the PEFT library~[5]. Training is formulated as causal language modeling on chat-formatted examples, where each training instance consists of a system prompt, the multiple-choice question, and the correct answer letter. We conducted a systematic ablation over seven configurations for SmolLM2-135M, varying LoRA rank ($r \in \{8, 16, 32, 64\}$), learning rate, dropout, and augmentation strategy.
+
+The \textbf{evaluation framework} is model-agnostic, supporting two backends: Ollama for serving larger models via REST API, and HuggingFace Transformers for direct inference with finetuned adapters. It implements two evaluation modes: generative (parsing free-text responses) and log-likelihood (scoring answer tokens by logits for base models). A fuzzy response parser recovers answers from varied output formats, including DeepSeek's \texttt{\textbackslash boxed\{\}} notation and verbose SmolLM2 responses. Option shuffling diagnostics detect position memorization in finetuned models.
+
+\section{Methodology}
+
+\textbf{Models.} We evaluate five model families spanning two orders of magnitude in parameter count: SmolLM2-135M, SmolLM2-360M, SmolLM2-1.7B~[6], Qwen2.5-3B~[7], and DeepSeek-R1-Distill-Qwen-7B~[8]. SmolLM2 models are evaluated in both instruct and base variants where available. All finetuned models use LoRA adapters applied to attention projection matrices.
+
+\textbf{Finetuning ablation.} For SmolLM2-135M, we conducted seven training runs (A--G) systematically varying: LoRA rank ($r \in \{8, 16, 32, 64\}$), learning rate ($\{2 \times 10^{-4}, 5 \times 10^{-5}\}$), dropout ($\{0.0, 0.1\}$), and inclusion of 160 rule-based augmented examples. Run~C (LoRA $r$=32, learning rate $2 \times 10^{-4}$, no augmentation, no dropout) produced the best validation performance and was adopted as the standard configuration for subsequent scaling experiments. We applied this configuration to SmolLM2-360M (Run~G), SmolLM2-360M with 88 synthetic examples (Run~H), SmolLM2-1.7B, and Qwen2.5-3B.
+
+\textbf{Synthetic data generation.} To investigate whether data quality could overcome model capacity limitations, we generated 88 synthetic training examples using an LLM-powered pipeline. Unlike the rule-based augmentations (query rewrites of existing examples), the synthetic pipeline generates entirely novel query-recipe combinations, producing more diverse training signal. These were added to the 350-example training set for the Run~H experiment.
+
+\textbf{Evaluation protocol.} All models are evaluated on the same 75-question test split. Instruct models and finetuned models are evaluated generatively: the model receives a chat-formatted prompt and generates a free-text response, which is parsed to extract a letter choice. Base (non-instruct) models are evaluated via log-likelihood: for each of the five answer options, we compute the log-probability of the answer token conditioned on the prompt, and select the option with the highest score. This approach avoids the failure mode where base models generate incoherent text rather than answering the question.
+
+\section{Numerical Experiments}
+
+\subsection{Main Results}
+
+Table~\ref{tab:main-results} presents the complete results across all model configurations. The most striking finding is the sharp performance transition between 360M and 1.7B parameters.
+
+\begin{table}[h]
+  \caption{Test set accuracy (75 questions) across all model configurations. Random chance is 20\%.}
+  \label{tab:main-results}
+  \centering
+  \small
+  \begin{tabular}{llccc}
+    \toprule
+    Model & Params & Finetuned & Eval Mode & Acc. \\
+    \midrule
+    SmolLM2-135M-Instruct & 135M & No & Generative & 18.7\% \\
+    SmolLM2-135M base & 135M & No & Log-likeli. & 18.7\% \\
+    SmolLM2-135M ft.\ (Run C) & 135M & LoRA $r$\!=\!32 & Generative & 22.7\% \\
+    SmolLM2-360M ft.\ (Run G) & 360M & LoRA $r$\!=\!32 & Generative & 17.3\% \\
+    SmolLM2-360M ft.\ (Run H) & 360M & LoRA $r$\!=\!32+syn. & Generative & 21.3\% \\
+    SmolLM2-1.7B-Instruct & 1.7B & No & Generative & 18.7\% \\
+    SmolLM2-1.7B finetuned & 1.7B & LoRA $r$\!=\!32 & Generative & 78.7\% \\
+    Qwen2.5-3B-Instruct & 3B & No & Generative & 86.7\% \\
+    DeepSeek-R1-7B & 7B & No & Generative & 97.3\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+All models at or below 360M parameters achieve approximately 20\% accuracy---indistinguishable from random chance on a five-option task---regardless of whether they are finetuned, evaluated generatively or via log-likelihood, or trained with augmented data. At 1.7B parameters, finetuning transforms performance from 18.7\% to 78.7\%, a 60-percentage-point gain. Above the threshold, performance scales with model size: Qwen2.5-3B achieves 86.7\% without any finetuning, and DeepSeek-R1-7B reaches 97.3\%.
+
+\subsection{Finetuning Ablation at 135M}
+
+The seven-configuration ablation for SmolLM2-135M (Table~\ref{tab:ablation}) reveals that neither LoRA capacity nor augmented data meaningfully improves performance below the capability threshold. Run~C, using LoRA rank 32 without augmentation, achieved the highest accuracy at 22.7\%, while runs incorporating the 160 augmented examples (D, E, F) consistently showed higher validation loss, indicating that the rule-based query rewrites introduced overfitting rather than useful signal.
+
+\begin{table}[h]
+  \caption{Finetuning ablation for SmolLM2-135M across seven configurations (Runs A--G).}
+  \label{tab:ablation}
+  \centering
+  \begin{tabular}{lccccc}
+    \toprule
+    Run & LoRA $r$ & LR & Dropout & Augmented & Test Acc. \\
+    \midrule
+    A (baseline) & 16 & $2{\times}10^{-4}$ & 0.0 & No & 20.0\% \\
+    B (+ augmented) & 16 & $2{\times}10^{-4}$ & 0.0 & Yes & 18.7\% \\
+    C (higher cap.) & 32 & $2{\times}10^{-4}$ & 0.0 & No & \textbf{22.7\%} \\
+    D (aug. + cap.) & 32 & $2{\times}10^{-4}$ & 0.0 & Yes & 20.0\% \\
+    E (+ dropout) & 32 & $2{\times}10^{-4}$ & 0.1 & Yes & 18.7\% \\
+    F (lower LR) & 32 & $5{\times}10^{-5}$ & 0.1 & Yes & 17.3\% \\
+    G (360M) & 32 & $2{\times}10^{-4}$ & 0.0 & No & 17.3\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Catastrophic Overfitting at Scale}
+
+Finetuning Qwen2.5-3B with the Run~C configuration produced catastrophic overfitting: training accuracy reached 100\% and loss dropped to near zero within the first epoch, indicating complete memorization of the 350-example training set. At evaluation time, the model generated empty or incoherent responses, achieving 0\% accuracy with 75 parse failures. A conservative retraining with reduced learning rate ($1 \times 10^{-5}$), LoRA rank 8, and 2 epochs partially recovered performance to 53.3\%, but this still represented a substantial degradation from the 86.7\% zero-shot baseline. This demonstrates that for models already performing well on a task, finetuning on small datasets can be actively harmful.
+
+\section{Discussion}
+
+Our results reveal three key insights about the relationship between model scale and task-specific capability for recipe recommendation.
+
+First, the capability threshold we observe between 360M and 1.7B parameters is notably sharp rather than gradual. This is consistent with the emergent abilities hypothesis~[3], which predicts that certain capabilities appear discontinuously with scale. The fact that SmolLM2-1.7B-Instruct scores 18.7\% without finetuning---identical to the 135M and 360M models---suggests that the relevant knowledge is not accessible through prompting alone but can be unlocked through task-specific training once sufficient model capacity exists.
+
+Second, our finding that data augmentation cannot compensate for insufficient model capacity has practical implications for practitioners working with SLMs. Both rule-based augmentation (160 query rewrites) and higher-quality LLM-generated synthetic data (88 diverse examples) failed to push sub-threshold models beyond chance performance. This suggests that the bottleneck is representational capacity rather than training data quantity or diversity.
+
+Third, the catastrophic overfitting of Qwen2.5-3B highlights a complementary risk at the opposite end of the spectrum: models with excess capacity relative to the training set can memorize rather than generalize. This creates an asymmetry where underpowered models cannot learn the task and overpowered models may overfit destructively, suggesting that finetuning is most beneficial in a moderate capacity regime.
+
+The strong zero-shot performance of Qwen2.5-3B (86.7\%) and DeepSeek-R1-7B (97.3\%) suggests that for recipe recommendation, models above approximately 3B parameters have already acquired sufficient knowledge during pretraining, and finetuning may be unnecessary or counterproductive on small datasets.
+
+\section{Conclusions}
+
+We conducted a systematic scaling study of language models from 135M to 7B parameters on recipe preference recommendation, revealing a sharp capability threshold between 360M and 1.7B parameters. Below this threshold, no combination of finetuning strategy, LoRA configuration, or data augmentation produces performance above random chance. Above it, finetuning is highly effective, and larger pretrained models perform well without any task-specific training. Our results provide practical guidance for deploying language models for domain-specific reasoning: practitioners should first verify that their target model size exceeds the task's capability threshold before investing in finetuning infrastructure. Future work could investigate the threshold more precisely (e.g., evaluating models at 500M and 1B parameters), explore knowledge distillation from larger to smaller models, and extend the analysis to other commonsense reasoning benchmarks.
+
+\section*{References}
+
+{\small
+
+[1] Brown, T., Mann, B., Ryder, N., et al. (2020). Language models are few-shot learners. \textit{Advances in Neural Information Processing Systems}, 33, 1877--1901.
+
+[2] Wei, J., Wang, X., Schuurmans, D., et al. (2022). Chain-of-thought prompting elicits reasoning in large language models. \textit{Advances in Neural Information Processing Systems}, 35, 24824--24837.
+
+[3] Wei, J., Tay, Y., Bommasani, R., et al. (2022). Emergent abilities of large language models. \textit{Transactions on Machine Learning Research}.
+
+[4] Hu, E.J., Shen, Y., Wallis, P., et al. (2022). LoRA: Low-rank adaptation of large language models. \textit{International Conference on Learning Representations}.
+
+[5] Mangrulkar, S., Gugger, S., Debut, L., Belkada, Y., Paul, S., \& Bossan, B. (2022). PEFT: Parameter-efficient fine-tuning methods. \url{https://github.com/huggingface/peft}.
+
+[6] Allal, L.B., Lozhkov, A., Penedo, G., et al. (2024). SmolLM2: A family of small yet capable language models. Hugging Face.
+
+[7] Yang, A., Yang, B., Hui, B., et al. (2024). Qwen2.5: A party of foundation models. \textit{arXiv preprint arXiv:2412.15115}.
+
+[8] DeepSeek-AI. (2025). DeepSeek-R1: Incentivizing reasoning capability in LLMs via reinforcement learning. \textit{arXiv preprint arXiv:2501.12948}.
+
+}
+
+\section*{Appendix}
+
+The complete codebase, evaluation results, and Slurm scripts are available in the project repository at \url{https://github.com/ShayanNasiri/ece1508}. The repository includes the installable \texttt{recipe\_mpr\_qa} Python package, 14 Slurm scripts for reproducible execution on GPU clusters, all evaluation result JSON files, and a Streamlit dashboard for interactive exploration of per-question results.
+
+\newpage
+\section*{Use of AI}
+
+We used AI tools extensively throughout this project. Claude (Anthropic) was used via Claude Code as a programming assistant for implementing the evaluation pipeline, writing Slurm scripts, debugging CUDA and dependency issues, and refactoring code. OpenAI's GPT-4o was used within the synthetic data generation pipeline to produce novel training examples, which were then automatically reviewed and filtered for quality. All AI-generated code was reviewed and tested by team members before integration, and all AI-generated training data was validated against quality thresholds before inclusion. The evaluation results themselves were produced by the language models under study (SmolLM2, Qwen2.5, DeepSeek-R1) as the subject of our investigation, not as authoring tools.
+
+\section*{Consent for Information Sharing}
+
+\subsection*{Consent for Sharing Project Materials}
+
+\begin{itemize}
+	\item All group members consent to allow the project materials (report, slides, and presentation recording) to be shared on the course page for future students.
+\end{itemize}
+
+\subsection*{Consent for Use of Project Information in Statistical Analysis}
+
+\begin{itemize}
+	\item All group members consent to allow anonymized information about the project (e.g., topic, methods, outcomes, grades) to be used by the instructor for statistical analysis and course improvement.
+\end{itemize}
+
+\subsection*{Optional Comments}
+
+No additional comments.
+
+\subsection*{Group Identification}
+
+\begin{itemize}
+	\item Group number: [TO BE FILLED]
+	\item Names of group members: Shayan Nasiri, Jagrit Rai, Pedram Yazdinia
+	\item Signature of group members: [TO BE SIGNED]
+	\item Date: April 2026
+\end{itemize}
+
+\end{document}
