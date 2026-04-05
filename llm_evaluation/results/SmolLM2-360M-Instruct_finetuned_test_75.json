@@ -1,10 +1,10 @@
 {
-  "model": "/h/439/snasiri/ece1508/outputs/run_G_360m_capacity/final",
+  "model": "/h/439/snasiri/ece1508/outputs/run_H_synthetic_highcap/final",
   "split": "test",
   "eval_mode": "generative",
   "metrics": {
-    "overall": 0.17333333333333334,
-    "total_correct": 13,
+    "overall": 0.21333333333333335,
+    "total_correct": 16,
     "total": 75,
     "parse_failures": 0,
     "Specific": {
@@ -13,8 +13,8 @@
       "total": 23
     },
     "Commonsense": {
-      "accuracy": 0.1282051282051282,
-      "correct": 5,
+      "accuracy": 0.1794871794871795,
+      "correct": 7,
       "total": 39
     },
     "Negated": {
@@ -23,8 +23,8 @@
       "total": 17
     },
     "Analogical": {
-      "accuracy": 0.25,
-      "correct": 1,
+      "accuracy": 0.0,
+      "correct": 0,
       "total": 4
     },
     "Temporal": {
@@ -40,11 +40,11 @@
       "query": "What's a lobster recipe without too many ingredients?",
       "correct_answer_id": "54ea91646e",
       "correct_letter": "C",
-      "predicted_letter": "E",
-      "predicted_id": "4ac7520420",
+      "predicted_letter": "D",
+      "predicted_id": "1406f052ff",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "E",
+      "raw_response": "D",
       "options": {
         "A": "Cheddar biscuits copying the ones at Red Lobster restaurant",
         "B": "Lobster recipe made with lots of seasoning, fresh herbs, puffy pastry, truffle oil, egg, essence, difference sauces, and a variety of vegetables",
@@ -166,11 +166,11 @@
       "query": "My favourite dessert is ice cream but I don't like fruity flavours",
       "correct_answer_id": "7d09f98349",
       "correct_letter": "A",
-      "predicted_letter": "D",
-      "predicted_id": "421aafaa99",
+      "predicted_letter": "E",
+      "predicted_id": "294c60c0c7",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "D",
+      "raw_response": "E",
       "options": {
         "A": "Cookies and cream ice cream made with oreo cookies",
         "B": "Chocolate-flavoured French eclairs made from vanilla instant pudding mix",
@@ -254,11 +254,18 @@
       "query": "What are some fruit smoothie recipes that don't contain dairy?",
       "correct_answer_id": "7881dfd5df",
       "correct_letter": "D",
-      "predicted_letter": "D",
-      "predicted_id": "7881dfd5df",
-      "is_correct": true,
+      "predicted_letter": "C",
+      "predicted_id": "7b176958fa",
+      "is_correct": false,
       "parse_failure": false,
-      "raw_response": "D"
+      "raw_response": "C",
+      "options": {
+        "A": "Crepes with a cheese and blueberry pie filling",
+        "B": "Strawberry smoothie with oats and flax made using low-fat milk",
+        "C": "Smoothie containing strawberries, bananas, yogurt, and nonfat milk",
+        "D": "Smoothie made from fruit juice and bananas",
+        "E": "Dessert containing yogurt, pudding mix, milk and three types of fruits"
+      }
     },
     {
       "index": 13,
@@ -285,18 +292,11 @@
       "query": "Can I have a tangy summer drink?",
       "correct_answer_id": "1776c5b520",
       "correct_letter": "A",
-      "predicted_letter": "D",
-      "predicted_id": "2cdcd73aea",
-      "is_correct": false,
+      "predicted_letter": "A",
+      "predicted_id": "1776c5b520",
+      "is_correct": true,
       "parse_failure": false,
-      "raw_response": "D",
-      "options": {
-        "A": "Punch made from lemon-lime beverage, pineapple juice, drink mix, and lime",
-        "B": "Tangy beef meatballs containing Worcestershire sauce",
-        "C": "Summer meringue dessert made of strawberry and kiwi meringue",
-        "D": "Sweet drink with milk powder, sugar, and cocoa",
-        "E": "Barbecue pork ribs with a tangy sauce"
-      }
+      "raw_response": "A"
     },
     {
       "index": 15,
@@ -304,18 +304,11 @@
       "query": "What's a recipe for soup that's sweet?",
       "correct_answer_id": "080c32addb",
       "correct_letter": "C",
-      "predicted_letter": "A",
-      "predicted_id": "562934022c",
-      "is_correct": false,
+      "predicted_letter": "C",
+      "predicted_id": "080c32addb",
+      "is_correct": true,
       "parse_failure": false,
-      "raw_response": "A",
-      "options": {
-        "A": "Sweet potato casserole that's mildly sweet",
-        "B": "Sweet purple cabbage coleslaw containing Miracle Whip",
-        "C": "Soup made from mango puree, sweetened condensed milk, orange juice, and papayas",
-        "D": "Spicy and sour tofu and mushroom soup",
-        "E": "Beef brisket soup containing chili powder"
-      }
+      "raw_response": "C"
     },
     {
       "index": 16,
@@ -342,18 +335,11 @@
       "query": "I want healthy Mexican food",
       "correct_answer_id": "099ae0fa87",
       "correct_letter": "C",
-      "predicted_letter": "A",
-      "predicted_id": "08c41efc14",
-      "is_correct": false,
+      "predicted_letter": "C",
+      "predicted_id": "099ae0fa87",
+      "is_correct": true,
       "parse_failure": false,
-      "raw_response": "A",
-      "options": {
-        "A": "Mexican pizza made with beans and ground beef",
-        "B": "Healthier donuts made from whole wheat bread and honey with no processed sugar",
-        "C": "Mexican salad made from beans and corn",
-        "D": "Mexican s'mores made from chocolate and peanut butter",
-        "E": "Healthy vegetable chips made from sweet potatoes"
-      }
+      "raw_response": "C"
     },
     {
       "index": 18,
@@ -380,11 +366,11 @@
       "query": "My cousins are vegetarian and they are coming over for mexican food night",
       "correct_answer_id": "81db102972",
       "correct_letter": "C",
-      "predicted_letter": "E",
-      "predicted_id": "92fe205b4e",
+      "predicted_letter": "D",
+      "predicted_id": "6f24593c2c",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "E",
+      "raw_response": "D",
       "options": {
         "A": "Halibut tacos from corn tortillas",
         "B": "Mexican taco salad made from ground beef and chili powder",
@@ -437,18 +423,11 @@
       "query": "I want to eat pizza but I'm watching my weight",
       "correct_answer_id": "27c6a03010",
       "correct_letter": "B",
-      "predicted_letter": "D",
-      "predicted_id": "952937b83d",
-      "is_correct": false,
+      "predicted_letter": "B",
+      "predicted_id": "27c6a03010",
+      "is_correct": true,
       "parse_failure": false,
-      "raw_response": "D",
-      "options": {
-        "A": "Grilled pizza with chicken and BBQ sauce",
-        "B": "Low calories pizza made of dry yeast, flour, and fat free mozzarella cheese",
-        "C": "Healthy meat loaf made pizza flavoured with marinara sauce, lean ground beef",
-        "D": "Low calories spinach salad with pizza sauce",
-        "E": "Bacon, lettuce, and tomato pizza with monterey jack cheese and cream cheese"
-      }
+      "raw_response": "B"
     },
     {
       "index": 23,
@@ -487,11 +466,18 @@
       "query": "I want to make a well-known Chinese chicken dish",
       "correct_answer_id": "06dddda4ee",
       "correct_letter": "D",
-      "predicted_letter": "D",
-      "predicted_id": "06dddda4ee",
-      "is_correct": true,
+      "predicted_letter": "A",
+      "predicted_id": "70e63cadd9",
+      "is_correct": false,
       "parse_failure": false,
-      "raw_response": "D"
+      "raw_response": "A",
+      "options": {
+        "A": "Ground beef and rice made chinese style with soy sauce",
+        "B": "Chinese stir fry made using celery and beef",
+        "C": "Chinese pot roast made from beef and served with cabbage",
+        "D": "Kung pao chicken flavoured with soy sauce and red chilies",
+        "E": "Casserole made Chinese style with chicken breast and water chestnut"
+      }
     },
     {
       "index": 26,
@@ -511,11 +497,18 @@
       "query": "I want to make a soup from the Mediterranean",
       "correct_answer_id": "6cd574ada4",
       "correct_letter": "D",
-      "predicted_letter": "D",
-      "predicted_id": "6cd574ada4",
-      "is_correct": true,
+      "predicted_letter": "A",
+      "predicted_id": "03068e4d95",
+      "is_correct": false,
       "parse_failure": false,
-      "raw_response": "D"
+      "raw_response": "A",
+      "options": {
+        "A": "Mediterranean salad of diced tomatoes, seasoned with olive oil and vinegar",
+        "B": "British onion soup with cheese and onion",
+        "C": "Sweet and sour beet polish soup full of vegetables",
+        "D": "Greek style meatball soup made from minced beef, egg, and rice",
+        "E": "Meditarranean couscous salad with veggies and feta cheese"
+      }
     },
     {
       "index": 28,
@@ -523,18 +516,11 @@
       "query": "I want to make paella for my spanish mother-in-law who is diabetic",
       "correct_answer_id": "a6c5c1f5cb",
       "correct_letter": "D",
-      "predicted_letter": "A",
-      "predicted_id": "12427544a2",
-      "is_correct": false,
+      "predicted_letter": "D",
+      "predicted_id": "a6c5c1f5cb",
+      "is_correct": true,
       "parse_failure": false,
-      "raw_response": "A",
-      "options": {
-        "A": "Spanish rice made with mushroom and chicken",
-        "B": "Spanish seafood rice made from shrimp, squid, mussels, and vegetables",
-        "C": "Gelato made from peach, heavy cream, egg yolks, truvia sweetener, and plain yogurt",
-        "D": "Spanish rice with chicken, spicy sausage, and seafood with low sugar content",
-        "E": "Russian caramel fudge made from sweetened milk, golden syrup, and butter"
-      }
+      "raw_response": "D"
     },
     {
       "index": 29,
@@ -649,18 +635,11 @@
       "query": "Any ideas for a brunch that is easy to make in my dormitory kitchen?",
       "correct_answer_id": "8abf5e0868",
       "correct_letter": "B",
-      "predicted_letter": "A",
-      "predicted_id": "04d424289c",
-      "is_correct": false,
+      "predicted_letter": "B",
+      "predicted_id": "8abf5e0868",
+      "is_correct": true,
       "parse_failure": false,
-      "raw_response": "A",
-      "options": {
-        "A": "Eggs benedict - poached eggs, prosciutto on top of English muffins topped with a creamy Hollandaise sauce",
-        "B": "Pancakes with berries",
-        "C": "Spaghetti pasta with bolognese sauce",
-        "D": "Instant ramen with eggs, spinach and pickled cabbage",
-        "E": "Instant potato soup made from instant mashed potatoes and herbs"
-      }
+      "raw_response": "B"
     },
     {
       "index": 36,
@@ -711,11 +690,11 @@
       "query": "My daughter told me she wants a cake with lots of cream for her birthday, but my oven is broken - what should I do?",
       "correct_answer_id": "902fe21ebf",
       "correct_letter": "B",
-      "predicted_letter": "A",
-      "predicted_id": "0088f15391",
+      "predicted_letter": "D",
+      "predicted_id": "138992031e",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "A",
+      "raw_response": "D",
       "options": {
         "A": "Classic strawberry shortcake - shortcake layered with strawberry slices and whipped cream",
         "B": "Mille crepe cake - layer cake made of crepes stacked with custard and cream",
@@ -749,11 +728,11 @@
       "query": "I'm going to a cocktail party where they will host a competition for the guests to see who can make the prettiest drink.",
       "correct_answer_id": "8f83d9114b",
       "correct_letter": "E",
-      "predicted_letter": "D",
-      "predicted_id": "0a90d9e978",
+      "predicted_letter": "C",
+      "predicted_id": "9865b93ea8",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "D",
+      "raw_response": "C",
       "options": {
         "A": "Gin and tonic cocktail",
         "B": "Detox green juice made from cilantro, ginger, lemon, lime, cucumbers",
@@ -768,11 +747,11 @@
       "query": "I need a healthy preworkout snack and I can't be too full",
       "correct_answer_id": "1c2ce335be",
       "correct_letter": "E",
-      "predicted_letter": "A",
-      "predicted_id": "a0d64772d7",
+      "predicted_letter": "D",
+      "predicted_id": "a59714262e",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "A",
+      "raw_response": "D",
       "options": {
         "A": "Classic chicken tenders - deep fried boneless chicken strips",
         "B": "Vegetarian spring rolls with noodles",
@@ -787,11 +766,11 @@
       "query": "I would like something cheap but I get hungry all the time",
       "correct_answer_id": "035e1bea0d",
       "correct_letter": "B",
-      "predicted_letter": "A",
-      "predicted_id": "04f1bc79a5",
+      "predicted_letter": "D",
+      "predicted_id": "8e9403043d",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "A",
+      "raw_response": "D",
       "options": {
         "A": "Risotto topped with smoked salmon",
         "B": "Simple fried rice with carrots and peas",
@@ -825,11 +804,11 @@
       "query": "My friend is bringing a bottle of champagne over, what should I make for dinner to go with it?",
       "correct_answer_id": "29e400e3bc",
       "correct_letter": "A",
-      "predicted_letter": "D",
-      "predicted_id": "56c08f5841",
+      "predicted_letter": "C",
+      "predicted_id": "095addb74c",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "D",
+      "raw_response": "C",
       "options": {
         "A": "Oysters rockefeller - baked oysters topped with breadcrumbs and a rich sauce of butter and herbs",
         "B": "Angelhair pasta with pomodoro sauce",
@@ -844,11 +823,11 @@
       "query": "I want a pasta that doesn't taste cheap.",
       "correct_answer_id": "14db1de478",
       "correct_letter": "E",
-      "predicted_letter": "C",
-      "predicted_id": "80fa99770f",
+      "predicted_letter": "D",
+      "predicted_id": "1f0dbc881d",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "C",
+      "raw_response": "D",
       "options": {
         "A": "Spaghetti pasta with bolognese sauce",
         "B": "Angelhair pasta with pomodoro sauce",
@@ -958,11 +937,11 @@
       "query": "I'm on a paleo diet and want a breakfast I can grab and go",
       "correct_answer_id": "39bc46d7ce",
       "correct_letter": "C",
-      "predicted_letter": "A",
-      "predicted_id": "91f37c23ec",
+      "predicted_letter": "E",
+      "predicted_id": "2390529a80",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "A",
+      "raw_response": "E",
       "options": {
         "A": "Paleo taco salad made with ground beef",
         "B": "Chocolate ice cream",
@@ -977,11 +956,18 @@
       "query": "I'm vegan but I miss eating steak",
       "correct_answer_id": "803be1d5b3",
       "correct_letter": "A",
-      "predicted_letter": "A",
-      "predicted_id": "803be1d5b3",
-      "is_correct": true,
+      "predicted_letter": "D",
+      "predicted_id": "72ae911e6c",
+      "is_correct": false,
       "parse_failure": false,
-      "raw_response": "A"
+      "raw_response": "D",
+      "options": {
+        "A": "Fake steak made from seitan",
+        "B": "Spicy peppered steaks with steak sauce and mustard",
+        "C": "Vegan pancakes made from fruits and maple syrup",
+        "D": "Vegan chocolate cake with vegan icing",
+        "E": "Skillet beef steak With vegetables and rice"
+      }
     },
     {
       "index": 54,
@@ -1008,11 +994,11 @@
       "query": "What snack can I have if I am allergic to soy?",
       "correct_answer_id": "99a2ec51be",
       "correct_letter": "E",
-      "predicted_letter": "A",
-      "predicted_id": "1df267929e",
+      "predicted_letter": "B",
+      "predicted_id": "477ddf6e02",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "A",
+      "raw_response": "B",
       "options": {
         "A": "Whole grain gluten-free spinach and soy bread",
         "B": "Roasted soy beans with soy sauce",
@@ -1039,11 +1025,11 @@
       "query": "I want a lunch I can eat cold",
       "correct_answer_id": "51c55a401e",
       "correct_letter": "E",
-      "predicted_letter": "D",
-      "predicted_id": "4a13c4e253",
+      "predicted_letter": "A",
+      "predicted_id": "262878bbe2",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "D",
+      "raw_response": "A",
       "options": {
         "A": "Korean style hot pot made with vegetables",
         "B": "Steak fingers made with sirloin steaks, flour, and pepper",
@@ -1058,11 +1044,11 @@
       "query": "I'm craving Asian style meat pancakes",
       "correct_answer_id": "5c0b92f270",
       "correct_letter": "D",
-      "predicted_letter": "B",
-      "predicted_id": "0115f36655",
+      "predicted_letter": "C",
+      "predicted_id": "07c53e91c9",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "B",
+      "raw_response": "C",
       "options": {
         "A": "Vegan pumpkin pancakes",
         "B": "Asian bolognese made of ground chicken, tofu, and tomatoes with jasmine rice",
@@ -1172,11 +1158,11 @@
       "query": "What's a sweet and spicy snack I can make?",
       "correct_answer_id": "9aa69ef8df",
       "correct_letter": "E",
-      "predicted_letter": "A",
-      "predicted_id": "56c08f5841",
+      "predicted_letter": "C",
+      "predicted_id": "a0751f8e57",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "A",
+      "raw_response": "C",
       "options": {
         "A": "Spicy hotpot broth with Sichuan chili peppers",
         "B": "Cracker snack with cheese spread, ham, and tomatoes",
@@ -1210,11 +1196,11 @@
       "query": "I'd like to have a halloween themed snack for my halloween party.",
       "correct_answer_id": "4aa5eb0875",
       "correct_letter": "B",
-      "predicted_letter": "A",
-      "predicted_id": "25a4ca702a",
+      "predicted_letter": "E",
+      "predicted_id": "4ad12bd622",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "A",
+      "raw_response": "E",
       "options": {
         "A": "Cracker snack with cheese spread, ham, and tomatoes",
         "B": "Cheese and olive appetizer made to look like an eyeball",
@@ -1229,11 +1215,11 @@
       "query": "My grandparents friends are coming over for dinner, can I get an entree recipe that's easy on the teeth?",
       "correct_answer_id": "6530deca11",
       "correct_letter": "E",
-      "predicted_letter": "D",
-      "predicted_id": "9d3fd92dc5",
+      "predicted_letter": "A",
+      "predicted_id": "a63291e765",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "D",
+      "raw_response": "A",
       "options": {
         "A": "Soft and chewy M&M cookies",
         "B": "Chinese style ribs made from sparerib racks, fresh ginger, and honey",
@@ -1267,11 +1253,11 @@
       "query": "I want to make an Asian vegetable platter for brunch with my friends, what are some good recipes?",
       "correct_answer_id": "cf50b6f537",
       "correct_letter": "D",
-      "predicted_letter": "C",
-      "predicted_id": "0b7fca11bc",
+      "predicted_letter": "A",
+      "predicted_id": "0a4b96801b",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "C",
+      "raw_response": "A",
       "options": {
         "A": "A mixture of Mediterranean vegetables cooked on a grill",
         "B": "A mixture of raw Mexican vegetables",
@@ -1286,18 +1272,11 @@
       "query": "Can I get a coconut drink that is alcoholic?",
       "correct_answer_id": "8d27c9a9af",
       "correct_letter": "D",
-      "predicted_letter": "B",
-      "predicted_id": "96aebd0344",
-      "is_correct": false,
+      "predicted_letter": "D",
+      "predicted_id": "8d27c9a9af",
+      "is_correct": true,
       "parse_failure": false,
-      "raw_response": "B",
-      "options": {
-        "A": "Smoothie with orange juice, mango, papayas, pineapple, soy milk, and coconut",
-        "B": "Low-sugar iced tea with rum or vodka",
-        "C": "Berry flavored alcoholic beverage",
-        "D": "Coconut flavored rum beverage",
-        "E": "Passion fruit flavored alcoholic beverage"
-      }
+      "raw_response": "D"
     },
     {
       "index": 71,
@@ -1305,11 +1284,11 @@
       "query": "I like to try flavors that seem weird and unconventional, would I be able to have a soup recipe with cheese and alcohol?",
       "correct_answer_id": "bbcdcdc481",
       "correct_letter": "B",
-      "predicted_letter": "D",
-      "predicted_id": "3658053e15",
+      "predicted_letter": "A",
+      "predicted_id": "02a044aea5",
       "is_correct": false,
       "parse_failure": false,
-      "raw_response": "D",
+      "raw_response": "A",
       "options": {
         "A": "French onion soup made from beef broth, sweet white onion, and gruyere cheese",
         "B": "Cheese and vegetable soup with a beer broth",
@@ -1324,11 +1303,18 @@
       "query": "I want a thick and spicy chicken soup recipe",
       "correct_answer_id": "e5d4318d05",
       "correct_letter": "D",
-      "predicted_letter": "D",
-      "predicted_id": "e5d4318d05",
-      "is_correct": true,
+      "predicted_letter": "A",
+      "predicted_id": "02735d8ac5",
+      "is_correct": false,
       "parse_failure": false,
-      "raw_response": "D"
+      "raw_response": "A",
+      "options": {
+        "A": "Spicy soup made from vegetables",
+        "B": "Spicy soup with vegetables and cayenne pepper",
+        "C": "Thick and creamy butternut squash soup with parmesan cheese",
+        "D": "Creamy soup with chicken meat and cayenne pepper",
+        "E": "Chicken soup with onions, carrots, parsnip, and celery made from scratch using a whole chicken"
+      }
     },
     {
       "index": 73,
@@ -1355,18 +1341,11 @@
       "query": "Can I get a healthy vegan burger entree?",
       "correct_answer_id": "3605f03f94",
       "correct_letter": "C",
-      "predicted_letter": "D",
-      "predicted_id": "567dcd03f7",
-      "is_correct": false,
+      "predicted_letter": "C",
+      "predicted_id": "3605f03f94",
+      "is_correct": true,
       "parse_failure": false,
-      "raw_response": "D",
-      "options": {
-        "A": "Healthy fruit milk shake that is low fat and high protein",
-        "B": "Protein burger containing onions, tomatoes, ground beef, and flax seeds",
-        "C": "Low-fat burgers made with tofu, vegetables, and seasoning",
-        "D": "Vegan pizza made with vegetables, flour, and oil",
-        "E": "Pizza burger made with pizza sauce and cheese"
-      }
+      "raw_response": "C"
     }
   ]
 }

@@ -88,6 +88,78 @@ def build_multiple_choice_prompt(
     return prompt, letter_to_option_id
 
 
+_EXPLICIT_PATTERNS = (
+    r"\\BOXED\{([A-E])\}",
+    r"\b(?:FINAL\s+ANSWER|ANSWER|CORRECT\s+ANSWER|BEST\s+OPTION|BEST\s+MATCHING\s+RECIPE|PREDICTION|CHOICE)\s*(?:IS|:)?\s*\(?([A-E])\)?[\)\.\:\-]?(?=\s|$)",
+    r"\b(?:I\s+CHOOSE|I\s+PICK|I\s+SELECT|CHOOSE|PICK|SELECT)\s+(?:OPTION\s*)?\(?([A-E])\)?(?=\b)",
+    r"\b(?:MY\s+ANSWER|MY\s+CHOICE)\s*(?:IS|:)\s*\(?([A-E])\)?[\)\.\:\-]?(?=\s|$)",
+)
+_MIN_WORD_OVERLAP = 0.5
+
+
+def _try_exact_match(text: str) -> str | None:
+    """Single uppercase letter, optionally wrapped in parens or followed by punctuation."""
+    m = re.fullmatch(r"\(?([A-E])\)?[\)\.\:\-]?", text)
+    return m.group(1) if m else None
+
+
+def _try_option_prefix(text: str) -> str | None:
+    """'Option A' or 'OPTION A)' style response."""
+    m = re.fullmatch(r"OPTION\s*([A-E])[\)\.\:\-]?", text)
+    return m.group(1) if m else None
+
+
+def _try_explicit_patterns(text: str) -> str | None:
+    """Explicit declarations: 'The answer is A', '\\boxed{A}', 'I choose B', etc."""
+    latest: tuple[int, str] | None = None
+    for pattern in _EXPLICIT_PATTERNS:
+        for match in re.finditer(pattern, text):
+            if latest is None or match.end() > latest[0]:
+                latest = (match.end(), match.group(1))
+    return latest[1] if latest is not None else None
+
+
+def _try_tail_match(text: str) -> str | None:
+    """Letter at the end of the response, not preceded by 'Option/Choice'."""
+    m = re.search(r"(?:^|[\s>])\(?([A-E])\)?[\)\.\:\-]?\s*$", text)
+    if m and not re.search(r"(?:OPTION|CHOICE)\s*$", text[:m.start(1)]):
+        return m.group(1)
+    return None
+
+
+def _try_leading_match(text: str) -> str | None:
+    """Letter at the start of the response, only when few other letters are mentioned."""
+    mentioned = {
+        match.group(1) or match.group(2)
+        for match in re.finditer(r"OPTION\s+([A-E])\b|(?:^|[\s])([A-E])\)", text)
+    }
+    if len(mentioned) >= 3:
+        return None
+    m = re.match(r"\s*\(?([A-E])\)?[\)\.\:\-]\s+\S", text)
+    return m.group(1) if m else None
+
+
+def _try_word_overlap(text: str, options: dict[str, str]) -> str | None:
+    """Fuzzy match 'best option is <description>' against option text by word overlap."""
+    desc_match = None
+    for match in re.finditer(r"BEST OPTION IS\s+(.+?)(?:\.|##|\Z)", text):
+        desc_match = match
+    if desc_match is None:
+        return None
+    candidate = desc_match.group(1).strip()
+    best_letter: str | None = None
+    best_score = 0.0
+    for letter, option_text in options.items():
+        words = [w for w in option_text.upper().split() if len(w) > 3]
+        if not words:
+            continue
+        score = sum(1 for w in words if w in candidate) / len(words)
+        if score > best_score:
+            best_score = score
+            best_letter = letter
+    return best_letter if best_score >= _MIN_WORD_OVERLAP else None
+
+
 def parse_multiple_choice_response(
     response_text: str,
     options: dict[str, str] | None = None,
@@ -95,67 +167,15 @@ def parse_multiple_choice_response(
     text = response_text.strip().upper()
     if not text:
         return None
-    exact_match = re.fullmatch(r"\(?([A-E])\)?[\)\.\:\-]?", text)
-    if exact_match:
-        return exact_match.group(1)
-    option_match = re.fullmatch(r"OPTION\s*([A-E])[\)\.\:\-]?", text)
-    if option_match:
-        return option_match.group(1)
-
-    explicit_patterns = (
-        r"\\BOXED\{([A-E])\}",
-        r"\b(?:FINAL\s+ANSWER|ANSWER|CORRECT\s+ANSWER|BEST\s+OPTION|BEST\s+MATCHING\s+RECIPE|PREDICTION|CHOICE)\s*(?:IS|:)?\s*\(?([A-E])\)?[\)\.\:\-]?(?=\s|$)",
-        r"\b(?:I\s+CHOOSE|I\s+PICK|I\s+SELECT|CHOOSE|PICK|SELECT)\s+(?:OPTION\s*)?\(?([A-E])\)?(?=\b)",
-        r"\b(?:MY\s+ANSWER|MY\s+CHOICE)\s*(?:IS|:)\s*\(?([A-E])\)?[\)\.\:\-]?(?=\s|$)",
+    return (
+        _try_exact_match(text)
+        or _try_option_prefix(text)
+        or _try_explicit_patterns(text)
+        or _try_tail_match(text)
+        or _try_leading_match(text)
+        or (options and _try_word_overlap(text, options))
+        or None
     )
-    latest_match: tuple[int, str] | None = None
-    for pattern in explicit_patterns:
-        for match in re.finditer(pattern, text):
-            candidate = match.group(1)
-            if latest_match is None or match.end() > latest_match[0]:
-                latest_match = (match.end(), candidate)
-    if latest_match is not None:
-        return latest_match[1]
-
-    tail_match = re.search(r"(?:^|[\s>])\(?([A-E])\)?[\)\.\:\-]?\s*$", text)
-    if tail_match:
-        prefix = text[:tail_match.start(1)]
-        if not re.search(r"(?:OPTION|CHOICE)\s*$", prefix):
-            return tail_match.group(1)
-
-    mentioned_letters = {
-        match.group(1) or match.group(2)
-        for match in re.finditer(r"OPTION\s+([A-E])\b|(?:^|[\s])([A-E])\)", text)
-    }
-    if len(mentioned_letters) < 3:
-        leading_match = re.match(r"\s*\(?([A-E])\)?[\)\.\:\-]\s+\S", text)
-        if leading_match:
-            return leading_match.group(1)
-
-    # Fallback: if options provided, try to match "the best option is <text>"
-    if options:
-        desc_match = None
-        for match in re.finditer(r"BEST OPTION IS\s+(.+?)(?:\.|##|\Z)", text):
-            desc_match = match
-        if desc_match:
-            candidate = desc_match.group(1).strip()
-            best_letter = None
-            best_score = 0
-            for letter, option_text in options.items():
-                option_upper = option_text.upper()
-                # Score by number of words in option text that appear in candidate
-                words = [w for w in option_upper.split() if len(w) > 3]
-                if not words:
-                    continue
-                score = sum(1 for w in words if w in candidate) / len(words)
-                if score > best_score:
-                    best_score = score
-                    best_letter = letter
-            # Require at least 50% word overlap to avoid spurious matches
-            if best_score >= 0.5:
-                return best_letter
-
-    return None
 
 
 @dataclass(frozen=True)
