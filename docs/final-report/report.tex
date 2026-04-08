@@ -100,7 +100,7 @@ Table~\ref{tab:main-results} presents the complete results across all model conf
     SmolLM2-135M ft.\ (Run C) & 135M & LoRA $r$\!=\!32 & Generative & 22.7\% \\
     \midrule
     SmolLM2-360M-Instruct & 360M & No & Generative & 25.3\% \\
-    SmolLM2-360M ft.\ (Run G) & 360M & LoRA $r$\!=\!32 & Generative & 21.3\% \\
+    SmolLM2-360M ft.\ (Run G) & 360M & LoRA $r$\!=\!32 & Generative & 17.3\% \\
     SmolLM2-360M ft.+syn.\ (Run H) & 360M & LoRA $r$\!=\!32+syn. & Generative & 21.3\% \\
     \midrule
     SmolLM2-1.7B-Instruct & 1.7B & No & Generative & 18.7\% \\
@@ -117,7 +117,7 @@ All models at or below 360M parameters achieve approximately 20\% accuracy---ind
 
 \subsection{Finetuning Ablation at 135M}
 
-The ablation study for SmolLM2-135M (Table~\ref{tab:ablation}) reveals that neither LoRA capacity nor augmented data meaningfully improves performance below the capability threshold. Run~C, using LoRA rank 32 without augmentation, achieved the highest accuracy at 22.7\%, while runs incorporating 160 rule-based augmented examples (D, E, F) showed higher validation loss, indicating that the query rewrites introduced overfitting rather than useful signal. Run~G extended the best configuration to SmolLM2-360M, achieving 21.3\%---still at chance level, confirming the threshold.
+The ablation study for SmolLM2-135M (Table~\ref{tab:ablation}) reveals that neither LoRA capacity nor augmented data meaningfully improves performance below the capability threshold. Run~C, using LoRA rank 32 without augmentation, achieved the highest accuracy at 22.7\%, while runs incorporating 160 rule-based augmented examples (D, E, F) showed higher validation loss, indicating that the query rewrites introduced overfitting rather than useful signal. Run~G extended the best configuration to SmolLM2-360M, achieving 17.3\%---still at chance level, confirming the threshold.
 
 \begin{table}[h]
   \caption{Finetuning ablation for SmolLM2-135M (Runs A--F) and SmolLM2-360M (Run G). All runs use $\alpha = 2r$ and dropout 0.05 unless noted.}
@@ -134,14 +134,14 @@ The ablation study for SmolLM2-135M (Table~\ref{tab:ablation}) reveals that neit
     D (+ augmented) & 32 & $1{\times}10^{-4}$ & 10 & 0.05 & Yes & 20.0\% \\
     E (high cap.+aug.) & 64 & $1{\times}10^{-4}$ & 10 & 0.05 & Yes & 18.7\% \\
     F (+ high dropout) & 64 & $1{\times}10^{-4}$ & 10 & 0.1 & Yes & 17.3\% \\
-    G (360M) & 32 & $1{\times}10^{-4}$ & 10 & 0.05 & No & 21.3\% \\
+    G (360M) & 32 & $1{\times}10^{-4}$ & 10 & 0.05 & No & 17.3\% \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \subsection{Synthetic Data Augmentation Across the Threshold}
 
-To isolate the effect of synthetic data, we conducted a controlled comparison at two model sizes straddling the capability threshold. At 360M parameters, adding 88 synthetic examples (Run~H) produced no improvement over training on original data alone (Run~G), with both achieving 21.3\% and identical per-query-type breakdowns across all five types. At 1.7B parameters, the same augmentation (Run~K) improved accuracy from 78.7\% to 82.7\%. Gains were concentrated in Specific queries (86.9\% to 95.7\%) and Analogical queries (75.0\% to 100\%), while Commonsense (74.4\% to 76.9\%) and Negated (82.4\%, unchanged) showed smaller or no gains. This demonstrates that synthetic data augmentation interacts with model capacity: it benefits only models with sufficient representational capacity to exploit the additional training signal.
+To isolate the effect of synthetic data, we conducted a controlled comparison at two model sizes straddling the capability threshold. At 360M parameters, adding 88 synthetic examples (Run~H, 21.3\%) improved over training on original data alone (Run~G, 17.3\%) by 4 percentage points, but both results remain near random chance (20\%), suggesting the improvement is not meaningful. At 1.7B parameters, the same augmentation (Run~K) improved accuracy from 78.7\% to 82.7\%, also a 4-percentage-point gain but now lifting performance well above chance. Gains at 1.7B were concentrated in Specific queries (86.9\% to 95.7\%) and Analogical queries (75.0\% to 100\%), while Commonsense (74.4\% to 76.9\%) and Negated (82.4\%, unchanged) showed smaller or no gains. This demonstrates that synthetic data augmentation interacts with model capacity: while it produces a nominal improvement at 360M, the effect is only practically meaningful above the capability threshold where the model can exploit the additional training signal.
 
 \subsection{Catastrophic Overfitting at Scale}
 
