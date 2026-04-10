@@ -1,0 +1,496 @@
+Looking in indexes: https://download.pytorch.org/whl/cu124
+Collecting torch==2.5.1
+  Downloading https://download-r2.pytorch.org/whl/cu124/torch-2.5.1%2Bcu124-cp312-cp312-linux_x86_64.whl (908.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 908.2/908.2 MB 257.9 MB/s eta 0:00:00
+Collecting filelock (from torch==2.5.1)
+  Downloading filelock-3.25.2-py3-none-any.whl.metadata (2.0 kB)
+Collecting typing-extensions>=4.8.0 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting networkx (from torch==2.5.1)
+  Downloading networkx-3.6.1-py3-none-any.whl.metadata (6.8 kB)
+Collecting jinja2 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting fsspec (from torch==2.5.1)
+  Downloading fsspec-2026.2.0-py3-none-any.whl.metadata (10 kB)
+Collecting nvidia-cuda-nvrtc-cu12==12.4.127 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_cuda_nvrtc_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl (24.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 24.6/24.6 MB 264.9 MB/s eta 0:00:00
+Collecting nvidia-cuda-runtime-cu12==12.4.127 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_cuda_runtime_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl (883 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 883.7/883.7 kB 259.0 MB/s eta 0:00:00
+Collecting nvidia-cuda-cupti-cu12==12.4.127 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_cuda_cupti_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl (13.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.8/13.8 MB 254.5 MB/s eta 0:00:00
+Collecting nvidia-cudnn-cu12==9.1.0.70 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_cudnn_cu12-9.1.0.70-py3-none-manylinux2014_x86_64.whl (664.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 664.8/664.8 MB 260.1 MB/s eta 0:00:00
+Collecting nvidia-cublas-cu12==12.4.5.8 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_cublas_cu12-12.4.5.8-py3-none-manylinux2014_x86_64.whl (363.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 363.4/363.4 MB 261.0 MB/s eta 0:00:00
+Collecting nvidia-cufft-cu12==11.2.1.3 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_cufft_cu12-11.2.1.3-py3-none-manylinux2014_x86_64.whl (211.5 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 211.5/211.5 MB 261.5 MB/s eta 0:00:00
+Collecting nvidia-curand-cu12==10.3.5.147 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_curand_cu12-10.3.5.147-py3-none-manylinux2014_x86_64.whl (56.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 56.3/56.3 MB 263.1 MB/s eta 0:00:00
+Collecting nvidia-cusolver-cu12==11.6.1.9 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_cusolver_cu12-11.6.1.9-py3-none-manylinux2014_x86_64.whl (127.9 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 127.9/127.9 MB 262.7 MB/s eta 0:00:00
+Collecting nvidia-cusparse-cu12==12.3.1.170 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_cusparse_cu12-12.3.1.170-py3-none-manylinux2014_x86_64.whl (207.5 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 207.5/207.5 MB 260.4 MB/s eta 0:00:00
+Collecting nvidia-nccl-cu12==2.21.5 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/nvidia_nccl_cu12-2.21.5-py3-none-manylinux2014_x86_64.whl (188.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 188.7/188.7 MB 261.6 MB/s eta 0:00:00
+Collecting nvidia-nvtx-cu12==12.4.127 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_nvtx_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl (99 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 99.1/99.1 kB 252.7 MB/s eta 0:00:00
+Collecting nvidia-nvjitlink-cu12==12.4.127 (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/cu124/nvidia_nvjitlink_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl (21.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 21.1/21.1 MB 264.4 MB/s eta 0:00:00
+Collecting triton==3.1.0 (from torch==2.5.1)
+  Downloading https://download-r2.pytorch.org/whl/triton-3.1.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (209.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 209.6/209.6 MB 259.0 MB/s eta 0:00:00
+Collecting setuptools (from torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/setuptools-70.2.0-py3-none-any.whl.metadata (5.8 kB)
+Collecting sympy==1.13.1 (from torch==2.5.1)
+  Downloading sympy-1.13.1-py3-none-any.whl.metadata (12 kB)
+Collecting mpmath<1.4,>=1.1.0 (from sympy==1.13.1->torch==2.5.1)
+  Downloading mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+Collecting MarkupSafe>=2.0 (from jinja2->torch==2.5.1)
+  Downloading https://download.pytorch.org/whl/markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Downloading sympy-1.13.1-py3-none-any.whl (6.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.2/6.2 MB 79.4 MB/s eta 0:00:00
+Downloading https://download.pytorch.org/whl/typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 kB 134.8 MB/s eta 0:00:00
+Downloading filelock-3.25.2-py3-none-any.whl (26 kB)
+Downloading fsspec-2026.2.0-py3-none-any.whl (202 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 202.5/202.5 kB 155.2 MB/s eta 0:00:00
+Downloading https://download.pytorch.org/whl/jinja2-3.1.6-py3-none-any.whl (134 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 150.8 MB/s eta 0:00:00
+Downloading networkx-3.6.1-py3-none-any.whl (2.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 163.9 MB/s eta 0:00:00
+Downloading https://download.pytorch.org/whl/setuptools-70.2.0-py3-none-any.whl (930 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 930.8/930.8 kB 263.0 MB/s eta 0:00:00
+Downloading https://download.pytorch.org/whl/markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 265.7 MB/s eta 0:00:00
+Installing collected packages: mpmath, typing-extensions, sympy, setuptools, nvidia-nvtx-cu12, nvidia-nvjitlink-cu12, nvidia-nccl-cu12, nvidia-curand-cu12, nvidia-cufft-cu12, nvidia-cuda-runtime-cu12, nvidia-cuda-nvrtc-cu12, nvidia-cuda-cupti-cu12, nvidia-cublas-cu12, networkx, MarkupSafe, fsspec, filelock, triton, nvidia-cusparse-cu12, nvidia-cudnn-cu12, jinja2, nvidia-cusolver-cu12, torch
+Successfully installed MarkupSafe-3.0.3 filelock-3.25.2 fsspec-2026.2.0 jinja2-3.1.6 mpmath-1.3.0 networkx-3.6.1 nvidia-cublas-cu12-12.4.5.8 nvidia-cuda-cupti-cu12-12.4.127 nvidia-cuda-nvrtc-cu12-12.4.127 nvidia-cuda-runtime-cu12-12.4.127 nvidia-cudnn-cu12-9.1.0.70 nvidia-cufft-cu12-11.2.1.3 nvidia-curand-cu12-10.3.5.147 nvidia-cusolver-cu12-11.6.1.9 nvidia-cusparse-cu12-12.3.1.170 nvidia-nccl-cu12-2.21.5 nvidia-nvjitlink-cu12-12.4.127 nvidia-nvtx-cu12-12.4.127 setuptools-70.2.0 sympy-1.13.1 torch-2.5.1+cu124 triton-3.1.0 typing-extensions-4.15.0
+Obtaining file:///h/439/snasiri/ece1508
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Collecting requests (from recipe-mpr-qa==0.1.0)
+  Downloading requests-2.33.1-py3-none-any.whl.metadata (4.8 kB)
+Collecting tqdm (from recipe-mpr-qa==0.1.0)
+  Downloading tqdm-4.67.3-py3-none-any.whl.metadata (57 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.7/57.7 kB 6.8 MB/s eta 0:00:00
+Requirement already satisfied: torch in /tmp/venv_snasiri/lib/python3.12/site-packages (from recipe-mpr-qa==0.1.0) (2.5.1+cu124)
+Collecting transformers (from recipe-mpr-qa==0.1.0)
+  Downloading transformers-5.5.0-py3-none-any.whl.metadata (32 kB)
+Collecting accelerate (from recipe-mpr-qa==0.1.0)
+  Downloading accelerate-1.13.0-py3-none-any.whl.metadata (19 kB)
+Collecting peft (from recipe-mpr-qa==0.1.0)
+  Downloading peft-0.18.1-py3-none-any.whl.metadata (14 kB)
+Collecting datasets (from recipe-mpr-qa==0.1.0)
+  Downloading datasets-4.8.4-py3-none-any.whl.metadata (19 kB)
+Collecting trl (from recipe-mpr-qa==0.1.0)
+  Downloading trl-1.0.0-py3-none-any.whl.metadata (11 kB)
+Collecting numpy>=1.17 (from accelerate->recipe-mpr-qa==0.1.0)
+  Downloading numpy-2.4.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+Collecting packaging>=20.0 (from accelerate->recipe-mpr-qa==0.1.0)
+  Downloading packaging-26.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting psutil (from accelerate->recipe-mpr-qa==0.1.0)
+  Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl.metadata (22 kB)
+Collecting pyyaml (from accelerate->recipe-mpr-qa==0.1.0)
+  Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting huggingface_hub>=0.21.0 (from accelerate->recipe-mpr-qa==0.1.0)
+  Downloading huggingface_hub-1.9.1-py3-none-any.whl.metadata (14 kB)
+Collecting safetensors>=0.4.3 (from accelerate->recipe-mpr-qa==0.1.0)
+  Downloading safetensors-0.7.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+Requirement already satisfied: filelock in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (3.25.2)
+Requirement already satisfied: typing-extensions>=4.8.0 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (4.15.0)
+Requirement already satisfied: networkx in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (3.6.1)
+Requirement already satisfied: jinja2 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (3.1.6)
+Requirement already satisfied: fsspec in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (2026.2.0)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.4.127 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-cuda-runtime-cu12==12.4.127 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-cuda-cupti-cu12==12.4.127 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-cudnn-cu12==9.1.0.70 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (9.1.0.70)
+Requirement already satisfied: nvidia-cublas-cu12==12.4.5.8 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (12.4.5.8)
+Requirement already satisfied: nvidia-cufft-cu12==11.2.1.3 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (11.2.1.3)
+Requirement already satisfied: nvidia-curand-cu12==10.3.5.147 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (10.3.5.147)
+Requirement already satisfied: nvidia-cusolver-cu12==11.6.1.9 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (11.6.1.9)
+Requirement already satisfied: nvidia-cusparse-cu12==12.3.1.170 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (12.3.1.170)
+Requirement already satisfied: nvidia-nccl-cu12==2.21.5 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (2.21.5)
+Requirement already satisfied: nvidia-nvtx-cu12==12.4.127 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-nvjitlink-cu12==12.4.127 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (12.4.127)
+Requirement already satisfied: triton==3.1.0 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (3.1.0)
+Requirement already satisfied: setuptools in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (70.2.0)
+Requirement already satisfied: sympy==1.13.1 in /tmp/venv_snasiri/lib/python3.12/site-packages (from torch->recipe-mpr-qa==0.1.0) (1.13.1)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /tmp/venv_snasiri/lib/python3.12/site-packages (from sympy==1.13.1->torch->recipe-mpr-qa==0.1.0) (1.3.0)
+Collecting pyarrow>=21.0.0 (from datasets->recipe-mpr-qa==0.1.0)
+  Downloading pyarrow-23.0.1-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (3.1 kB)
+Collecting dill<0.4.2,>=0.3.0 (from datasets->recipe-mpr-qa==0.1.0)
+  Downloading dill-0.4.1-py3-none-any.whl.metadata (10 kB)
+Collecting pandas (from datasets->recipe-mpr-qa==0.1.0)
+  Downloading pandas-3.0.2-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (79 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 79.5/79.5 kB 233.6 MB/s eta 0:00:00
+Collecting httpx<1.0.0 (from datasets->recipe-mpr-qa==0.1.0)
+  Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+Collecting xxhash (from datasets->recipe-mpr-qa==0.1.0)
+  Downloading xxhash-3.6.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (13 kB)
+Collecting multiprocess<0.70.20 (from datasets->recipe-mpr-qa==0.1.0)
+  Downloading multiprocess-0.70.19-py312-none-any.whl.metadata (7.5 kB)
+Collecting charset_normalizer<4,>=2 (from requests->recipe-mpr-qa==0.1.0)
+  Downloading charset_normalizer-3.4.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.9/40.9 kB 165.5 MB/s eta 0:00:00
+Collecting idna<4,>=2.5 (from requests->recipe-mpr-qa==0.1.0)
+  Downloading idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+Collecting urllib3<3,>=1.26 (from requests->recipe-mpr-qa==0.1.0)
+  Downloading urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+Collecting certifi>=2023.5.7 (from requests->recipe-mpr-qa==0.1.0)
+  Downloading certifi-2026.2.25-py3-none-any.whl.metadata (2.5 kB)
+Collecting regex>=2025.10.22 (from transformers->recipe-mpr-qa==0.1.0)
+  Downloading regex-2026.4.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.4/40.4 kB 232.7 MB/s eta 0:00:00
+Collecting tokenizers<=0.23.0,>=0.22.0 (from transformers->recipe-mpr-qa==0.1.0)
+  Downloading tokenizers-0.22.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (7.3 kB)
+Collecting typer (from transformers->recipe-mpr-qa==0.1.0)
+  Downloading typer-0.24.1-py3-none-any.whl.metadata (16 kB)
+Collecting aiohttp!=4.0.0a0,!=4.0.0a1 (from fsspec[http]<=2026.2.0,>=2023.1.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading aiohttp-3.13.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.1 kB)
+Collecting anyio (from httpx<1.0.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading anyio-4.13.0-py3-none-any.whl.metadata (4.5 kB)
+Collecting httpcore==1.* (from httpx<1.0.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+Collecting h11>=0.16 (from httpcore==1.*->httpx<1.0.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting hf-xet<2.0.0,>=1.4.3 (from huggingface_hub>=0.21.0->accelerate->recipe-mpr-qa==0.1.0)
+  Downloading hf_xet-1.4.3-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (4.9 kB)
+Requirement already satisfied: MarkupSafe>=2.0 in /tmp/venv_snasiri/lib/python3.12/site-packages (from jinja2->torch->recipe-mpr-qa==0.1.0) (3.0.3)
+Collecting python-dateutil>=2.8.2 (from pandas->datasets->recipe-mpr-qa==0.1.0)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting click>=8.2.1 (from typer->transformers->recipe-mpr-qa==0.1.0)
+  Downloading click-8.3.2-py3-none-any.whl.metadata (2.6 kB)
+Collecting shellingham>=1.3.0 (from typer->transformers->recipe-mpr-qa==0.1.0)
+  Downloading shellingham-1.5.4-py2.py3-none-any.whl.metadata (3.5 kB)
+Collecting rich>=12.3.0 (from typer->transformers->recipe-mpr-qa==0.1.0)
+  Downloading rich-14.3.3-py3-none-any.whl.metadata (18 kB)
+Collecting annotated-doc>=0.0.2 (from typer->transformers->recipe-mpr-qa==0.1.0)
+  Downloading annotated_doc-0.0.4-py3-none-any.whl.metadata (6.6 kB)
+Collecting aiohappyeyeballs>=2.5.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading aiohappyeyeballs-2.6.1-py3-none-any.whl.metadata (5.9 kB)
+Collecting aiosignal>=1.4.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading aiosignal-1.4.0-py3-none-any.whl.metadata (3.7 kB)
+Collecting attrs>=17.3.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+Collecting frozenlist>=1.1.1 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading frozenlist-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (20 kB)
+Collecting multidict<7.0,>=4.5 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading multidict-6.7.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.3 kB)
+Collecting propcache>=0.2.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading propcache-0.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (13 kB)
+Collecting yarl<2.0,>=1.17.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets->recipe-mpr-qa==0.1.0)
+  Downloading yarl-1.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (79 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 79.6/79.6 kB 237.1 MB/s eta 0:00:00
+Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas->datasets->recipe-mpr-qa==0.1.0)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting markdown-it-py>=2.2.0 (from rich>=12.3.0->typer->transformers->recipe-mpr-qa==0.1.0)
+  Downloading markdown_it_py-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+Collecting pygments<3.0.0,>=2.13.0 (from rich>=12.3.0->typer->transformers->recipe-mpr-qa==0.1.0)
+  Downloading pygments-2.20.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=12.3.0->typer->transformers->recipe-mpr-qa==0.1.0)
+  Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+Downloading accelerate-1.13.0-py3-none-any.whl (383 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 383.7/383.7 kB 181.5 MB/s eta 0:00:00
+Downloading datasets-4.8.4-py3-none-any.whl (526 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 527.0/527.0 kB 226.2 MB/s eta 0:00:00
+Downloading requests-2.33.1-py3-none-any.whl (64 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.9/64.9 kB 141.3 MB/s eta 0:00:00
+Downloading tqdm-4.67.3-py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.4/78.4 kB 147.1 MB/s eta 0:00:00
+Downloading peft-0.18.1-py3-none-any.whl (556 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 557.0/557.0 kB 164.1 MB/s eta 0:00:00
+Downloading transformers-5.5.0-py3-none-any.whl (10.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.2/10.2 MB 165.4 MB/s eta 0:00:00
+Downloading trl-1.0.0-py3-none-any.whl (630 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 630.8/630.8 kB 255.1 MB/s eta 0:00:00
+Downloading certifi-2026.2.25-py3-none-any.whl (153 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 153.7/153.7 kB 253.9 MB/s eta 0:00:00
+Downloading charset_normalizer-3.4.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (216 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 216.6/216.6 kB 191.5 MB/s eta 0:00:00
+Downloading dill-0.4.1-py3-none-any.whl (120 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 120.0/120.0 kB 252.9 MB/s eta 0:00:00
+Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.5/73.5 kB 241.0 MB/s eta 0:00:00
+Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.8/78.8 kB 255.0 MB/s eta 0:00:00
+Downloading huggingface_hub-1.9.1-py3-none-any.whl (637 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 637.4/637.4 kB 212.1 MB/s eta 0:00:00
+Downloading idna-3.11-py3-none-any.whl (71 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 71.0/71.0 kB 165.4 MB/s eta 0:00:00
+Downloading multiprocess-0.70.19-py312-none-any.whl (150 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 150.3/150.3 kB 251.9 MB/s eta 0:00:00
+Downloading numpy-2.4.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.6/16.6 MB 182.3 MB/s eta 0:00:00
+Downloading packaging-26.0-py3-none-any.whl (74 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 74.4/74.4 kB 249.0 MB/s eta 0:00:00
+Downloading pyarrow-23.0.1-cp312-cp312-manylinux_2_28_x86_64.whl (47.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 47.6/47.6 MB 148.0 MB/s eta 0:00:00
+Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 807.9/807.9 kB 197.6 MB/s eta 0:00:00
+Downloading regex-2026.4.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 801.1/801.1 kB 256.9 MB/s eta 0:00:00
+Downloading safetensors-0.7.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (507 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 507.2/507.2 kB 257.0 MB/s eta 0:00:00
+Downloading tokenizers-0.22.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 223.2 MB/s eta 0:00:00
+Downloading urllib3-2.6.3-py3-none-any.whl (131 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 131.6/131.6 kB 246.0 MB/s eta 0:00:00
+Downloading pandas-3.0.2-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (10.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.9/10.9 MB 206.2 MB/s eta 0:00:00
+Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (155 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 155.6/155.6 kB 243.2 MB/s eta 0:00:00
+Downloading typer-0.24.1-py3-none-any.whl (56 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 56.1/56.1 kB 233.1 MB/s eta 0:00:00
+Downloading xxhash-3.6.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (193 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 193.9/193.9 kB 262.1 MB/s eta 0:00:00
+Downloading aiohttp-3.13.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 217.3 MB/s eta 0:00:00
+Downloading annotated_doc-0.0.4-py3-none-any.whl (5.3 kB)
+Downloading click-8.3.2-py3-none-any.whl (108 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 108.4/108.4 kB 243.0 MB/s eta 0:00:00
+Downloading hf_xet-1.4.3-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (4.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.2/4.2 MB 252.0 MB/s eta 0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 252.6 MB/s eta 0:00:00
+Downloading rich-14.3.3-py3-none-any.whl (310 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 310.5/310.5 kB 257.7 MB/s eta 0:00:00
+Downloading shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+Downloading anyio-4.13.0-py3-none-any.whl (114 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 114.4/114.4 kB 251.5 MB/s eta 0:00:00
+Downloading aiohappyeyeballs-2.6.1-py3-none-any.whl (15 kB)
+Downloading aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.5/67.5 kB 234.6 MB/s eta 0:00:00
+Downloading frozenlist-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (242 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 242.4/242.4 kB 241.8 MB/s eta 0:00:00
+Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Downloading markdown_it_py-4.0.0-py3-none-any.whl (87 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 87.3/87.3 kB 249.1 MB/s eta 0:00:00
+Downloading multidict-6.7.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (256 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 256.3/256.3 kB 245.9 MB/s eta 0:00:00
+Downloading propcache-0.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (221 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 221.6/221.6 kB 221.5 MB/s eta 0:00:00
+Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 223.9 MB/s eta 0:00:00
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading yarl-1.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (100 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100.1/100.1 kB 231.3 MB/s eta 0:00:00
+Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Checking if build backend supports build_editable: started
+Checking if build backend supports build_editable: finished with status 'done'
+Building wheels for collected packages: recipe-mpr-qa
+  Building editable for recipe-mpr-qa (pyproject.toml): started
+  Building editable for recipe-mpr-qa (pyproject.toml): finished with status 'done'
+  Created wheel for recipe-mpr-qa: filename=recipe_mpr_qa-0.1.0-0.editable-py3-none-any.whl size=4024 sha256=617cbce6d311855cd7971f0163a09c2465d1ca70686d46750ea2e3407da8b22d
+  Stored in directory: /tmp/pip-ephem-wheel-cache-o_ih8hlb/wheels/b0/d2/b7/f5abe490961c497e73945d2a1ce9d8a956aa5e3591bb5dc217
+Successfully built recipe-mpr-qa
+Installing collected packages: xxhash, urllib3, tqdm, six, shellingham, safetensors, regex, pyyaml, pygments, pyarrow, psutil, propcache, packaging, numpy, multidict, mdurl, idna, hf-xet, h11, frozenlist, dill, click, charset_normalizer, certifi, attrs, annotated-doc, aiohappyeyeballs, yarl, requests, python-dateutil, multiprocess, markdown-it-py, httpcore, anyio, aiosignal, rich, recipe-mpr-qa, pandas, httpx, aiohttp, typer, huggingface_hub, tokenizers, datasets, accelerate, transformers, trl, peft
+Successfully installed accelerate-1.13.0 aiohappyeyeballs-2.6.1 aiohttp-3.13.5 aiosignal-1.4.0 annotated-doc-0.0.4 anyio-4.13.0 attrs-26.1.0 certifi-2026.2.25 charset_normalizer-3.4.7 click-8.3.2 datasets-4.8.4 dill-0.4.1 frozenlist-1.8.0 h11-0.16.0 hf-xet-1.4.3 httpcore-1.0.9 httpx-0.28.1 huggingface_hub-1.9.1 idna-3.11 markdown-it-py-4.0.0 mdurl-0.1.2 multidict-6.7.1 multiprocess-0.70.19 numpy-2.4.4 packaging-26.0 pandas-3.0.2 peft-0.18.1 propcache-0.4.1 psutil-7.2.2 pyarrow-23.0.1 pygments-2.20.0 python-dateutil-2.9.0.post0 pyyaml-6.0.3 recipe-mpr-qa-0.1.0 regex-2026.4.4 requests-2.33.1 rich-14.3.3 safetensors-0.7.0 shellingham-1.5.4 six-1.17.0 tokenizers-0.22.2 tqdm-4.67.3 transformers-5.5.0 trl-1.0.0 typer-0.24.1 urllib3-2.6.3 xxhash-3.6.0 yarl-1.23.0
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+================================================================================
+Recipe-MPR fine-tuning run
+================================================================================
+{
+  "model_name": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "data_path": "/h/439/snasiri/ece1508/data/processed/recipe_mpr_qa.jsonl",
+  "split_manifest_path": "/h/439/snasiri/ece1508/data/processed/primary_split.json",
+  "output_dir": "outputs/run_K_1.7b_synthetic",
+  "augmented_train_path": "data/processed/synthetic/train_mixed_ratio025.jsonl",
+  "seed": 42,
+  "max_seq_length": 512,
+  "num_train_epochs": 10,
+  "learning_rate": 0.0001,
+  "weight_decay": 0.0,
+  "warmup_ratio": 0.1,
+  "per_device_train_batch_size": 8,
+  "per_device_eval_batch_size": 8,
+  "gradient_accumulation_steps": 1,
+  "logging_steps": 10,
+  "save_strategy": "epoch",
+  "eval_strategy": "epoch",
+  "save_total_limit": 2,
+  "bf16": false,
+  "fp16": false,
+  "gradient_checkpointing": false,
+  "use_lora": true,
+  "lora_r": 32,
+  "lora_alpha": 64,
+  "lora_dropout": 0.05,
+  "lora_target_modules": "q_proj,k_proj,v_proj,o_proj",
+  "completion_only_loss": true,
+  "report_to": "none"
+}
+Train examples: 438
+Val examples:   75
+Test examples:  75
+--------------------------------------------------------------------------------
+Sample train row:
+{'prompt': 'Given the following recipe preference query, select the best matching recipe.\n\nQuery: I want to make a warm dish containing oysters\n\nOptions:\nA) Creamy clam chowder made with whole milk and baby clams\nB) Tomato mussel soup containing dry white wine\nC) Seasoned salted crackers shaped like oysters\nD) Warm vegetable soup containing tomatoes, peas, corn, carrots, and potatoes\nE) Simple creamy oyster soup\n\nRespond with only the letter (A-E) of the best option.', 'completion': 'E', 'example_id': 'rmpr-0001', 'answer_option_id': '08cb462fdf', 'query_type_flags': {'Analogical': False, 'Commonsense': True, 'Negated': False, 'Specific': False, 'Temporal': False}}
+Loading weights:   0%|          | 0/218 [00:00<?, ?it/s]Loading weights: 100%|██████████| 218/218 [00:00<00:00, 6253.60it/s]
+warmup_ratio is deprecated and will be removed in v5.2. Use `warmup_steps` instead.
+Adding EOS to train dataset:   0%|          | 0/438 [00:00<?, ? examples/s]Adding EOS to train dataset: 100%|██████████| 438/438 [00:00<00:00, 17926.82 examples/s]
+Tokenizing train dataset:   0%|          | 0/438 [00:00<?, ? examples/s]Tokenizing train dataset:  43%|████▎     | 188/438 [00:00<00:00, 1862.80 examples/s]Tokenizing train dataset:  88%|████████▊ | 384/438 [00:00<00:00, 1918.12 examples/s]Tokenizing train dataset: 100%|██████████| 438/438 [00:00<00:00, 1704.90 examples/s]
+Adding EOS to eval dataset:   0%|          | 0/75 [00:00<?, ? examples/s]Adding EOS to eval dataset: 100%|██████████| 75/75 [00:00<00:00, 11652.14 examples/s]
+Tokenizing eval dataset:   0%|          | 0/75 [00:00<?, ? examples/s]Tokenizing eval dataset: 100%|██████████| 75/75 [00:00<00:00, 1617.83 examples/s]
+trainable params: 12,582,912 || all params: 1,723,959,296 || trainable%: 0.7299
+  0%|          | 0/550 [00:00<?, ?it/s]  0%|          | 1/550 [00:00<06:24,  1.43it/s]  0%|          | 2/550 [00:00<03:18,  2.75it/s]  1%|          | 3/550 [00:00<02:18,  3.95it/s]  1%|          | 4/550 [00:01<01:50,  4.95it/s]  1%|          | 5/550 [00:01<01:34,  5.76it/s]  1%|          | 6/550 [00:01<01:25,  6.39it/s]  1%|▏         | 7/550 [00:01<01:19,  6.87it/s]  1%|▏         | 8/550 [00:01<01:14,  7.23it/s]  2%|▏         | 9/550 [00:01<01:13,  7.33it/s]  2%|▏         | 10/550 [00:01<01:11,  7.56it/s]                                                  2%|▏         | 10/550 [00:01<01:11,  7.56it/s]  2%|▏         | 11/550 [00:01<01:10,  7.69it/s]  2%|▏         | 12/550 [00:02<01:08,  7.82it/s]  2%|▏         | 13/550 [00:02<01:07,  7.91it/s]  3%|▎         | 14/550 [00:02<01:07,  7.96it/s]  3%|▎         | 15/550 [00:02<01:06,  7.99it/s]  3%|▎         | 16/550 [00:02<01:06,  8.06it/s]  3%|▎         | 17/550 [00:02<01:06,  8.06it/s]  3%|▎         | 18/550 [00:02<01:10,  7.50it/s]  3%|▎         | 19/550 [00:02<01:09,  7.65it/s]  4%|▎         | 20/550 [00:03<01:08,  7.77it/s]                                                  4%|▎         | 20/550 [00:03<01:08,  7.77it/s]  4%|▍         | 21/550 [00:03<01:07,  7.88it/s]  4%|▍         | 22/550 [00:03<01:06,  7.91it/s]  4%|▍         | 23/550 [00:03<01:06,  7.96it/s]  4%|▍         | 24/550 [00:03<01:05,  7.99it/s]  5%|▍         | 25/550 [00:03<01:06,  7.86it/s]  5%|▍         | 26/550 [00:03<01:10,  7.40it/s]  5%|▍         | 27/550 [00:03<01:08,  7.59it/s]  5%|▌         | 28/550 [00:04<01:07,  7.74it/s]  5%|▌         | 29/550 [00:04<01:06,  7.82it/s]  5%|▌         | 30/550 [00:04<01:05,  7.91it/s]                                                  5%|▌         | 30/550 [00:04<01:05,  7.91it/s]  6%|▌         | 31/550 [00:04<01:06,  7.80it/s]  6%|▌         | 32/550 [00:04<01:05,  7.88it/s]  6%|▌         | 33/550 [00:04<01:05,  7.95it/s]  6%|▌         | 34/550 [00:04<01:04,  8.01it/s]  6%|▋         | 35/550 [00:04<01:04,  8.04it/s]  7%|▋         | 36/550 [00:05<01:03,  8.07it/s]  7%|▋         | 37/550 [00:05<01:03,  8.11it/s]  7%|▋         | 38/550 [00:05<01:03,  8.12it/s]  7%|▋         | 39/550 [00:05<01:03,  8.08it/s]  7%|▋         | 40/550 [00:05<01:03,  8.09it/s]                                                  7%|▋         | 40/550 [00:05<01:03,  8.09it/s]  7%|▋         | 41/550 [00:05<01:03,  8.07it/s]  8%|▊         | 42/550 [00:05<01:02,  8.09it/s]  8%|▊         | 43/550 [00:05<01:02,  8.09it/s]  8%|▊         | 44/550 [00:06<01:02,  8.10it/s]  8%|▊         | 45/550 [00:06<01:02,  8.10it/s]  8%|▊         | 46/550 [00:06<01:02,  8.12it/s]  9%|▊         | 47/550 [00:06<01:02,  8.11it/s]  9%|▊         | 48/550 [00:06<01:01,  8.12it/s]  9%|▉         | 49/550 [00:06<01:01,  8.10it/s]  9%|▉         | 50/550 [00:06<01:01,  8.11it/s]                                                  9%|▉         | 50/550 [00:06<01:01,  8.11it/s]  9%|▉         | 51/550 [00:06<01:01,  8.11it/s]  9%|▉         | 52/550 [00:07<01:01,  8.10it/s] 10%|▉         | 53/550 [00:07<01:01,  8.11it/s] 10%|▉         | 54/550 [00:07<01:01,  8.13it/s] 10%|█         | 55/550 [00:07<01:00,  8.19it/s]{'loss': '8.512', 'grad_norm': '8.336', 'learning_rate': '1.636e-05', 'entropy': '1.903', 'num_tokens': '1.006e+04', 'mean_token_accuracy': '0.4', 'epoch': '0.1818'}
+{'loss': '7.887', 'grad_norm': '5.75', 'learning_rate': '3.455e-05', 'entropy': '1.954', 'num_tokens': '1.994e+04', 'mean_token_accuracy': '0.4188', 'epoch': '0.3636'}
+{'loss': '5.316', 'grad_norm': '15.14', 'learning_rate': '5.273e-05', 'entropy': '1.993', 'num_tokens': '3.018e+04', 'mean_token_accuracy': '0.5', 'epoch': '0.5455'}
+{'loss': '1.299', 'grad_norm': '7.711', 'learning_rate': '7.091e-05', 'entropy': '2.009', 'num_tokens': '4.008e+04', 'mean_token_accuracy': '0.5938', 'epoch': '0.7273'}
+{'loss': '0.7855', 'grad_norm': '3.798', 'learning_rate': '8.909e-05', 'entropy': '1.973', 'num_tokens': '4.992e+04', 'mean_token_accuracy': '0.6687', 'epoch': '0.9091'}
+
+  0%|          | 0/10 [00:00<?, ?it/s][A
+ 40%|████      | 4/10 [00:00<00:00, 29.53it/s][A
+ 70%|███████   | 7/10 [00:00<00:00, 24.51it/s][A
+100%|██████████| 10/10 [00:00<00:00, 23.90it/s][A                                                
+                                               [A 10%|█         | 55/550 [00:07<01:00,  8.19it/s]
+100%|██████████| 10/10 [00:00<00:00, 23.90it/s][A
+                                               [A 10%|█         | 56/550 [00:08<04:24,  1.87it/s] 10%|█         | 57/550 [00:09<03:23,  2.42it/s] 11%|█         | 58/550 [00:09<02:42,  3.03it/s] 11%|█         | 59/550 [00:09<02:12,  3.70it/s] 11%|█         | 60/550 [00:09<01:50,  4.42it/s]                                                 11%|█         | 60/550 [00:09<01:50,  4.42it/s] 11%|█         | 61/550 [00:09<01:35,  5.12it/s] 11%|█▏        | 62/550 [00:09<01:24,  5.77it/s] 11%|█▏        | 63/550 [00:09<01:17,  6.29it/s] 12%|█▏        | 64/550 [00:09<01:12,  6.74it/s] 12%|█▏        | 65/550 [00:10<01:08,  7.11it/s] 12%|█▏        | 66/550 [00:10<01:05,  7.40it/s] 12%|█▏        | 67/550 [00:10<01:03,  7.62it/s] 12%|█▏        | 68/550 [00:10<01:02,  7.75it/s] 13%|█▎        | 69/550 [00:10<01:02,  7.70it/s] 13%|█▎        | 70/550 [00:10<01:01,  7.83it/s]                                                 13%|█▎        | 70/550 [00:10<01:01,  7.83it/s] 13%|█▎        | 71/550 [00:10<01:00,  7.95it/s] 13%|█▎        | 72/550 [00:10<00:59,  8.00it/s] 13%|█▎        | 73/550 [00:11<00:59,  8.02it/s] 13%|█▎        | 74/550 [00:11<00:59,  8.03it/s] 14%|█▎        | 75/550 [00:11<00:59,  8.04it/s] 14%|█▍        | 76/550 [00:11<00:59,  8.02it/s] 14%|█▍        | 77/550 [00:11<00:58,  8.04it/s] 14%|█▍        | 78/550 [00:11<00:58,  8.05it/s] 14%|█▍        | 79/550 [00:11<00:58,  8.07it/s] 15%|█▍        | 80/550 [00:11<00:58,  8.10it/s]                                                 15%|█▍        | 80/550 [00:11<00:58,  8.10it/s] 15%|█▍        | 81/550 [00:12<00:57,  8.09it/s] 15%|█▍        | 82/550 [00:12<01:00,  7.76it/s] 15%|█▌        | 83/550 [00:12<01:04,  7.28it/s] 15%|█▌        | 84/550 [00:12<01:03,  7.40it/s] 15%|█▌        | 85/550 [00:12<01:01,  7.57it/s] 16%|█▌        | 86/550 [00:12<01:01,  7.60it/s] 16%|█▌        | 87/550 [00:12<00:59,  7.74it/s] 16%|█▌        | 88/550 [00:12<00:58,  7.86it/s] 16%|█▌        | 89/550 [00:13<00:58,  7.93it/s] 16%|█▋        | 90/550 [00:13<00:57,  8.00it/s]                                                 16%|█▋        | 90/550 [00:13<00:57,  8.00it/s] 17%|█▋        | 91/550 [00:13<00:57,  8.05it/s] 17%|█▋        | 92/550 [00:13<00:56,  8.06it/s] 17%|█▋        | 93/550 [00:13<00:56,  8.07it/s] 17%|█▋        | 94/550 [00:13<00:56,  8.07it/s] 17%|█▋        | 95/550 [00:13<00:56,  8.11it/s] 17%|█▋        | 96/550 [00:13<00:55,  8.12it/s] 18%|█▊        | 97/550 [00:14<00:55,  8.15it/s] 18%|█▊        | 98/550 [00:14<00:55,  8.17it/s] 18%|█▊        | 99/550 [00:14<00:55,  8.17it/s] 18%|█▊        | 100/550 [00:14<00:55,  8.18it/s]                                                  18%|█▊        | 100/550 [00:14<00:55,  8.18it/s] 18%|█▊        | 101/550 [00:14<00:54,  8.17it/s] 19%|█▊        | 102/550 [00:14<00:59,  7.58it/s] 19%|█▊        | 103/550 [00:14<00:57,  7.75it/s] 19%|█▉        | 104/550 [00:14<00:56,  7.86it/s] 19%|█▉        | 105/550 [00:15<00:56,  7.94it/s] 19%|█▉        | 106/550 [00:15<00:55,  8.01it/s] 19%|█▉        | 107/550 [00:15<00:55,  8.05it/s] 20%|█▉        | 108/550 [00:15<00:54,  8.09it/s] 20%|█▉        | 109/550 [00:15<00:55,  7.94it/s] 20%|██        | 110/550 [00:15<00:54,  8.08it/s]                                                  20%|██        | 110/550 [00:15<00:54,  8.08it/s]{'eval_loss': '0.611', 'eval_runtime': '0.4583', 'eval_samples_per_second': '163.6', 'eval_steps_per_second': '21.82', 'eval_entropy': '1.905', 'eval_num_tokens': '5.458e+04', 'eval_mean_token_accuracy': '0.7854', 'epoch': '1'}
+{'loss': '0.5267', 'grad_norm': '3.938', 'learning_rate': '9.919e-05', 'entropy': '1.885', 'num_tokens': '5.953e+04', 'mean_token_accuracy': '0.8021', 'epoch': '1.091'}
+{'loss': '0.5668', 'grad_norm': '2.47', 'learning_rate': '9.717e-05', 'entropy': '1.921', 'num_tokens': '6.946e+04', 'mean_token_accuracy': '0.7812', 'epoch': '1.273'}
+{'loss': '0.5587', 'grad_norm': '3.842', 'learning_rate': '9.515e-05', 'entropy': '1.915', 'num_tokens': '7.934e+04', 'mean_token_accuracy': '0.8313', 'epoch': '1.455'}
+{'loss': '0.5054', 'grad_norm': '2.446', 'learning_rate': '9.313e-05', 'entropy': '1.92', 'num_tokens': '8.95e+04', 'mean_token_accuracy': '0.8375', 'epoch': '1.636'}
+{'loss': '0.4123', 'grad_norm': '3.984', 'learning_rate': '9.111e-05', 'entropy': '1.848', 'num_tokens': '9.935e+04', 'mean_token_accuracy': '0.85', 'epoch': '1.818'}
+{'loss': '0.4135', 'grad_norm': '3.068', 'learning_rate': '8.909e-05', 'entropy': '1.81', 'num_tokens': '1.092e+05', 'mean_token_accuracy': '0.8708', 'epoch': '2'}
+
+  0%|          | 0/10 [00:00<?, ?it/s][A
+ 40%|████      | 4/10 [00:00<00:00, 29.57it/s][A
+ 70%|███████   | 7/10 [00:00<00:00, 24.56it/s][A
+100%|██████████| 10/10 [00:00<00:00, 23.96it/s][A                                                 
+                                               [A 20%|██        | 110/550 [00:16<00:54,  8.08it/s]
+100%|██████████| 10/10 [00:00<00:00, 23.96it/s][A
+                                               [A 20%|██        | 111/550 [00:17<03:50,  1.90it/s] 20%|██        | 112/550 [00:17<02:57,  2.47it/s] 21%|██        | 113/550 [00:17<02:19,  3.12it/s] 21%|██        | 114/550 [00:17<01:53,  3.83it/s] 21%|██        | 115/550 [00:17<01:35,  4.57it/s] 21%|██        | 116/550 [00:17<01:23,  5.19it/s] 21%|██▏       | 117/550 [00:17<01:14,  5.82it/s] 21%|██▏       | 118/550 [00:18<01:07,  6.38it/s] 22%|██▏       | 119/550 [00:18<01:03,  6.83it/s] 22%|██▏       | 120/550 [00:18<00:59,  7.18it/s]                                                  22%|██▏       | 120/550 [00:18<00:59,  7.18it/s] 22%|██▏       | 121/550 [00:18<00:57,  7.43it/s] 22%|██▏       | 122/550 [00:18<00:56,  7.60it/s] 22%|██▏       | 123/550 [00:18<00:54,  7.77it/s] 23%|██▎       | 124/550 [00:18<00:53,  7.89it/s] 23%|██▎       | 125/550 [00:18<00:53,  7.96it/s] 23%|██▎       | 126/550 [00:19<00:52,  8.05it/s] 23%|██▎       | 127/550 [00:19<00:52,  8.10it/s] 23%|██▎       | 128/550 [00:19<00:51,  8.13it/s] 23%|██▎       | 129/550 [00:19<00:51,  8.17it/s] 24%|██▎       | 130/550 [00:19<00:51,  8.16it/s]                                                  24%|██▎       | 130/550 [00:19<00:51,  8.16it/s] 24%|██▍       | 131/550 [00:19<00:51,  8.16it/s] 24%|██▍       | 132/550 [00:19<00:51,  8.16it/s] 24%|██▍       | 133/550 [00:19<00:51,  8.15it/s] 24%|██▍       | 134/550 [00:20<00:51,  8.11it/s] 25%|██▍       | 135/550 [00:20<00:51,  8.12it/s] 25%|██▍       | 136/550 [00:20<00:50,  8.13it/s] 25%|██▍       | 137/550 [00:20<00:50,  8.13it/s] 25%|██▌       | 138/550 [00:20<00:50,  8.14it/s] 25%|██▌       | 139/550 [00:20<00:50,  8.13it/s] 25%|██▌       | 140/550 [00:20<00:50,  8.14it/s]                                                  25%|██▌       | 140/550 [00:20<00:50,  8.14it/s] 26%|██▌       | 141/550 [00:20<00:50,  8.15it/s] 26%|██▌       | 142/550 [00:21<00:51,  7.97it/s] 26%|██▌       | 143/550 [00:21<00:50,  7.99it/s] 26%|██▌       | 144/550 [00:21<00:50,  8.07it/s] 26%|██▋       | 145/550 [00:21<00:49,  8.10it/s] 27%|██▋       | 146/550 [00:21<00:49,  8.13it/s] 27%|██▋       | 147/550 [00:21<00:53,  7.54it/s] 27%|██▋       | 148/550 [00:21<00:52,  7.72it/s] 27%|██▋       | 149/550 [00:21<00:51,  7.81it/s] 27%|██▋       | 150/550 [00:22<00:50,  7.92it/s]                                                  27%|██▋       | 150/550 [00:22<00:50,  7.92it/s] 27%|██▋       | 151/550 [00:22<00:51,  7.80it/s] 28%|██▊       | 152/550 [00:22<00:50,  7.90it/s] 28%|██▊       | 153/550 [00:22<00:49,  7.98it/s] 28%|██▊       | 154/550 [00:22<00:49,  8.03it/s] 28%|██▊       | 155/550 [00:22<00:49,  8.06it/s] 28%|██▊       | 156/550 [00:22<00:48,  8.11it/s] 29%|██▊       | 157/550 [00:22<00:48,  8.12it/s] 29%|██▊       | 158/550 [00:23<00:51,  7.56it/s] 29%|██▉       | 159/550 [00:23<00:50,  7.74it/s] 29%|██▉       | 160/550 [00:23<00:49,  7.87it/s]                                                  29%|██▉       | 160/550 [00:23<00:49,  7.87it/s] 29%|██▉       | 161/550 [00:23<00:49,  7.94it/s] 29%|██▉       | 162/550 [00:23<00:48,  8.01it/s] 30%|██▉       | 163/550 [00:23<00:48,  8.05it/s] 30%|██▉       | 164/550 [00:23<00:47,  8.09it/s] 30%|███       | 165/550 [00:23<00:46,  8.19it/s]{'eval_loss': '0.3978', 'eval_runtime': '0.457', 'eval_samples_per_second': '164.1', 'eval_steps_per_second': '21.88', 'eval_entropy': '1.82', 'eval_num_tokens': '1.092e+05', 'eval_mean_token_accuracy': '0.8375', 'epoch': '2'}
+{'loss': '0.298', 'grad_norm': '1.744', 'learning_rate': '8.707e-05', 'entropy': '1.805', 'num_tokens': '1.19e+05', 'mean_token_accuracy': '0.9062', 'epoch': '2.182'}
+{'loss': '0.2131', 'grad_norm': '3.097', 'learning_rate': '8.505e-05', 'entropy': '1.756', 'num_tokens': '1.289e+05', 'mean_token_accuracy': '0.9313', 'epoch': '2.364'}
+{'loss': '0.2178', 'grad_norm': '2.395', 'learning_rate': '8.303e-05', 'entropy': '1.833', 'num_tokens': '1.389e+05', 'mean_token_accuracy': '0.9125', 'epoch': '2.545'}
+{'loss': '0.1844', 'grad_norm': '0.2279', 'learning_rate': '8.101e-05', 'entropy': '1.834', 'num_tokens': '1.49e+05', 'mean_token_accuracy': '0.9313', 'epoch': '2.727'}
+{'loss': '0.1978', 'grad_norm': '4.041', 'learning_rate': '7.899e-05', 'entropy': '1.719', 'num_tokens': '1.591e+05', 'mean_token_accuracy': '0.9375', 'epoch': '2.909'}
+
+  0%|          | 0/10 [00:00<?, ?it/s][A
+ 40%|████      | 4/10 [00:00<00:00, 29.39it/s][A
+ 70%|███████   | 7/10 [00:00<00:00, 24.34it/s][A
+100%|██████████| 10/10 [00:00<00:00, 23.31it/s][A                                                 
+                                               [A 30%|███       | 165/550 [00:24<00:46,  8.19it/s]
+100%|██████████| 10/10 [00:00<00:00, 23.31it/s][A
+                                               [A 30%|███       | 166/550 [00:28<08:34,  1.34s/it] 30%|███       | 167/550 [00:28<06:13,  1.03it/s] 31%|███       | 168/550 [00:28<04:34,  1.39it/s] 31%|███       | 169/550 [00:28<03:25,  1.85it/s] 31%|███       | 170/550 [00:28<02:37,  2.41it/s]                                                  31%|███       | 170/550 [00:28<02:37,  2.41it/s] 31%|███       | 171/550 [00:28<02:03,  3.06it/s] 31%|███▏      | 172/550 [00:28<01:40,  3.77it/s] 31%|███▏      | 173/550 [00:28<01:23,  4.50it/s] 32%|███▏      | 174/550 [00:29<01:12,  5.20it/s] 32%|███▏      | 175/550 [00:29<01:04,  5.83it/s] 32%|███▏      | 176/550 [00:29<00:58,  6.38it/s] 32%|███▏      | 177/550 [00:29<00:54,  6.83it/s] 32%|███▏      | 178/550 [00:29<00:51,  7.19it/s] 33%|███▎      | 179/550 [00:29<00:49,  7.46it/s] 33%|███▎      | 180/550 [00:29<00:48,  7.66it/s]                                                  33%|███▎      | 180/550 [00:29<00:48,  7.66it/s] 33%|███▎      | 181/550 [00:29<00:47,  7.81it/s] 33%|███▎      | 182/550 [00:30<00:46,  7.89it/s] 33%|███▎      | 183/550 [00:30<00:45,  7.98it/s] 33%|███▎      | 184/550 [00:30<00:45,  8.03it/s] 34%|███▎      | 185/550 [00:30<00:45,  8.07it/s] 34%|███▍      | 186/550 [00:30<00:45,  8.09it/s] 34%|███▍      | 187/550 [00:30<00:44,  8.10it/s] 34%|███▍      | 188/550 [00:30<00:44,  8.17it/s] 34%|███▍      | 189/550 [00:30<00:44,  8.17it/s] 35%|███▍      | 190/550 [00:31<00:47,  7.57it/s]                                                  35%|███▍      | 190/550 [00:31<00:47,  7.57it/s] 35%|███▍      | 191/550 [00:31<00:47,  7.56it/s] 35%|███▍      | 192/550 [00:31<00:46,  7.74it/s] 35%|███▌      | 193/550 [00:31<00:45,  7.87it/s] 35%|███▌      | 194/550 [00:31<00:44,  7.97it/s] 35%|███▌      | 195/550 [00:31<00:47,  7.46it/s] 36%|███▌      | 196/550 [00:31<00:46,  7.67it/s] 36%|███▌      | 197/550 [00:31<00:45,  7.77it/s] 36%|███▌      | 198/550 [00:32<00:44,  7.88it/s] 36%|███▌      | 199/550 [00:32<00:44,  7.94it/s] 36%|███▋      | 200/550 [00:32<00:43,  7.98it/s]                                                  36%|███▋      | 200/550 [00:32<00:43,  7.98it/s] 37%|███▋      | 201/550 [00:32<00:43,  8.04it/s] 37%|███▋      | 202/550 [00:32<00:43,  8.05it/s] 37%|███▋      | 203/550 [00:32<00:43,  7.90it/s] 37%|███▋      | 204/550 [00:32<00:43,  7.98it/s] 37%|███▋      | 205/550 [00:32<00:42,  8.04it/s] 37%|███▋      | 206/550 [00:33<00:42,  8.08it/s] 38%|███▊      | 207/550 [00:33<00:42,  8.07it/s] 38%|███▊      | 208/550 [00:33<00:42,  8.12it/s] 38%|███▊      | 209/550 [00:33<00:42,  8.11it/s] 38%|███▊      | 210/550 [00:33<00:41,  8.14it/s]                                                  38%|███▊      | 210/550 [00:33<00:41,  8.14it/s] 38%|███▊      | 211/550 [00:33<00:41,  8.18it/s] 39%|███▊      | 212/550 [00:33<00:41,  8.17it/s] 39%|███▊      | 213/550 [00:33<00:41,  8.15it/s] 39%|███▉      | 214/550 [00:34<00:41,  8.16it/s] 39%|███▉      | 215/550 [00:34<00:41,  8.17it/s] 39%|███▉      | 216/550 [00:34<00:41,  8.14it/s] 39%|███▉      | 217/550 [00:34<00:41,  8.11it/s] 40%|███▉      | 218/550 [00:34<00:40,  8.11it/s] 40%|███▉      | 219/550 [00:34<00:40,  8.14it/s] 40%|████      | 220/550 [00:34<00:40,  8.22it/s]                                                  40%|████      | 220/550 [00:34<00:40,  8.22it/s]{'eval_loss': '0.6041', 'eval_runtime': '0.4662', 'eval_samples_per_second': '160.9', 'eval_steps_per_second': '21.45', 'eval_entropy': '1.673', 'eval_num_tokens': '1.638e+05', 'eval_mean_token_accuracy': '0.8625', 'epoch': '3'}
+{'loss': '0.2754', 'grad_norm': '2.44', 'learning_rate': '7.697e-05', 'entropy': '1.637', 'num_tokens': '1.687e+05', 'mean_token_accuracy': '0.9437', 'epoch': '3.091'}
+{'loss': '0.08439', 'grad_norm': '1.232', 'learning_rate': '7.495e-05', 'entropy': '1.685', 'num_tokens': '1.786e+05', 'mean_token_accuracy': '0.9688', 'epoch': '3.273'}
+{'loss': '0.1372', 'grad_norm': '0.4581', 'learning_rate': '7.293e-05', 'entropy': '1.677', 'num_tokens': '1.885e+05', 'mean_token_accuracy': '0.9688', 'epoch': '3.455'}
+{'loss': '0.134', 'grad_norm': '11.12', 'learning_rate': '7.091e-05', 'entropy': '1.69', 'num_tokens': '1.985e+05', 'mean_token_accuracy': '0.9563', 'epoch': '3.636'}
+{'loss': '0.08494', 'grad_norm': '1.403', 'learning_rate': '6.889e-05', 'entropy': '1.679', 'num_tokens': '2.088e+05', 'mean_token_accuracy': '0.9625', 'epoch': '3.818'}
+{'loss': '0.0725', 'grad_norm': '5.008', 'learning_rate': '6.687e-05', 'entropy': '1.691', 'num_tokens': '2.183e+05', 'mean_token_accuracy': '0.9604', 'epoch': '4'}
+
+  0%|          | 0/10 [00:00<?, ?it/s][A
+ 40%|████      | 4/10 [00:00<00:00, 29.42it/s][A
+ 70%|███████   | 7/10 [00:00<00:00, 24.47it/s][A
+100%|██████████| 10/10 [00:00<00:00, 23.87it/s][A                                                 
+                                               [A 40%|████      | 220/550 [00:35<00:40,  8.22it/s]
+100%|██████████| 10/10 [00:00<00:00, 23.87it/s][A
+                                               [A 40%|████      | 221/550 [00:36<02:59,  1.83it/s] 40%|████      | 222/550 [00:36<02:17,  2.39it/s] 41%|████      | 223/550 [00:36<01:47,  3.04it/s] 41%|████      | 224/550 [00:36<01:27,  3.74it/s] 41%|████      | 225/550 [00:36<01:12,  4.47it/s] 41%|████      | 226/550 [00:36<01:02,  5.17it/s] 41%|████▏     | 227/550 [00:37<00:55,  5.81it/s] 41%|████▏     | 228/550 [00:37<00:50,  6.37it/s] 42%|████▏     | 229/550 [00:37<00:47,  6.82it/s] 42%|████▏     | 230/550 [00:37<00:44,  7.20it/s]                                                  42%|████▏     | 230/550 [00:37<00:44,  7.20it/s] 42%|████▏     | 231/550 [00:37<00:42,  7.47it/s] 42%|████▏     | 232/550 [00:37<00:41,  7.67it/s] 42%|████▏     | 233/550 [00:37<00:40,  7.82it/s] 43%|████▎     | 234/550 [00:37<00:39,  7.96it/s] 43%|████▎     | 235/550 [00:38<00:39,  8.02it/s] 43%|████▎     | 236/550 [00:38<00:38,  8.08it/s] 43%|████▎     | 237/550 [00:38<00:38,  8.08it/s] 43%|████▎     | 238/550 [00:38<00:38,  8.07it/s] 43%|████▎     | 239/550 [00:38<00:38,  8.09it/s] 44%|████▎     | 240/550 [00:38<00:38,  8.12it/s]                                                  44%|████▎     | 240/550 [00:38<00:38,  8.12it/s] 44%|████▍     | 241/550 [00:38<00:38,  8.12it/s] 44%|████▍     | 242/550 [00:38<00:37,  8.14it/s] 44%|████▍     | 243/550 [00:39<00:37,  8.13it/s] 44%|████▍     | 244/550 [00:39<00:37,  8.09it/s] 45%|████▍     | 245/550 [00:39<00:38,  7.96it/s] 45%|████▍     | 246/550 [00:39<00:38,  7.87it/s] 45%|████▍     | 247/550 [00:39<00:38,  7.93it/s] 45%|████▌     | 248/550 [00:39<00:38,  7.94it/s] 45%|████▌     | 249/550 [00:39<00:37,  7.97it/s] 45%|████▌     | 250/550 [00:39<00:37,  7.98it/s]                                                  45%|████▌     | 250/550 [00:39<00:37,  7.98it/s] 46%|████▌     | 251/550 [00:40<00:37,  8.02it/s] 46%|████▌     | 252/550 [00:40<00:37,  8.04it/s] 46%|████▌     | 253/550 [00:40<00:36,  8.04it/s] 46%|████▌     | 254/550 [00:40<00:36,  8.02it/s] 46%|████▋     | 255/550 [00:40<00:36,  8.06it/s] 47%|████▋     | 256/550 [00:40<00:36,  8.07it/s] 47%|████▋     | 257/550 [00:40<00:36,  8.07it/s] 47%|████▋     | 258/550 [00:40<00:35,  8.12it/s] 47%|████▋     | 259/550 [00:41<00:35,  8.11it/s] 47%|████▋     | 260/550 [00:41<00:35,  8.08it/s]                                                  47%|████▋     | 260/550 [00:41<00:35,  8.08it/s] 47%|████▋     | 261/550 [00:41<00:35,  8.08it/s] 48%|████▊     | 262/550 [00:41<00:35,  8.09it/s] 48%|████▊     | 263/550 [00:41<00:35,  8.07it/s] 48%|████▊     | 264/550 [00:41<00:35,  8.06it/s] 48%|████▊     | 265/550 [00:41<00:35,  8.05it/s] 48%|████▊     | 266/550 [00:41<00:35,  8.08it/s] 49%|████▊     | 267/550 [00:42<00:37,  7.52it/s] 49%|████▊     | 268/550 [00:42<00:36,  7.70it/s] 49%|████▉     | 269/550 [00:42<00:38,  7.28it/s] 49%|████▉     | 270/550 [00:42<00:37,  7.50it/s]                                                  49%|████▉     | 270/550 [00:42<00:37,  7.50it/s] 49%|████▉     | 271/550 [00:42<00:36,  7.62it/s] 49%|████▉     | 272/550 [00:42<00:36,  7.61it/s] 50%|████▉     | 273/550 [00:42<00:36,  7.59it/s] 50%|████▉     | 274/550 [00:42<00:35,  7.69it/s] 50%|█████     | 275/550 [00:43<00:35,  7.85it/s]{'eval_loss': '0.7069', 'eval_runtime': '0.4586', 'eval_samples_per_second': '163.5', 'eval_steps_per_second': '21.8', 'eval_entropy': '1.707', 'eval_num_tokens': '2.183e+05', 'eval_mean_token_accuracy': '0.8688', 'epoch': '4'}
+{'loss': '0.07785', 'grad_norm': '1.871', 'learning_rate': '6.485e-05', 'entropy': '1.734', 'num_tokens': '2.283e+05', 'mean_token_accuracy': '0.9812', 'epoch': '4.182'}
+{'loss': '0.006012', 'grad_norm': '0.009276', 'learning_rate': '6.283e-05', 'entropy': '1.651', 'num_tokens': '2.382e+05', 'mean_token_accuracy': '1', 'epoch': '4.364'}
+{'loss': '0.001591', 'grad_norm': '0.01076', 'learning_rate': '6.081e-05', 'entropy': '1.612', 'num_tokens': '2.48e+05', 'mean_token_accuracy': '1', 'epoch': '4.545'}
+{'loss': '0.05058', 'grad_norm': '29.96', 'learning_rate': '5.879e-05', 'entropy': '1.625', 'num_tokens': '2.579e+05', 'mean_token_accuracy': '0.9875', 'epoch': '4.727'}
+{'loss': '0.04474', 'grad_norm': '0.002295', 'learning_rate': '5.677e-05', 'entropy': '1.63', 'num_tokens': '2.681e+05', 'mean_token_accuracy': '0.9875', 'epoch': '4.909'}
+
+  0%|          | 0/10 [00:00<?, ?it/s][A
+ 40%|████      | 4/10 [00:00<00:00, 29.48it/s][A
+ 70%|███████   | 7/10 [00:00<00:00, 24.47it/s][A
+100%|██████████| 10/10 [00:00<00:00, 23.87it/s][A                                                 
+                                               [A 50%|█████     | 275/550 [00:43<00:35,  7.85it/s]
+100%|██████████| 10/10 [00:00<00:00, 23.87it/s][A
+                                               [A 50%|█████     | 276/550 [00:44<02:32,  1.80it/s] 50%|█████     | 277/550 [00:44<01:59,  2.29it/s] 51%|█████     | 278/550 [00:44<01:34,  2.88it/s] 51%|█████     | 279/550 [00:45<01:15,  3.57it/s] 51%|█████     | 280/550 [00:45<01:03,  4.28it/s]                                                  51%|█████     | 280/550 [00:45<01:03,  4.28it/s] 51%|█████     | 281/550 [00:45<00:54,  4.98it/s] 51%|█████▏    | 282/550 [00:45<00:48,  5.54it/s] 51%|█████▏    | 283/550 [00:45<00:43,  6.11it/s] 52%|█████▏    | 284/550 [00:45<00:40,  6.60it/s] 52%|█████▏    | 285/550 [00:45<00:37,  7.01it/s] 52%|█████▏    | 286/550 [00:45<00:36,  7.31it/s] 52%|█████▏    | 287/550 [00:46<00:34,  7.55it/s] 52%|█████▏    | 288/550 [00:46<00:34,  7.69it/s] 53%|█████▎    | 289/550 [00:46<00:33,  7.77it/s] 53%|█████▎    | 290/550 [00:46<00:33,  7.88it/s]                                                  53%|█████▎    | 290/550 [00:46<00:33,  7.88it/s] 53%|█████▎    | 291/550 [00:46<00:32,  7.95it/s] 53%|█████▎    | 292/550 [00:46<00:32,  7.99it/s] 53%|█████▎    | 293/550 [00:46<00:32,  8.01it/s] 53%|█████▎    | 294/550 [00:46<00:31,  8.04it/s] 54%|█████▎    | 295/550 [00:47<00:31,  8.07it/s] 54%|█████▍    | 296/550 [00:47<00:31,  8.09it/s] 54%|█████▍    | 297/550 [00:47<00:31,  8.09it/s] 54%|█████▍    | 298/550 [00:47<00:31,  8.11it/s] 54%|█████▍    | 299/550 [00:47<00:31,  8.09it/s] 55%|█████▍    | 300/550 [00:47<00:30,  8.07it/s]                                                  55%|█████▍    | 300/550 [00:47<00:30,  8.07it/s] 55%|█████▍    | 301/550 [00:47<00:30,  8.07it/s] 55%|█████▍    | 302/550 [00:47<00:30,  8.08it/s] 55%|█████▌    | 303/550 [00:48<00:30,  8.08it/s] 55%|█████▌    | 304/550 [00:48<00:30,  8.11it/s] 55%|█████▌    | 305/550 [00:48<00:32,  7.53it/s] 56%|█████▌    | 306/550 [00:48<00:31,  7.70it/s] 56%|█████▌    | 307/550 [00:48<00:31,  7.80it/s] 56%|█████▌    | 308/550 [00:48<00:30,  7.90it/s] 56%|█████▌    | 309/550 [00:48<00:30,  7.98it/s] 56%|█████▋    | 310/550 [00:48<00:29,  8.01it/s]                                                  56%|█████▋    | 310/550 [00:48<00:29,  8.01it/s] 57%|█████▋    | 311/550 [00:49<00:29,  8.02it/s] 57%|█████▋    | 312/550 [00:49<00:29,  8.05it/s] 57%|█████▋    | 313/550 [00:49<00:29,  8.07it/s] 57%|█████▋    | 314/550 [00:49<00:29,  7.91it/s] 57%|█████▋    | 315/550 [00:49<00:30,  7.79it/s] 57%|█████▋    | 316/550 [00:49<00:29,  7.87it/s] 58%|█████▊    | 317/550 [00:49<00:29,  7.93it/s] 58%|█████▊    | 318/550 [00:49<00:29,  7.97it/s] 58%|█████▊    | 319/550 [00:50<00:28,  7.99it/s] 58%|█████▊    | 320/550 [00:50<00:28,  8.03it/s]                                                  58%|█████▊    | 320/550 [00:50<00:28,  8.03it/s] 58%|█████▊    | 321/550 [00:50<00:28,  8.03it/s] 59%|█████▊    | 322/550 [00:50<00:28,  8.06it/s] 59%|█████▊    | 323/550 [00:50<00:28,  8.07it/s] 59%|█████▉    | 324/550 [00:50<00:28,  8.07it/s] 59%|█████▉    | 325/550 [00:50<00:28,  8.03it/s] 59%|█████▉    | 326/550 [00:50<00:27,  8.06it/s] 59%|█████▉    | 327/550 [00:51<00:27,  8.09it/s] 60%|█████▉    | 328/550 [00:51<00:27,  8.12it/s] 60%|█████▉    | 329/550 [00:51<00:27,  8.15it/s] 60%|██████    | 330/550 [00:51<00:26,  8.22it/s]                                                  60%|██████    | 330/550 [00:51<00:26,  8.22it/s]{'eval_loss': '1.083', 'eval_runtime': '0.4586', 'eval_samples_per_second': '163.6', 'eval_steps_per_second': '21.81', 'eval_entropy': '1.645', 'eval_num_tokens': '2.729e+05', 'eval_mean_token_accuracy': '0.85', 'epoch': '5'}
+{'loss': '0.01446', 'grad_norm': '0.1414', 'learning_rate': '5.475e-05', 'entropy': '1.638', 'num_tokens': '2.78e+05', 'mean_token_accuracy': '0.9938', 'epoch': '5.091'}
+{'loss': '0.0006413', 'grad_norm': '0.01513', 'learning_rate': '5.273e-05', 'entropy': '1.626', 'num_tokens': '2.879e+05', 'mean_token_accuracy': '1', 'epoch': '5.273'}
+{'loss': '0.08629', 'grad_norm': '0.07454', 'learning_rate': '5.071e-05', 'entropy': '1.648', 'num_tokens': '2.979e+05', 'mean_token_accuracy': '0.9875', 'epoch': '5.455'}
+{'loss': '0.00959', 'grad_norm': '0.01342', 'learning_rate': '4.869e-05', 'entropy': '1.694', 'num_tokens': '3.077e+05', 'mean_token_accuracy': '0.9938', 'epoch': '5.636'}
+{'loss': '0.0009256', 'grad_norm': '0.005459', 'learning_rate': '4.667e-05', 'entropy': '1.729', 'num_tokens': '3.177e+05', 'mean_token_accuracy': '1', 'epoch': '5.818'}
+{'loss': '0.0002592', 'grad_norm': '0.002844', 'learning_rate': '4.465e-05', 'entropy': '1.682', 'num_tokens': '3.275e+05', 'mean_token_accuracy': '1', 'epoch': '6'}
+
+  0%|          | 0/10 [00:00<?, ?it/s][A
+ 40%|████      | 4/10 [00:00<00:00, 29.45it/s][A
+ 70%|███████   | 7/10 [00:00<00:00, 24.44it/s][A
+100%|██████████| 10/10 [00:00<00:00, 23.83it/s][A                                                 
+                                               [A 60%|██████    | 330/550 [00:51<00:26,  8.22it/s]
+100%|██████████| 10/10 [00:00<00:00, 23.83it/s][A
+                                               [A 60%|██████    | 331/550 [00:53<02:06,  1.73it/s] 60%|██████    | 332/550 [00:53<01:36,  2.26it/s] 61%|██████    | 333/550 [00:53<01:15,  2.89it/s] 61%|██████    | 334/550 [00:53<01:00,  3.59it/s] 61%|██████    | 335/550 [00:53<00:49,  4.30it/s] 61%|██████    | 336/550 [00:53<00:42,  5.01it/s] 61%|██████▏   | 337/550 [00:53<00:37,  5.67it/s] 61%|██████▏   | 338/550 [00:53<00:34,  6.22it/s] 62%|██████▏   | 339/550 [00:54<00:31,  6.68it/s] 62%|██████▏   | 340/550 [00:54<00:29,  7.06it/s]                                                  62%|██████▏   | 340/550 [00:54<00:29,  7.06it/s] 62%|██████▏   | 341/550 [00:54<00:28,  7.32it/s] 62%|██████▏   | 342/550 [00:54<00:27,  7.50it/s] 62%|██████▏   | 343/550 [00:54<00:27,  7.65it/s] 63%|██████▎   | 344/550 [00:54<00:27,  7.62it/s] 63%|██████▎   | 345/550 [00:54<00:26,  7.74it/s] 63%|██████▎   | 346/550 [00:54<00:26,  7.84it/s] 63%|██████▎   | 347/550 [00:55<00:25,  7.90it/s] 63%|██████▎   | 348/550 [00:55<00:25,  7.98it/s] 63%|██████▎   | 349/550 [00:55<00:25,  8.04it/s] 64%|██████▎   | 350/550 [00:55<00:26,  7.49it/s]                                                  64%|██████▎   | 350/550 [00:55<00:26,  7.49it/s] 64%|██████▍   | 351/550 [00:55<00:25,  7.66it/s] 64%|██████▍   | 352/550 [00:55<00:27,  7.26it/s] 64%|██████▍   | 353/550 [00:55<00:26,  7.49it/s] 64%|██████▍   | 354/550 [00:55<00:25,  7.66it/s] 65%|██████▍   | 355/550 [00:56<00:25,  7.78it/s] 65%|██████▍   | 356/550 [00:56<00:24,  7.89it/s] 65%|██████▍   | 357/550 [00:56<00:24,  7.93it/s] 65%|██████▌   | 358/550 [00:56<00:24,  7.99it/s] 65%|██████▌   | 359/550 [00:56<00:23,  8.01it/s] 65%|██████▌   | 360/550 [00:56<00:23,  8.07it/s]                                                  65%|██████▌   | 360/550 [00:56<00:23,  8.07it/s] 66%|██████▌   | 361/550 [00:56<00:23,  8.07it/s] 66%|██████▌   | 362/550 [00:56<00:23,  8.11it/s] 66%|██████▌   | 363/550 [00:57<00:23,  8.11it/s] 66%|██████▌   | 364/550 [00:57<00:22,  8.11it/s] 66%|██████▋   | 365/550 [00:57<00:22,  8.13it/s] 67%|██████▋   | 366/550 [00:57<00:22,  8.12it/s] 67%|██████▋   | 367/550 [00:57<00:22,  8.12it/s] 67%|██████▋   | 368/550 [00:57<00:22,  8.12it/s] 67%|██████▋   | 369/550 [00:57<00:22,  8.13it/s] 67%|██████▋   | 370/550 [00:57<00:22,  8.13it/s]                                                  67%|██████▋   | 370/550 [00:57<00:22,  8.13it/s] 67%|██████▋   | 371/550 [00:58<00:21,  8.15it/s] 68%|██████▊   | 372/550 [00:58<00:21,  8.14it/s] 68%|██████▊   | 373/550 [00:58<00:21,  8.14it/s] 68%|██████▊   | 374/550 [00:58<00:21,  8.12it/s] 68%|██████▊   | 375/550 [00:58<00:21,  8.14it/s] 68%|██████▊   | 376/550 [00:58<00:21,  7.94it/s] 69%|██████▊   | 377/550 [00:58<00:21,  8.01it/s] 69%|██████▊   | 378/550 [00:58<00:21,  8.07it/s] 69%|██████▉   | 379/550 [00:59<00:21,  8.10it/s] 69%|██████▉   | 380/550 [00:59<00:20,  8.14it/s]                                                  69%|██████▉   | 380/550 [00:59<00:20,  8.14it/s] 69%|██████▉   | 381/550 [00:59<00:20,  8.13it/s] 69%|██████▉   | 382/550 [00:59<00:20,  8.15it/s] 70%|██████▉   | 383/550 [00:59<00:20,  8.16it/s] 70%|██████▉   | 384/550 [00:59<00:20,  8.17it/s] 70%|███████   | 385/550 [00:59<00:20,  8.24it/s]{'eval_loss': '0.9692', 'eval_runtime': '0.4594', 'eval_samples_per_second': '163.3', 'eval_steps_per_second': '21.77', 'eval_entropy': '1.705', 'eval_num_tokens': '3.275e+05', 'eval_mean_token_accuracy': '0.8562', 'epoch': '6'}
+{'loss': '0.0003761', 'grad_norm': '0.01023', 'learning_rate': '4.263e-05', 'entropy': '1.702', 'num_tokens': '3.374e+05', 'mean_token_accuracy': '1', 'epoch': '6.182'}
+{'loss': '0.0001645', 'grad_norm': '0.00892', 'learning_rate': '4.061e-05', 'entropy': '1.658', 'num_tokens': '3.476e+05', 'mean_token_accuracy': '1', 'epoch': '6.364'}
+{'loss': '0.02992', 'grad_norm': '0.01038', 'learning_rate': '3.859e-05', 'entropy': '1.668', 'num_tokens': '3.577e+05', 'mean_token_accuracy': '0.9938', 'epoch': '6.545'}
+{'loss': '0.000191', 'grad_norm': '0.001998', 'learning_rate': '3.657e-05', 'entropy': '1.71', 'num_tokens': '3.674e+05', 'mean_token_accuracy': '1', 'epoch': '6.727'}
+{'loss': '0.01441', 'grad_norm': '0.02879', 'learning_rate': '3.455e-05', 'entropy': '1.717', 'num_tokens': '3.774e+05', 'mean_token_accuracy': '0.9938', 'epoch': '6.909'}
+
+  0%|          | 0/10 [00:00<?, ?it/s][A
+ 40%|████      | 4/10 [00:00<00:00, 29.46it/s][A
+ 70%|███████   | 7/10 [00:00<00:00, 24.49it/s][A
+100%|██████████| 10/10 [00:00<00:00, 23.88it/s][A                                                 
+                                               [A 70%|███████   | 385/550 [01:00<00:20,  8.24it/s]
+100%|██████████| 10/10 [00:00<00:00, 23.88it/s][A
+                                               [A 70%|███████   | 386/550 [01:01<01:32,  1.78it/s] 70%|███████   | 387/550 [01:01<01:10,  2.33it/s] 71%|███████   | 388/550 [01:01<00:54,  2.96it/s] 71%|███████   | 389/550 [01:01<00:44,  3.65it/s] 71%|███████   | 390/550 [01:01<00:36,  4.37it/s]                                                  71%|███████   | 390/550 [01:01<00:36,  4.37it/s] 71%|███████   | 391/550 [01:01<00:31,  5.08it/s] 71%|███████▏  | 392/550 [01:02<00:27,  5.71it/s] 71%|███████▏  | 393/550 [01:02<00:25,  6.28it/s] 72%|███████▏  | 394/550 [01:02<00:23,  6.73it/s] 72%|███████▏  | 395/550 [01:02<00:21,  7.08it/s] 72%|███████▏  | 396/550 [01:02<00:20,  7.35it/s] 72%|███████▏  | 397/550 [01:02<00:20,  7.58it/s] 72%|███████▏  | 398/550 [01:02<00:19,  7.70it/s] 73%|███████▎  | 399/550 [01:02<00:19,  7.83it/s] 73%|███████▎  | 400/550 [01:03<00:18,  7.91it/s]                                                  73%|███████▎  | 400/550 [01:03<00:18,  7.91it/s] 73%|███████▎  | 401/550 [01:03<00:18,  7.98it/s] 73%|███████▎  | 402/550 [01:03<00:18,  8.01it/s] 73%|███████▎  | 403/550 [01:03<00:18,  7.86it/s] 73%|███████▎  | 404/550 [01:03<00:18,  7.94it/s] 74%|███████▎  | 405/550 [01:03<00:18,  8.00it/s] 74%|███████▍  | 406/550 [01:03<00:17,  8.01it/s] 74%|███████▍  | 407/550 [01:03<00:17,  8.05it/s] 74%|███████▍  | 408/550 [01:04<00:17,  8.06it/s] 74%|███████▍  | 409/550 [01:04<00:17,  8.07it/s] 75%|███████▍  | 410/550 [01:04<00:17,  7.91it/s]                                                  75%|███████▍  | 410/550 [01:04<00:17,  7.91it/s] 75%|███████▍  | 411/550 [01:04<00:17,  7.97it/s] 75%|███████▍  | 412/550 [01:04<00:17,  7.99it/s] 75%|███████▌  | 413/550 [01:04<00:17,  8.03it/s] 75%|███████▌  | 414/550 [01:04<00:16,  8.02it/s] 75%|███████▌  | 415/550 [01:04<00:16,  8.06it/s] 76%|███████▌  | 416/550 [01:05<00:16,  8.07it/s] 76%|███████▌  | 417/550 [01:05<00:16,  8.08it/s] 76%|███████▌  | 418/550 [01:05<00:16,  8.08it/s] 76%|███████▌  | 419/550 [01:05<00:16,  8.09it/s] 76%|███████▋  | 420/550 [01:05<00:16,  8.06it/s]                                                  76%|███████▋  | 420/550 [01:05<00:16,  8.06it/s] 77%|███████▋  | 421/550 [01:05<00:15,  8.07it/s] 77%|███████▋  | 422/550 [01:05<00:16,  7.89it/s] 77%|███████▋  | 423/550 [01:05<00:15,  7.98it/s] 77%|███████▋  | 424/550 [01:06<00:15,  8.02it/s] 77%|███████▋  | 425/550 [01:06<00:15,  8.05it/s] 77%|███████▋  | 426/550 [01:06<00:16,  7.49it/s] 78%|███████▊  | 427/550 [01:06<00:16,  7.68it/s] 78%|███████▊  | 428/550 [01:06<00:15,  7.79it/s] 78%|███████▊  | 429/550 [01:06<00:15,  7.87it/s] 78%|███████▊  | 430/550 [01:06<00:15,  7.93it/s]                                                  78%|███████▊  | 430/550 [01:06<00:15,  7.93it/s] 78%|███████▊  | 431/550 [01:06<00:14,  7.98it/s] 79%|███████▊  | 432/550 [01:07<00:14,  8.03it/s] 79%|███████▊  | 433/550 [01:07<00:14,  8.06it/s] 79%|███████▉  | 434/550 [01:07<00:14,  8.06it/s] 79%|███████▉  | 435/550 [01:07<00:14,  8.10it/s] 79%|███████▉  | 436/550 [01:07<00:14,  8.13it/s] 79%|███████▉  | 437/550 [01:07<00:13,  8.08it/s] 80%|███████▉  | 438/550 [01:07<00:14,  7.51it/s] 80%|███████▉  | 439/550 [01:07<00:14,  7.71it/s] 80%|████████  | 440/550 [01:08<00:13,  7.89it/s]                                                  80%|████████  | 440/550 [01:08<00:13,  7.89it/s]{'eval_loss': '0.9349', 'eval_runtime': '0.4584', 'eval_samples_per_second': '163.6', 'eval_steps_per_second': '21.81', 'eval_entropy': '1.706', 'eval_num_tokens': '3.821e+05', 'eval_mean_token_accuracy': '0.8438', 'epoch': '7'}
+{'loss': '0.0004757', 'grad_norm': '0.0138', 'learning_rate': '3.253e-05', 'entropy': '1.682', 'num_tokens': '3.87e+05', 'mean_token_accuracy': '1', 'epoch': '7.091'}
+{'loss': '0.001943', 'grad_norm': '0.06129', 'learning_rate': '3.051e-05', 'entropy': '1.706', 'num_tokens': '3.969e+05', 'mean_token_accuracy': '1', 'epoch': '7.273'}
+{'loss': '0.0001634', 'grad_norm': '0.001189', 'learning_rate': '2.848e-05', 'entropy': '1.641', 'num_tokens': '4.068e+05', 'mean_token_accuracy': '1', 'epoch': '7.455'}
+{'loss': '0.0004204', 'grad_norm': '0.04647', 'learning_rate': '2.646e-05', 'entropy': '1.657', 'num_tokens': '4.169e+05', 'mean_token_accuracy': '1', 'epoch': '7.636'}
+{'loss': '0.0001339', 'grad_norm': '0.007705', 'learning_rate': '2.444e-05', 'entropy': '1.641', 'num_tokens': '4.27e+05', 'mean_token_accuracy': '1', 'epoch': '7.818'}
+{'loss': '0.0001917', 'grad_norm': '0.001987', 'learning_rate': '2.242e-05', 'entropy': '1.67', 'num_tokens': '4.367e+05', 'mean_token_accuracy': '1', 'epoch': '8'}
+
+  0%|          | 0/10 [00:00<?, ?it/s][A
+ 40%|████      | 4/10 [00:00<00:00, 29.42it/s][A
+ 70%|███████   | 7/10 [00:00<00:00, 24.46it/s][A
+100%|██████████| 10/10 [00:00<00:00, 23.83it/s][A                                                 
+                                               [A 80%|████████  | 440/550 [01:08<00:13,  7.89it/s]
+100%|██████████| 10/10 [00:00<00:00, 23.83it/s][A
+                                               [A 80%|████████  | 441/550 [01:09<01:09,  1.56it/s] 80%|████████  | 442/550 [01:10<00:52,  2.06it/s] 81%|████████  | 443/550 [01:10<00:40,  2.66it/s] 81%|████████  | 444/550 [01:10<00:31,  3.33it/s] 81%|████████  | 445/550 [01:10<00:25,  4.05it/s] 81%|████████  | 446/550 [01:10<00:21,  4.77it/s] 81%|████████▏ | 447/550 [01:10<00:19,  5.36it/s] 81%|████████▏ | 448/550 [01:10<00:17,  5.98it/s] 82%|████████▏ | 449/550 [01:10<00:15,  6.49it/s] 82%|████████▏ | 450/550 [01:11<00:14,  6.77it/s]                                                  82%|████████▏ | 450/550 [01:11<00:14,  6.77it/s] 82%|████████▏ | 451/550 [01:11<00:13,  7.13it/s] 82%|████████▏ | 452/550 [01:11<00:13,  7.42it/s] 82%|████████▏ | 453/550 [01:11<00:12,  7.63it/s] 83%|████████▎ | 454/550 [01:11<00:12,  7.79it/s] 83%|████████▎ | 455/550 [01:11<00:11,  7.92it/s] 83%|████████▎ | 456/550 [01:11<00:11,  7.95it/s] 83%|████████▎ | 457/550 [01:11<00:11,  8.01it/s] 83%|████████▎ | 458/550 [01:12<00:11,  8.06it/s] 83%|████████▎ | 459/550 [01:12<00:11,  8.09it/s] 84%|████████▎ | 460/550 [01:12<00:11,  8.12it/s]                                                  84%|████████▎ | 460/550 [01:12<00:11,  8.12it/s] 84%|████████▍ | 461/550 [01:12<00:10,  8.13it/s] 84%|████████▍ | 462/550 [01:12<00:11,  7.90it/s] 84%|████████▍ | 463/550 [01:12<00:11,  7.68it/s] 84%|████████▍ | 464/550 [01:12<00:11,  7.53it/s] 85%|████████▍ | 465/550 [01:12<00:11,  7.66it/s] 85%|████████▍ | 466/550 [01:13<00:10,  7.80it/s] 85%|████████▍ | 467/550 [01:13<00:10,  7.91it/s] 85%|████████▌ | 468/550 [01:13<00:10,  7.98it/s] 85%|████████▌ | 469/550 [01:13<00:10,  7.45it/s] 85%|████████▌ | 470/550 [01:13<00:10,  7.46it/s]                                                  85%|████████▌ | 470/550 [01:13<00:10,  7.46it/s] 86%|████████▌ | 471/550 [01:13<00:10,  7.64it/s] 86%|████████▌ | 472/550 [01:13<00:10,  7.76it/s] 86%|████████▌ | 473/550 [01:13<00:09,  7.87it/s] 86%|████████▌ | 474/550 [01:14<00:09,  7.95it/s] 86%|████████▋ | 475/550 [01:14<00:09,  8.00it/s] 87%|████████▋ | 476/550 [01:14<00:09,  7.46it/s] 87%|████████▋ | 477/550 [01:14<00:09,  7.65it/s] 87%|████████▋ | 478/550 [01:14<00:09,  7.77it/s] 87%|████████▋ | 479/550 [01:14<00:09,  7.88it/s] 87%|████████▋ | 480/550 [01:14<00:08,  7.94it/s]                                                  87%|████████▋ | 480/550 [01:14<00:08,  7.94it/s] 87%|████████▋ | 481/550 [01:15<00:08,  7.97it/s] 88%|████████▊ | 482/550 [01:15<00:08,  8.00it/s] 88%|████████▊ | 483/550 [01:15<00:08,  8.04it/s] 88%|████████▊ | 484/550 [01:15<00:08,  8.05it/s] 88%|████████▊ | 485/550 [01:15<00:08,  8.08it/s] 88%|████████▊ | 486/550 [01:15<00:07,  8.08it/s] 89%|████████▊ | 487/550 [01:15<00:07,  8.08it/s] 89%|████████▊ | 488/550 [01:15<00:07,  8.07it/s] 89%|████████▉ | 489/550 [01:15<00:07,  8.11it/s] 89%|████████▉ | 490/550 [01:16<00:07,  8.12it/s]                                                  89%|████████▉ | 490/550 [01:16<00:07,  8.12it/s] 89%|████████▉ | 491/550 [01:16<00:07,  8.05it/s] 89%|████████▉ | 492/550 [01:16<00:07,  8.09it/s] 90%|████████▉ | 493/550 [01:16<00:07,  8.11it/s] 90%|████████▉ | 494/550 [01:16<00:06,  8.13it/s] 90%|█████████ | 495/550 [01:16<00:06,  8.22it/s]{'eval_loss': '1.129', 'eval_runtime': '0.4596', 'eval_samples_per_second': '163.2', 'eval_steps_per_second': '21.76', 'eval_entropy': '1.653', 'eval_num_tokens': '4.367e+05', 'eval_mean_token_accuracy': '0.8438', 'epoch': '8'}
+{'loss': '0.0001852', 'grad_norm': '0.0008431', 'learning_rate': '2.04e-05', 'entropy': '1.66', 'num_tokens': '4.468e+05', 'mean_token_accuracy': '1', 'epoch': '8.182'}
+{'loss': '9.365e-05', 'grad_norm': '0.003878', 'learning_rate': '1.838e-05', 'entropy': '1.616', 'num_tokens': '4.567e+05', 'mean_token_accuracy': '1', 'epoch': '8.364'}
+{'loss': '0.0002073', 'grad_norm': '0.01439', 'learning_rate': '1.636e-05', 'entropy': '1.65', 'num_tokens': '4.666e+05', 'mean_token_accuracy': '1', 'epoch': '8.545'}
+{'loss': '0.0001097', 'grad_norm': '0.02912', 'learning_rate': '1.434e-05', 'entropy': '1.609', 'num_tokens': '4.767e+05', 'mean_token_accuracy': '1', 'epoch': '8.727'}
+{'loss': '0.0001053', 'grad_norm': '0.002707', 'learning_rate': '1.232e-05', 'entropy': '1.658', 'num_tokens': '4.865e+05', 'mean_token_accuracy': '1', 'epoch': '8.909'}
+
+  0%|          | 0/10 [00:00<?, ?it/s][A
+ 40%|████      | 4/10 [00:00<00:00, 29.37it/s][A
+ 70%|███████   | 7/10 [00:00<00:00, 24.40it/s][A
+100%|██████████| 10/10 [00:00<00:00, 23.77it/s][A                                                 
+                                               [A 90%|█████████ | 495/550 [01:17<00:06,  8.22it/s]
+100%|██████████| 10/10 [00:00<00:00, 23.77it/s][A
+                                               [A 90%|█████████ | 496/550 [01:18<00:29,  1.86it/s] 90%|█████████ | 497/550 [01:18<00:21,  2.42it/s] 91%|█████████ | 498/550 [01:18<00:16,  3.06it/s] 91%|█████████ | 499/550 [01:18<00:13,  3.72it/s] 91%|█████████ | 500/550 [01:18<00:11,  4.46it/s]                                                  91%|█████████ | 500/550 [01:18<00:11,  4.46it/s] 91%|█████████ | 501/550 [01:18<00:09,  5.14it/s] 91%|█████████▏| 502/550 [01:18<00:08,  5.78it/s] 91%|█████████▏| 503/550 [01:19<00:07,  6.33it/s] 92%|█████████▏| 504/550 [01:19<00:06,  6.78it/s] 92%|█████████▏| 505/550 [01:19<00:06,  7.17it/s] 92%|█████████▏| 506/550 [01:19<00:05,  7.42it/s] 92%|█████████▏| 507/550 [01:19<00:05,  7.63it/s] 92%|█████████▏| 508/550 [01:19<00:05,  7.78it/s] 93%|█████████▎| 509/550 [01:19<00:05,  7.87it/s] 93%|█████████▎| 510/550 [01:19<00:05,  7.96it/s]                                                  93%|█████████▎| 510/550 [01:19<00:05,  7.96it/s] 93%|█████████▎| 511/550 [01:20<00:04,  8.02it/s] 93%|█████████▎| 512/550 [01:20<00:04,  8.05it/s] 93%|█████████▎| 513/550 [01:20<00:04,  8.07it/s] 93%|█████████▎| 514/550 [01:20<00:04,  8.06it/s] 94%|█████████▎| 515/550 [01:20<00:04,  7.90it/s] 94%|█████████▍| 516/550 [01:20<00:04,  7.96it/s] 94%|█████████▍| 517/550 [01:20<00:04,  8.00it/s] 94%|█████████▍| 518/550 [01:20<00:03,  8.04it/s] 94%|█████████▍| 519/550 [01:21<00:03,  8.08it/s] 95%|█████████▍| 520/550 [01:21<00:03,  8.11it/s]                                                  95%|█████████▍| 520/550 [01:21<00:03,  8.11it/s] 95%|█████████▍| 521/550 [01:21<00:03,  8.10it/s] 95%|█████████▍| 522/550 [01:21<00:03,  8.13it/s] 95%|█████████▌| 523/550 [01:21<00:03,  8.13it/s] 95%|█████████▌| 524/550 [01:21<00:03,  8.10it/s] 95%|█████████▌| 525/550 [01:21<00:03,  8.10it/s] 96%|█████████▌| 526/550 [01:21<00:02,  8.05it/s] 96%|█████████▌| 527/550 [01:22<00:02,  8.07it/s] 96%|█████████▌| 528/550 [01:22<00:02,  8.14it/s] 96%|█████████▌| 529/550 [01:22<00:02,  7.95it/s] 96%|█████████▋| 530/550 [01:22<00:02,  7.99it/s]                                                  96%|█████████▋| 530/550 [01:22<00:02,  7.99it/s] 97%|█████████▋| 531/550 [01:22<00:02,  8.01it/s] 97%|█████████▋| 532/550 [01:22<00:02,  8.03it/s] 97%|█████████▋| 533/550 [01:22<00:02,  8.03it/s] 97%|█████████▋| 534/550 [01:22<00:01,  8.04it/s] 97%|█████████▋| 535/550 [01:23<00:01,  8.05it/s] 97%|█████████▋| 536/550 [01:23<00:01,  8.06it/s] 98%|█████████▊| 537/550 [01:23<00:01,  8.05it/s] 98%|█████████▊| 538/550 [01:23<00:01,  8.04it/s] 98%|█████████▊| 539/550 [01:23<00:01,  8.06it/s] 98%|█████████▊| 540/550 [01:23<00:01,  8.08it/s]                                                  98%|█████████▊| 540/550 [01:23<00:01,  8.08it/s] 98%|█████████▊| 541/550 [01:23<00:01,  8.08it/s] 99%|█████████▊| 542/550 [01:23<00:00,  8.08it/s] 99%|█████████▊| 543/550 [01:24<00:00,  7.48it/s] 99%|█████████▉| 544/550 [01:24<00:00,  7.57it/s] 99%|█████████▉| 545/550 [01:24<00:00,  7.58it/s] 99%|█████████▉| 546/550 [01:24<00:00,  7.61it/s] 99%|█████████▉| 547/550 [01:24<00:00,  7.76it/s]100%|█████████▉| 548/550 [01:24<00:00,  7.86it/s]100%|█████████▉| 549/550 [01:24<00:00,  7.38it/s]100%|██████████| 550/550 [01:25<00:00,  7.66it/s]                                                 100%|██████████| 550/550 [01:25<00:00,  7.66it/s]{'eval_loss': '1.16', 'eval_runtime': '0.4603', 'eval_samples_per_second': '162.9', 'eval_steps_per_second': '21.73', 'eval_entropy': '1.652', 'eval_num_tokens': '4.913e+05', 'eval_mean_token_accuracy': '0.8438', 'epoch': '9'}
+{'loss': '7.37e-05', 'grad_norm': '0.00168', 'learning_rate': '1.03e-05', 'entropy': '1.657', 'num_tokens': '4.962e+05', 'mean_token_accuracy': '1', 'epoch': '9.091'}
+{'loss': '0.0001077', 'grad_norm': '0.005712', 'learning_rate': '8.283e-06', 'entropy': '1.631', 'num_tokens': '5.061e+05', 'mean_token_accuracy': '1', 'epoch': '9.273'}
+{'loss': '0.0001187', 'grad_norm': '0.00106', 'learning_rate': '6.263e-06', 'entropy': '1.613', 'num_tokens': '5.161e+05', 'mean_token_accuracy': '1', 'epoch': '9.455'}
+{'loss': '9.615e-05', 'grad_norm': '0.009651', 'learning_rate': '4.242e-06', 'entropy': '1.62', 'num_tokens': '5.259e+05', 'mean_token_accuracy': '1', 'epoch': '9.636'}
+{'loss': '9.939e-05', 'grad_norm': '0.002801', 'learning_rate': '2.222e-06', 'entropy': '1.666', 'num_tokens': '5.358e+05', 'mean_token_accuracy': '1', 'epoch': '9.818'}
+{'loss': '0.0001207', 'grad_norm': '0.0007412', 'learning_rate': '2.02e-07', 'entropy': '1.658', 'num_tokens': '5.458e+05', 'mean_token_accuracy': '1', 'epoch': '10'}
+
+  0%|          | 0/10 [00:00<?, ?it/s][A
+ 40%|████      | 4/10 [00:00<00:00, 29.43it/s][A
+ 70%|███████   | 7/10 [00:00<00:00, 24.37it/s][A
+100%|██████████| 10/10 [00:00<00:00, 23.75it/s][A                                                 
+                                               [A100%|██████████| 550/550 [01:25<00:00,  7.66it/s]
+100%|██████████| 10/10 [00:00<00:00, 23.75it/s][A
+                                               [A                                                 100%|██████████| 550/550 [01:36<00:00,  7.66it/s]100%|██████████| 550/550 [01:36<00:00,  5.71it/s]
+{'eval_loss': '1.154', 'eval_runtime': '0.4609', 'eval_samples_per_second': '162.7', 'eval_steps_per_second': '21.7', 'eval_entropy': '1.645', 'eval_num_tokens': '5.458e+05', 'eval_mean_token_accuracy': '0.85', 'epoch': '10'}
+{'train_runtime': '96.36', 'train_samples_per_second': '45.45', 'train_steps_per_second': '5.708', 'train_loss': '0.5277', 'epoch': '10'}
+Saved log history to: outputs/run_K_1.7b_synthetic/log_history.json
+Saved trainer state summary to: outputs/run_K_1.7b_synthetic/trainer_state_summary.json
+================================================================================
+Training complete. Final artifacts saved to: outputs/run_K_1.7b_synthetic/final
+================================================================================
