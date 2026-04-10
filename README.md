@@ -4,6 +4,33 @@ Recipe-MPR QA is a course project and research-style repository centered on one 
 
 Recipe-MPR is a five-way multiple-choice recipe recommendation task. Each example contains a natural-language food preference query, five candidate recipe descriptions, and one correct answer. The task is harder than keyword matching because many queries depend on commonsense reasoning, negation, analogical cues, or temporal constraints.
 
+## Final Results
+
+The full scaling and fine-tuning study uncovered a sharp **capability threshold** between 360M and 1.7B parameters: below the threshold, fine-tuning and synthetic-data augmentation produce no meaningful gains over random chance, while above it both yield large, additive improvements.
+
+| Model | Mode | Test accuracy |
+|---|---|---|
+| SmolLM2-135M-Instruct | zero-shot | 18.7% |
+| SmolLM2-360M-Instruct | zero-shot | 25.3% |
+| SmolLM2-1.7B-Instruct | zero-shot | 18.7% |
+| SmolLM2-135M-Instruct | LoRA fine-tune (Run C) | 22.7% |
+| SmolLM2-360M-Instruct | LoRA fine-tune (Run G) | 17.3% |
+| SmolLM2-360M-Instruct | LoRA fine-tune + 25% synthetic (Run H) | 21.3% |
+| **SmolLM2-1.7B-Instruct** | **LoRA fine-tune (Run I)** | **78.7%** |
+| **SmolLM2-1.7B-Instruct** | **LoRA fine-tune + 25% synthetic (Run K)** | **82.7%** |
+| Qwen2.5-3B-Instruct | zero-shot | 86.7% |
+| DeepSeek-R1-Distill-Qwen-7B | zero-shot | 97.3% |
+
+Headline finding: a 1.7B SmolLM2 fine-tuned with LoRA on the train split plus a 25% synthetic-data ratio reaches **82.7%** test accuracy, closing most of the gap to a 3B-parameter zero-shot baseline at roughly half the parameter count.
+
+- **Final report:** [docs/final-report/report.tex](docs/final-report/report.tex)
+- **Bar chart:** [llm_evaluation/results/results_bar_chart.png](llm_evaluation/results/results_bar_chart.png)
+- **All result JSONs:** [llm_evaluation/results/](llm_evaluation/results/)
+
+## Demo
+
+For a guided walkthrough of the input/output path end to end (load data, build a multiple-choice prompt, parse a model response, load a saved evaluation result), open [demo.ipynb](demo.ipynb) in the repo root and run the cells in order. The notebook is self-contained and only requires `pip install -r requirements.txt` plus `pip install -e .`.
+
 ## Current Repository Status
 
 The repository currently provides:
@@ -26,13 +53,19 @@ Support levels in the current repo:
 
 ## Quickstart
 
-Install the package from the repository root. This editable install is the expected starting point if you want to use `recipe-mpr-qa` or `python -m recipe_mpr_qa.cli`.
+Install the package from the repository root. The editable install is the expected starting point if you want to use `recipe-mpr-qa` or `python -m recipe_mpr_qa.cli`.
 
 ```bash
 pip install -e .
 ```
 
-Optional extras:
+If you would rather pin loose dependencies without the editable install, [`requirements.txt`](requirements.txt) mirrors the dependencies declared in `pyproject.toml` (core + the `slm` extras + Jupyter for the demo notebook):
+
+```bash
+pip install -r requirements.txt
+```
+
+Optional extras (recommended path for active development):
 
 ```bash
 pip install -e ".[dev]"
@@ -100,22 +133,11 @@ Run the regression suite:
 pytest -q
 ```
 
-## Current Experimental State
+## Final Experimental State
 
-The repo now contains real synthetic-data handoff artifacts under `data/processed/synthetic/`.
+All planned evaluations are complete and the result files in `llm_evaluation/results/` are the source of truth for the final report. The 1.7B + 25%-synthetic configuration (Run K) is the headline result at **82.7%** test accuracy; see the table in [Final Results](#final-results) above for the full landscape.
 
-As of April 1, 2026:
-
-- pilot plus second-pass query-only approvals: `154` total approved
-- pilot plus second-pass full-generation approvals: `39` total approved
-- validated train-ready handoff artifacts now exist for:
-  - query-only `0.25`
-  - full-generation `0.10`
-  - mixed `0.25` at `70/30`
-
-Those files are useful for future training and evaluation handoff, but they are not benchmark evidence. No training or held-out evaluation conclusions have been drawn from them yet.
-
-The main handoff artifacts are:
+The synthetic-data handoff artifacts under `data/processed/synthetic/` are still in the repo and were used to train Run H (360M) and Run K (1.7B):
 
 - `data/processed/synthetic/query_approved_merged.jsonl`
 - `data/processed/synthetic/full_approved_merged.jsonl`
@@ -123,7 +145,7 @@ The main handoff artifacts are:
 - `data/processed/synthetic/train_full_ratio010.jsonl`
 - `data/processed/synthetic/train_mixed_ratio025.jsonl`
 
-The old committed evaluation JSON files under `llm_evaluation/results/` and the saved training outputs under `outputs/` remain historical context only. The benchmark path changed materially after answer-position leakage mitigation and parser hardening, so any final benchmark claims still require fresh reruns.
+The SLURM scripts that produced the final results live in [`slurm/`](slurm/). The bar chart and per-query-type breakdowns are reproducible from the result JSONs via the helper exposed in `recipe_mpr_qa.evaluation.results` (see [demo.ipynb](demo.ipynb)).
 
 ## Documentation Map
 
@@ -140,9 +162,12 @@ The old committed evaluation JSON files under `llm_evaluation/results/` and the 
 ## Repository Structure
 
 - `data/`: raw, processed, and derived dataset artifacts
-- `docs/`: canonical project docs plus historical proposal/report material
+- `docs/`: canonical project docs plus the final report under `docs/final-report/`
 - `src/recipe_mpr_qa/`: canonical data, formatting, synthetic, evaluation, and tracking implementation
-- `llm_evaluation/`: repo-root evaluation wrapper and result artifacts
+- `llm_evaluation/`: repo-root evaluation wrapper and result artifacts (incl. `results_bar_chart.png`)
 - `finetuning/`: repo-root fine-tuning wrapper and related materials
-- `outputs/`: saved historical training outputs
+- `slurm/`: SLURM batch scripts used to run training and evaluation on the cluster
+- `outputs/`: saved training checkpoints and run configs
 - `tests/`: regression coverage for the current implementation
+- `demo.ipynb`: end-to-end demo notebook (input \u2192 prompt \u2192 parse \u2192 result summary)
+- `requirements.txt`: pinned-loose dependency list mirroring `pyproject.toml`
