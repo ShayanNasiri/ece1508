@@ -35,6 +35,8 @@ pytest-cache-files-*/
 mlruns/
 results/*.log
 llm_evaluation/results/*.log
+# Exception: keep finetune training stdout logs as evidence of which jobs ran
+!llm_evaluation/results/finetune_*.log
 outputs/smollm2_recipe_mpr/checkpoint*
 
 # Editor / OS noise
