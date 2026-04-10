@@ -1,0 +1,29 @@
+# Recipe-MPR QA — pinned-loose dependencies for reproducing the project
+#
+# This file mirrors the dependencies declared in pyproject.toml so an evaluator
+# can reproduce the experiments without an editable install. The recommended
+# install path is still:
+#
+#     pip install -e ".[slm,dev]"
+#
+# but `pip install -r requirements.txt` is sufficient to run the demo notebook,
+# the data preparation CLI, and the multiple-choice evaluation script.
+
+# --- Core (always required) ---
+requests
+tqdm
+
+# --- SLM finetuning + HuggingFace inference ---
+torch
+transformers
+accelerate
+peft
+datasets
+trl
+
+# --- Demo notebook + plotting ---
+jupyter
+matplotlib
+
+# --- Tests (optional, but useful for reviewers) ---
+pytest>=8.4
