@@ -17,17 +17,17 @@
 
 \author{%
   Shayan Nasiri\\
-  Department of Electrical and\\Computer Engineering\\
+  Department of Computer Science\\
   University of Toronto\\
-  \texttt{shayan.nasiri@mail.utoronto.ca} \\
+  \texttt{s.nasiri@mail.utoronto.ca} \\
   \And
   Jagrit Rai\\
-  Department of Electrical and\\Computer Engineering\\
+  Department of Electrical and Computer Engineering\\
   University of Toronto\\
   \texttt{jagrit.rai@mail.utoronto.ca} \\
   \And
   Pedram Yazdinia\\
-  Department of Electrical and\\Computer Engineering\\
+  Department of Computer Science\\
   University of Toronto\\
   \texttt{pedram.yazdinia@mail.utoronto.ca} \\
 }
@@ -37,7 +37,7 @@
 \maketitle
 
 \begin{abstract}
-We investigate whether small language models (SLMs) with fewer than 2 billion parameters can perform multi-choice recipe recommendation, a task requiring commonsense reasoning over natural-language preference queries. Using Recipe-MPR QA, a dataset of 500 multiple-choice questions spanning five query types, we evaluate SmolLM2 models at 135M, 360M, and 1.7B parameters alongside Qwen2.5-3B and DeepSeek-R1-7B. We apply Low-Rank Adaptation (LoRA) finetuning with systematic ablation over multiple configurations and augment training data with LLM-generated synthetic examples. Our results reveal a sharp capability threshold between 360M and 1.7B parameters: below it, all models perform at chance level ($\sim$20\%) regardless of finetuning or augmentation. Above it, finetuning yields a 60-percentage-point improvement (18.7\% to 78.7\% at 1.7B), and synthetic data augmentation provides an additional 4-percentage-point gain to 82.7\%. Critically, the same synthetic augmentation produces no improvement at 360M, confirming that data quality cannot compensate for insufficient model capacity. Accuracy scales further with model size---86.7\% at 3B and 97.3\% at 7B without finetuning. We additionally find that larger models risk catastrophic overfitting on small datasets. These findings demonstrate that a capability threshold governs when finetuning and data augmentation become effective.
+We investigate whether small language models (SLMs) with fewer than 2 billion parameters can perform multi-choice recipe recommendation, a task requiring commonsense reasoning over natural-language preference queries. Using Recipe-MPR QA, a dataset of 500 multiple-choice questions spanning five query types, we evaluate SmolLM2 models at 135M, 360M, and 1.7B parameters alongside Qwen2.5-3B and DeepSeek-R1-Distill-Qwen-7B. We apply Low-Rank Adaptation (LoRA) finetuning with systematic ablation over multiple configurations and augment training data with LLM-generated synthetic examples. Our results reveal a sharp capability threshold between 360M and 1.7B parameters: below it, all models perform near chance level ($\sim$20\%) regardless of finetuning or augmentation. Above it, finetuning yields a 60-percentage-point improvement (18.7\% to 78.7\% at 1.7B), and synthetic data augmentation provides an additional 4-percentage-point gain to 82.7\%. Critically, the same synthetic augmentation produces no improvement at 360M, confirming that data quality cannot compensate for insufficient model capacity. Accuracy scales further with model size: 86.7\% at 3B and 97.3\% at 7B without finetuning. We additionally find that larger models risk catastrophic overfitting on small datasets. These findings demonstrate that a capability threshold governs when finetuning and data augmentation become effective.
 \end{abstract}
 
 \section*{Attestation of Teamwork}
@@ -46,7 +46,7 @@ We investigate whether small language models (SLMs) with fewer than 2 billion pa
 
 \section{Introduction}
 
-Recipe recommendation systems must reason over diverse user preferences expressed in natural language, including specific ingredient requests, commonsense dietary knowledge, negated constraints, analogical comparisons, and temporal meal-planning considerations. While large language models (LLMs) with billions of parameters have demonstrated strong performance on such reasoning tasks~[1,2], deploying them in resource-constrained settings---such as mobile devices or embedded kitchen systems---motivates the investigation of small language models (SLMs) as alternatives.
+Recipe recommendation systems must reason over diverse user preferences expressed in natural language, including specific ingredient requests, common-sense dietary knowledge, negated constraints, analogical comparisons, and temporal meal-planning considerations. While large language models (LLMs) with billions of parameters have demonstrated strong performance on such reasoning tasks~[1,2], deploying them in resource-constrained settings, such as mobile devices or embedded kitchen systems, motivates the investigation of small language models (SLMs) as alternatives.
 
 Recent work on model scaling has established that language model capabilities often emerge discontinuously as parameter counts increase~[3], raising a practical question: what is the minimum model size required for a given reasoning task? This question has important implications for deployment, as smaller models offer advantages in latency, memory footprint, energy consumption, and privacy through on-device inference.
 
@@ -108,16 +108,16 @@ Table~\ref{tab:main-results} presents the complete results across all model conf
     SmolLM2-1.7B ft.+syn.\ (Run K) & 1.7B & LoRA $r$\!=\!32+syn. & Generative & 82.7\% \\
     \midrule
     Qwen2.5-3B-Instruct & 3B & No & Generative & 86.7\% \\
-    DeepSeek-R1-7B & 7B & No & Generative & 97.3\% \\
+    DeepSeek-R1-Distill-Qwen-7B & 7B & No & Generative & 97.3\% \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-All models at or below 360M parameters achieve approximately 20\% accuracy---indistinguishable from random chance on a five-option task---regardless of finetuning, evaluation mode, or augmentation strategy. At 1.7B parameters, finetuning transforms performance from 18.7\% to 78.7\% (Run~I), a 60-percentage-point gain. Adding synthetic data (Run~K) further improves accuracy to 82.7\%, a 4-percentage-point gain. Above the threshold, performance scales with model size: Qwen2.5-3B achieves 86.7\% zero-shot, and DeepSeek-R1-7B reaches 97.3\%. A visual summary of all results is provided in Figure~\ref{fig:results-bar} (Appendix).
+All models at or below 360M parameters achieve approximately 20\% accuracy (not meaningfully above random chance on a five-option task) regardless of finetuning, evaluation mode, or augmentation strategy. At 1.7B parameters, finetuning transforms performance from 18.7\% to 78.7\% (Run~I), a 60-percentage-point gain. Adding synthetic data (Run~K) further improves accuracy to 82.7\%, a 4-percentage-point gain. Above the threshold, performance scales with model size: Qwen2.5-3B achieves 86.7\% zero-shot, and DeepSeek-R1-Distill-Qwen-7B reaches 97.3\%. A visual summary of all results is provided in Figure~\ref{fig:results-bar} (Appendix).
 
 \subsection{Finetuning Ablation at 135M}
 
-The ablation study for SmolLM2-135M (Table~\ref{tab:ablation}) reveals that neither LoRA capacity nor augmented data meaningfully improves performance below the capability threshold. Run~C, using LoRA rank 32 without augmentation, achieved the highest accuracy at 22.7\%, while runs incorporating 160 rule-based augmented examples (D, E, F) showed higher validation loss, indicating that the query rewrites introduced overfitting rather than useful signal. Run~G extended the best configuration to SmolLM2-360M, achieving 17.3\%---still at chance level, confirming the threshold.
+The ablation study for SmolLM2-135M (Table~\ref{tab:ablation}) reveals that neither LoRA capacity nor augmented data significantly improves performance below the capability threshold. Run~C, using LoRA rank 32 without augmentation, achieved the highest accuracy at 22.7\%, while runs incorporating 160 rule-based augmented examples (D, E, F) showed higher validation loss, indicating that the query rewrites introduced overfitting rather than useful signal. Run~G extended the best configuration to SmolLM2-360M, achieving 17.3\%; still near chance level, confirming the threshold.
 
 \begin{table}[h]
   \caption{Finetuning ablation for SmolLM2-135M (Runs A--F) and SmolLM2-360M (Run G). All runs use $\alpha = 2r$ and dropout 0.05 unless noted.}
@@ -151,15 +151,15 @@ Finetuning Qwen2.5-3B with the same configuration used for SmolLM2-1.7B (LoRA $r
 
 Our results reveal three key insights about the relationship between model scale and task-specific capability for recipe recommendation.
 
-First, the capability threshold between 360M and 1.7B parameters is notably sharp rather than gradual. This is consistent with the emergent abilities hypothesis~[3], which predicts that certain capabilities appear discontinuously with scale. The fact that SmolLM2-1.7B-Instruct scores 18.7\% without finetuning---identical to the 135M and 360M models---suggests that the relevant knowledge is not accessible through prompting alone but can be unlocked through task-specific training once sufficient capacity exists.
+First, the capability threshold between 360M and 1.7B parameters is notably sharp rather than gradual. Below this threshold, all models, regardless of finetuning strategy, remain near chance performance (\(\sim 20\%\)), indicating an inability to reliably reason over semantic constraints. This suggests that the limiting factor is not optimization or data, but the model’s underlying representational capacity. In contrast, at 1.7B parameters, finetuning becomes immediately effective, producing a large jump in accuracy. This behavior is consistent with the emergent abilities hypothesis~[3] which predicts that certain capabilities appear discontinuously with scale, but more importantly, our results suggest that finetuning primarily unlocks capabilities that are already weakly present in the pretrained model, rather than creating them from scratch.
 
-Second, our synthetic data experiments reveal a nuanced interaction between augmentation and model capacity. Below the threshold, neither rule-based augmentation (160 query rewrites) nor LLM-generated synthetic data (88 examples) pushed models beyond chance performance, confirming that the bottleneck is representational capacity. Above the threshold, the same synthetic data yielded a 4-percentage-point improvement at 1.7B (78.7\% to 82.7\%), demonstrating that augmentation is effective precisely when the model can exploit the additional signal. This asymmetry implies practitioners should verify their model exceeds the task's capability threshold before investing in augmentation.
+Second, our synthetic data experiments reveal a nuanced interaction between augmentation and model capacity. Below the threshold, neither rule-based augmentation (160 query rewrites) nor LLM-generated synthetic data (88 examples) pushed models beyond chance performance, which suggests that the bottleneck is representational capacity. Above the threshold, the same synthetic data yielded a 4-percentage-point improvement at 1.7B (78.7\% to 82.7\%), demonstrating that augmentation is effective precisely when the model can exploit the additional signal. This asymmetry implies practitioners should verify their model exceeds the task's capability threshold before investing in augmentation.
 
-Third, the catastrophic overfitting of Qwen2.5-3B highlights a complementary risk: models with excess capacity relative to the training set memorize rather than generalize. This creates an asymmetry where underpowered models cannot learn and overpowered models overfit destructively, suggesting finetuning is most beneficial in a moderate capacity regime. The strong zero-shot performance of Qwen2.5-3B (86.7\%) and DeepSeek-R1-7B (97.3\%) further suggests that for recipe recommendation, models above approximately 3B parameters have already acquired sufficient knowledge during pretraining, making finetuning on small datasets unnecessary or counterproductive.
+Third, the catastrophic overfitting of Qwen2.5-3B highlights a complementary risk: models with excess capacity relative to the training set memorize rather than generalize. This creates an asymmetry where underpowered models cannot learn and overpowered models overfit destructively, suggesting finetuning is most beneficial in a moderate capacity regime. The strong zero-shot performance of Qwen2.5-3B (86.7\%) and DeepSeek-R1-Distill-Qwen-7B (97.3\%) further suggests that for recipe recommendation, models above approximately 3B parameters have already acquired sufficient knowledge during pretraining, making finetuning on small datasets unnecessary or counterproductive.
 
 \section{Conclusions}
 
-We conducted a systematic scaling study of language models from 135M to 7B parameters on recipe preference recommendation, revealing a sharp capability threshold between 360M and 1.7B parameters. Below this threshold, no combination of finetuning, LoRA configuration, or data augmentation produces performance above random chance. Above it, finetuning yields a 60-percentage-point gain at 1.7B, and synthetic data augmentation provides an additional 4-percentage-point improvement---but only above the threshold. Larger pretrained models perform well without task-specific training (86.7\% at 3B, 97.3\% at 7B zero-shot). Our results provide practical guidance: practitioners should verify that their target model size exceeds the task's capability threshold before investing in finetuning or augmentation pipelines. Future work could investigate the threshold more precisely (e.g., at 500M and 1B parameters), explore knowledge distillation from larger to smaller models, and extend the analysis to other commonsense reasoning benchmarks.
+We conducted a systematic scaling study of language models from 135M to 7B parameters on recipe preference recommendation, revealing a sharp capability threshold between 360M and 1.7B parameters. Below this threshold, no combination of finetuning, LoRA configuration, or data augmentation produces performance above random chance. Above it, finetuning yields a 60-percentage-point gain at 1.7B, and synthetic data augmentation provides an additional 4-percentage-point improvement for models above capacity threshold. Larger pretrained models perform well without task-specific training (86.7\% at 3B, 97.3\% at 7B zero-shot). Our results provide practical guidance: practitioners should verify that their target model size exceeds the task's capability threshold before investing in finetuning or augmentation pipelines. Future work could investigate the threshold more precisely (e.g., at 500M and 1B parameters), explore knowledge distillation from larger to smaller models, and extend the analysis to other commonsense reasoning benchmarks.
 
 \section*{References}
 
@@ -175,16 +175,15 @@ We conducted a systematic scaling study of language models from 135M to 7B param
 
 [5] Mangrulkar, S., Gugger, S., Debut, L., Belkada, Y., Paul, S., \& Bossan, B. (2022). PEFT: Parameter-efficient fine-tuning methods. \url{https://github.com/huggingface/peft}.
 
-[6] Allal, L.B., Lozhkov, A., Penedo, G., et al. (2024). SmolLM2: A family of small yet capable language models. Hugging Face.
+[6] Allal, L.B., Lozhkov, A., Bakouch, E., et al. (2025). SmolLM2: When Smol goes big — Data-centric training of a small language model. \textit{arXiv preprint arXiv:2502.02737}.
 
-[7] Yang, A., Yang, B., Hui, B., et al. (2024). Qwen2.5: A party of foundation models. \textit{arXiv preprint arXiv:2412.15115}.
+[7] Yang, A., Yang, B., Hui, B., et al. (2024). Qwen2.5 Technical Report. \textit{arXiv preprint arXiv:2412.15115}.
 
 [8] DeepSeek-AI. (2025). DeepSeek-R1: Incentivizing reasoning capability in LLMs via reinforcement learning. \textit{arXiv preprint arXiv:2501.12948}.
 
 }
 
 \section*{Appendix}
-
 The complete codebase, evaluation results, and Slurm scripts are available in the project repository at \url{https://github.com/ShayanNasiri/ece1508}. The repository includes the installable \texttt{recipe\_mpr\_qa} Python package, 20 Slurm scripts for reproducible execution on GPU clusters, all 12 evaluation result JSON files, and training logs for all finetuning runs.
 
 \begin{figure}[h]
@@ -222,7 +221,7 @@ No additional comments.
 \begin{itemize}
 	\item Group number: 24
 	\item Names of group members: Shayan Nasiri, Jagrit Rai, Pedram Yazdinia
-	\item Signature of group members: [TO BE SIGNED]
+	\item Signature of group members: SHAYAN NASIRI, JAGRIT RAI, PEDRAM YAZDINIA
 	\item Date: April 2026
 \end{itemize}
 
