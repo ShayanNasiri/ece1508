@@ -78,7 +78,6 @@ Current extras declared in `pyproject.toml`:
 - `dev`: `pytest`
 - `slm`: `torch`, `transformers`, `accelerate`, `peft`, `datasets`, `trl`
 - `mlops`: `mlflow`
-- `dashboard`: declared packaging extra only; not yet a first-class documented workflow
 
 Prepare the canonical processed dataset and split manifest:
 
@@ -157,7 +156,6 @@ The SLURM scripts that produced the final results live in [`slurm/`](slurm/). Th
 - [Experiment Status](docs/experiments_status.md)
 - [Synthetic Data R&D](docs/synthetic_data.md)
 - [MLOps Layer](docs/mlops.md)
-- [Documentation Audit](docs/documentation_audit.md)
 
 ## Repository Structure
 

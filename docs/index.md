@@ -13,7 +13,6 @@ Read based on what you need:
 - Understanding the live repo state and current caveats: read [Experiment Status](experiments_status.md)
 - Understanding the synthetic-data methodology and current pilot state: read [Synthetic Data R&D](synthetic_data.md)
 - Understanding tracked wrappers, registries, and lineage: read [MLOps Layer](mlops.md)
-- Understanding how the documentation set itself is being reconciled: read [Documentation Audit](documentation_audit.md)
 
 ## Canonical Page Ownership
 
@@ -24,7 +23,6 @@ Read based on what you need:
 - [Experiment Status](experiments_status.md): live snapshot of repo state, synthetic pilot outcomes, and what remains unvalidated
 - [Synthetic Data R&D](synthetic_data.md): literature grounding, method rationale, artifact lifecycle, approval rules, and pilot interpretation
 - [MLOps Layer](mlops.md): tracked run commands, manifest/registry layout, lineage behavior, and MLflow mirroring
-- [Documentation Audit](documentation_audit.md): maintainer-facing reconciliation matrix between live code surfaces and documentation ownership
 
 ## Canonical Vs Historical
 

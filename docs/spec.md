@@ -379,12 +379,8 @@ Declared extras in `pyproject.toml`:
 - `dev`
 - `slm`
 - `mlops`
-- `dashboard`
 
-Current documentation support level:
-
-- `dev`, `slm`, and `mlops` are active documented extras
-- `dashboard` is currently packaging-only and does not have a first-class documented workflow
+All declared extras are active documented extras.
 
 ## Key Output Locations
 

@@ -32,7 +32,6 @@ Current extras from `pyproject.toml`:
 - `dev`: `pytest`
 - `slm`: `torch`, `transformers`, `accelerate`, `peft`, `datasets`, `trl`
 - `mlops`: `mlflow`
-- `dashboard`: declared extra only; no first-class workflow is documented yet
 
 ## Base Data Commands
 

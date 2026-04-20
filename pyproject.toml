@@ -32,10 +32,6 @@ slm = [
 mlops = [
   "mlflow",
 ]
-dashboard = [
-  "streamlit",
-  "plotly",
-]
 
 [project.scripts]
 recipe-mpr-qa = "recipe_mpr_qa.cli:main"
